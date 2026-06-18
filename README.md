@@ -2,6 +2,11 @@
 
 Pythoncraft is an open-source, voxel-based sandbox engine built with Python, Pyglet, and modern OpenGL (GLSL shaders). It features advanced multi-threaded chunk generation, custom lighting and shadow systems, water/air physics accurately mimicking classic mechanics, and a highly optimized render pipeline.
 
+<img width="2559" height="1367" alt="image" src="https://github.com/user-attachments/assets/310551e9-c8ba-45ef-84f9-56abeda0b851" />
+
+<img width="2559" height="1391" alt="image" src="https://github.com/user-attachments/assets/10969f8e-4729-4f27-be38-3edec143ecd3" />
+
+
 ## 🚀 Features
 - **Infinite World Generation**: Multi-threaded terrain and biome generation using Perlin Noise.
 - **Advanced Physics**: Tick-based physics engine with highly accurate movement and swimming mechanics.
