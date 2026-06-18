@@ -6,6 +6,8 @@ Pythoncraft is an open-source, voxel-based sandbox engine built with Python, Pyg
 
 <img width="2559" height="1391" alt="image" src="https://github.com/user-attachments/assets/10969f8e-4729-4f27-be38-3edec143ecd3" />
 
+<img width="1273" height="740" alt="image" src="https://github.com/user-attachments/assets/05451d93-cdef-4674-9a6e-bd650aeeb500" />
+
 
 ## 🚀 Features
 - **Infinite World Generation**: Multi-threaded terrain and biome generation using Perlin Noise.
