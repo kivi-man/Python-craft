@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite Database
+world.db
+*.db
+
+# Virtual environments
+venv/
+env/
+.env
+
+# User specific AI data
+.gemini/
+
+# Örnek kodlar (Private/Exclude from public repo)
+*rnek kodlar/
+
+# OS generated files
+.DS_Store
+Thumbs.db
