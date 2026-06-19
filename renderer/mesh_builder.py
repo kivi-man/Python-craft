@@ -5,27 +5,8 @@ Includes Voxel Ambient Occlusion and SkyLight
 import numpy as np
 from numba import njit
 import math
-from world.mc_terrain import CHUNK_SIZE, CHUNK_HEIGHT, AIR, WATER, GLASS
-
-BLOCK_COLORS_ARRAY = np.zeros((256, 3), dtype=np.float32)
-BLOCK_COLORS_ARRAY[1] = [0.45, 0.45, 0.45]
-BLOCK_COLORS_ARRAY[2] = [0.40, 0.26, 0.13]
-BLOCK_COLORS_ARRAY[3] = [0.30, 0.65, 0.20]
-BLOCK_COLORS_ARRAY[4] = [0.20, 0.40, 0.75]
-BLOCK_COLORS_ARRAY[5] = [0.85, 0.80, 0.55]
-BLOCK_COLORS_ARRAY[6] = [0.95, 0.95, 0.95]
-BLOCK_COLORS_ARRAY[7] = [0.60, 0.80, 1.00]
-BLOCK_COLORS_ARRAY[8] = [0.50, 0.50, 0.50]
-BLOCK_COLORS_ARRAY[9] = [0.80, 0.75, 0.50]
-BLOCK_COLORS_ARRAY[10] = [0.45, 0.35, 0.40]
-BLOCK_COLORS_ARRAY[11] = [0.40, 0.30, 0.15]
-BLOCK_COLORS_ARRAY[12] = [0.15, 0.50, 0.15]
-BLOCK_COLORS_ARRAY[13] = [0.10, 0.60, 0.20]
-BLOCK_COLORS_ARRAY[14] = [0.90, 0.90, 0.85]
-BLOCK_COLORS_ARRAY[15] = [0.30, 0.20, 0.10]
-BLOCK_COLORS_ARRAY[16] = [0.25, 0.55, 0.25]
-BLOCK_COLORS_ARRAY[17] = [0.10, 0.35, 0.15]
-
+from world.mc_terrain import CHUNK_SIZE, CHUNK_HEIGHT
+from world.terrain import BLOCK_COLORS_ARRAY, BLOCK_OPAQUE_ARRAY, WATER, GLASS, AIR
 BIOME_COLORS = np.zeros((30, 3), dtype=np.float32)
 BIOME_COLORS[1] = [0.55, 0.78, 0.35] # PLAINS
 BIOME_COLORS[2] = [0.80, 0.80, 0.30] # DESERT
@@ -75,7 +56,7 @@ def _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z):
 @njit(nogil=True)
 def _is_solid(blocks, n_left, n_right, n_front, n_back, x, y, z):
     b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z)
-    if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+    if not _is_opaque(b):
         return 0
     return 1
 
@@ -122,14 +103,14 @@ def _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back
                 L = l_left[CHUNK_SIZE - 1, y, z]
                 if L > 1 and lights[0, y, z] < L - 1:
                     b = blocks[0, y, z]
-                    if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+                    if not _is_opaque(b):
                         lights[0, y, z] = L - 1
                         queue_x[tail] = 0; queue_y[tail] = y; queue_z[tail] = z; tail += 1
             if l_right.shape[0] > 0:
                 L = l_right[0, y, z]
                 if L > 1 and lights[CHUNK_SIZE - 1, y, z] < L - 1:
                     b = blocks[CHUNK_SIZE - 1, y, z]
-                    if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+                    if not _is_opaque(b):
                         lights[CHUNK_SIZE - 1, y, z] = L - 1
                         queue_x[tail] = CHUNK_SIZE - 1; queue_y[tail] = y; queue_z[tail] = z; tail += 1
                     
@@ -138,14 +119,14 @@ def _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back
                 L = l_back[x, y, CHUNK_SIZE - 1]
                 if L > 1 and lights[x, y, 0] < L - 1:
                     b = blocks[x, y, 0]
-                    if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+                    if not _is_opaque(b):
                         lights[x, y, 0] = L - 1
                         queue_x[tail] = x; queue_y[tail] = y; queue_z[tail] = 0; tail += 1
             if l_front.shape[0] > 0:
                 L = l_front[x, y, 0]
                 if L > 1 and lights[x, y, CHUNK_SIZE - 1] < L - 1:
                     b = blocks[x, y, CHUNK_SIZE - 1]
-                    if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+                    if not _is_opaque(b):
                         lights[x, y, CHUNK_SIZE - 1] = L - 1
                         queue_x[tail] = x; queue_y[tail] = y; queue_z[tail] = CHUNK_SIZE - 1; tail += 1
                     
@@ -165,7 +146,7 @@ def _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back
             nx = x + dxs[i]; ny = y + dys[i]; nz = z + dzs[i]
             if 0 <= nx < CHUNK_SIZE and 0 <= ny < CHUNK_HEIGHT and 0 <= nz < CHUNK_SIZE:
                 b = blocks[nx, ny, nz]
-                if b == 0 or b == 4 or b == 12 or b == 13 or b == 16 or b == 17 or b == GLASS or b in (31, 37, 38, 175, 176, 177, 178):
+                if not _is_opaque(b):
                     if lights[nx, ny, nz] < new_light:
                         lights[nx, ny, nz] = new_light
                         if tail < queue_x.shape[0]:
@@ -215,9 +196,9 @@ def _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z):
     return r_sum / count, g_sum / count, b_sum / count
 
 @njit(nogil=True)
-def _is_opaque(b_id):
-    if b_id == AIR or b_id == WATER or b_id == 13 or b_id == 12 or b_id == 16 or b_id == 17 or b_id == GLASS or b_id in (31, 37, 38, 175, 176, 177, 178):
-        return False
+def _is_opaque(b):
+    if b < 1024:
+        return BLOCK_OPAQUE_ARRAY[b]
     return True
 
 @njit(nogil=True)
@@ -225,8 +206,8 @@ def _build_chunk_mesh_jit(blocks, lights_in, n_left, n_right, n_front, n_back, l
     lights = lights_in.copy()
     _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back)
     
-    opaque_verts = np.empty(400000, dtype=np.float32)
-    trans_verts = np.empty(100000, dtype=np.float32)
+    opaque_verts = np.empty(2000000, dtype=np.float32)
+    trans_verts = np.empty(2000000, dtype=np.float32)
     o_idx = 0
     t_idx = 0
     

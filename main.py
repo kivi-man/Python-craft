@@ -24,6 +24,7 @@ import time
 import os
 
 from world.mc_terrain import generate_chunk, recalculate_chunk_light, CHUNK_SIZE, CHUNK_HEIGHT, AIR, WATER
+from world.terrain import CACTUS, SAND
 from renderer.mesh_builder import build_chunk_mesh
 from core.player import Player
 from core.raycast import raycast
@@ -151,12 +152,19 @@ class Camera:
 
 # ────────────────────────── ANA MOTOR ─────────────────────────────────
 
+def async_log(message):
+    try:
+        with open("log.txt", "a", encoding="utf-8") as f:
+            f.write(message + "\n")
+    except Exception:
+        pass
+
 from core.frustum import get_visible_chunk_indices
 from world.mc_terrain import load_or_generate_chunk
 from core.world_db import save_chunk
 
 class PythonCraftEngine(pyglet.window.Window):
-    def __init__(self, render_distance=4):
+    def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False):
         super().__init__(width=1280, height=720, caption="PythonCraft God-Tier Engine",
                          resizable=True, vsync=False)
         
@@ -186,7 +194,7 @@ class PythonCraftEngine(pyglet.window.Window):
         
         from core.texture_manager import TextureManager
         texture_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures')
-        self.texture_manager = TextureManager(texture_dir)
+        self.texture_manager = TextureManager(texture_dir, fast_leaves=fast_leaves)
         self.texture_manager.load_textures()
         self.block_layers = self.texture_manager.get_uvs_for_blocks()
         self.block_overlays = self.texture_manager.get_overlays_for_blocks()
@@ -250,6 +258,9 @@ class PythonCraftEngine(pyglet.window.Window):
         self.mesh_future_to_chunk = {} # future -> (cx, cz)
         
         self.chunk_load_queue = []
+        self.chunk_load_queue_set = set()
+        self.chunk_unload_queue = []
+        self.chunk_unload_queue_set = set()
         self.chunk_mesh_queue = [] # cx, cz tuples
         self.chunk_mesh_queue_set = set()
         self.modified_chunks = set()
@@ -259,8 +270,18 @@ class PythonCraftEngine(pyglet.window.Window):
         self.last_player_cx = None
         self.last_player_cz = None
         
-        print(f"[WORLD] Dynamic Chunk System Initialized. Pool size: {self.TOTAL_CHUNKS}")
+        import datetime
+        self.log(f"\n=== NEW SESSION STARTED AT {datetime.datetime.now()} ===")
+        self.log(f"[WORLD] Dynamic Chunk System Initialized. Pool size: {self.TOTAL_CHUNKS}")
         
+    def log(self, message):
+        if hasattr(self, 'executor'):
+            self.executor.submit(async_log, message)
+        else:
+            async_log(message)
+        if self.debug_mode:
+            print(message)
+            
     def _unload_chunk(self, cx, cz):
         if (cx, cz) not in self.chunk_indices: return
         
@@ -297,6 +318,8 @@ class PythonCraftEngine(pyglet.window.Window):
             del self.world_biomes[(cx, cz)]
             
     def _update_chunk_loading(self):
+        import time
+        t_start = time.perf_counter()
         px = int(self.player.x / CHUNK_SIZE)
         pz = int(self.player.z / CHUNK_SIZE)
         
@@ -306,21 +329,22 @@ class PythonCraftEngine(pyglet.window.Window):
         self.last_player_cx = px
         self.last_player_cz = pz
         
-        # 1. Unload old chunks
+        # 1. Queue old chunks for unloading
         unload_dist = self.RENDER_DISTANCE + 2
-        unload_list = []
         for (cx, cz) in list(self.chunk_indices.keys()):
             if abs(cx - px) > unload_dist or abs(cz - pz) > unload_dist:
-                unload_list.append((cx, cz))
-                
-        for cx, cz in unload_list:
-            self._unload_chunk(cx, cz)
-            if (cx, cz) in self.chunk_load_queue:
-                self.chunk_load_queue.remove((cx, cz))
-            if (cx, cz) in self.chunk_mesh_queue_set:
-                self.chunk_mesh_queue_set.remove((cx, cz))
-                if (cx, cz) in self.chunk_mesh_queue:
-                    self.chunk_mesh_queue.remove((cx, cz))
+                if (cx, cz) not in self.chunk_unload_queue_set:
+                    self.chunk_unload_queue.append((cx, cz))
+                    self.chunk_unload_queue_set.add((cx, cz))
+                # Diğer kuyruklardan hemen temizle ki boşuna işlem yapılmasın
+                if (cx, cz) in self.chunk_load_queue_set:
+                    self.chunk_load_queue_set.remove((cx, cz))
+                    if (cx, cz) in self.chunk_load_queue:
+                        self.chunk_load_queue.remove((cx, cz))
+                if (cx, cz) in self.chunk_mesh_queue_set:
+                    self.chunk_mesh_queue_set.remove((cx, cz))
+                    if (cx, cz) in self.chunk_mesh_queue:
+                        self.chunk_mesh_queue.remove((cx, cz))
                 
         # 2. Queue new chunks
         new_queue = []
@@ -328,7 +352,7 @@ class PythonCraftEngine(pyglet.window.Window):
             for cz in range(pz - self.RENDER_DISTANCE, pz + self.RENDER_DISTANCE + 1):
                 if (cx, cz) not in self.world_chunks and (cx, cz) not in self.chunk_indices:
                     # check if it's already queued or generating
-                    if (cx, cz) not in self.chunk_load_queue and (cx, cz) not in self.future_to_chunk.values():
+                    if (cx, cz) not in self.chunk_load_queue_set and (cx, cz) not in self.future_to_chunk.values():
                         dist_sq = (cx - px)**2 + (cz - pz)**2
                         new_queue.append((dist_sq, cx, cz))
                         
@@ -336,11 +360,34 @@ class PythonCraftEngine(pyglet.window.Window):
             new_queue.sort(key=lambda item: item[0])
             for item in new_queue:
                 self.chunk_load_queue.append((item[1], item[2]))
+                self.chunk_load_queue_set.add((item[1], item[2]))
+                
+        dur = (time.perf_counter() - t_start) * 1000.0
+        if dur > 1.0:
+            self.log(f"  [_update_chunk_loading] took {dur:.2f}ms")
         
     def _process_chunk_queues(self):
+        import time
+        t_start = time.perf_counter()
+        # 0. Eski chunk'ları zamana yayarak sil (Kare başına maks 2 adet)
+        px = int(self.player.x / CHUNK_SIZE)
+        pz = int(self.player.z / CHUNK_SIZE)
+        unload_dist = self.RENDER_DISTANCE + 2
+        
+        unloaded = 0
+        t_unload_start = time.perf_counter()
+        while self.chunk_unload_queue and unloaded < 2:
+            cx, cz = self.chunk_unload_queue.pop(0)
+            self.chunk_unload_queue_set.discard((cx, cz)) # Set'ten de çıkar
+            if abs(cx - px) > unload_dist or abs(cz - pz) > unload_dist:
+                self._unload_chunk(cx, cz)
+                unloaded += 1
+        t_unload_end = time.perf_counter()
+
         # 1. Bekleyen generation'ları kontrol et
+        t_gen_start = time.perf_counter()
         done_gen = [f for f in self.future_to_chunk if f.done()]
-        for f in done_gen:
+        for f in done_gen[:1]: # Her frame'de en fazla 1 chunk generation işle
             cx, cz = self.future_to_chunk.pop(f)
             blocks, light_map, out_of_bounds, biomes = f.result()
             
@@ -348,7 +395,7 @@ class PythonCraftEngine(pyglet.window.Window):
             if abs(cx - self.last_player_cx) > self.RENDER_DISTANCE + 2 or abs(cz - self.last_player_cz) > self.RENDER_DISTANCE + 2:
                 continue
                 
-            from world.terrain import LEAVES, AIR, SNOW
+            from world.terrain import LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, AIR, SNOW
             
             # Handle out_of_bounds (pending_decorations)
             for i in range(len(out_of_bounds)):
@@ -362,8 +409,8 @@ class PythonCraftEngine(pyglet.window.Window):
                 if (tcx, tcz) in self.world_chunks:
                     lx, lz = wx - tcx * 16, wz - tcz * 16
                     current = self.world_chunks[(tcx, tcz)][lx, wy, lz]
-                    if block_id == LEAVES:
-                        if current == AIR or current == LEAVES or current == SNOW:
+                    if block_id in (LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES):
+                        if current in (AIR, LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, SNOW):
                             self.world_chunks[(tcx, tcz)][lx, wy, lz] = block_id
                             if (tcx, tcz) not in self.chunk_mesh_queue_set:
                                 self.chunk_mesh_queue.append((tcx, tcz))
@@ -379,8 +426,8 @@ class PythonCraftEngine(pyglet.window.Window):
                 for wx, wy, wz, block_id in self.pending_decorations[(cx, cz)]:
                     lx, lz = wx - cx * 16, wz - cz * 16
                     current = blocks[lx, wy, lz]
-                    if block_id == LEAVES:
-                        if current == AIR or current == LEAVES or current == SNOW:
+                    if block_id in (LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES):
+                        if current in (AIR, LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, SNOW):
                             blocks[lx, wy, lz] = block_id
                     else:
                         blocks[lx, wy, lz] = block_id
@@ -391,7 +438,7 @@ class PythonCraftEngine(pyglet.window.Window):
             self.world_biomes[(cx, cz)] = biomes
             
             if not self.free_chunk_indices:
-                print(f"[WARNING] No free chunk indices for ({cx}, {cz})!")
+                self.log(f"[WARNING] No free chunk indices for ({cx}, {cz})!")
                 continue
                 
             chunk_idx = self.free_chunk_indices.pop()
@@ -411,22 +458,32 @@ class PythonCraftEngine(pyglet.window.Window):
                 if (ncx, ncz) in self.world_chunks and (ncx, ncz) not in self.chunk_mesh_queue_set:
                     self.chunk_mesh_queue.append((ncx, ncz))
                     self.chunk_mesh_queue_set.add((ncx, ncz))
+        t_gen_end = time.perf_counter()
                     
         # 2. Yeni generation'lar yolla
-        while self.chunk_load_queue and len(self.future_to_chunk) < 2:
+        t_submit_gen_start = time.perf_counter()
+        submitted_gen = 0
+        while self.chunk_load_queue and len(self.future_to_chunk) < 2 and submitted_gen < 1:
             cx, cz = self.chunk_load_queue.pop(0)
+            self.chunk_load_queue_set.discard((cx, cz)) # Set'ten de çıkar
             future = self.executor.submit(load_or_generate_chunk, cx, cz)
             self.future_to_chunk[future] = (cx, cz)
+            submitted_gen += 1
+        t_submit_gen_end = time.perf_counter()
             
         # 3. Bekleyen mesh'leri kontrol et (GPU'ya yükle)
+        t_mesh_start = time.perf_counter()
         done_mesh = [f for f in self.mesh_future_to_chunk if f.done()]
-        for f in done_mesh:
+        for f in done_mesh[:1]: # Her frame'de en fazla 1 mesh yükle
             cx, cz = self.mesh_future_to_chunk.pop(f)
             mesh = f.result()
             self._apply_chunk_mesh(cx, cz, mesh)
+        t_mesh_end = time.perf_counter()
             
         # 4. Yeni mesh'ler yolla
-        while self.chunk_mesh_queue and len(self.mesh_future_to_chunk) < 4:
+        t_submit_mesh_start = time.perf_counter()
+        submitted_mesh = 0
+        while self.chunk_mesh_queue and len(self.mesh_future_to_chunk) < 4 and submitted_mesh < 1:
             cx, cz = self.chunk_mesh_queue.pop(0)
             self.chunk_mesh_queue_set.remove((cx, cz))
             blocks = self.world_chunks.get((cx, cz))
@@ -445,8 +502,16 @@ class PythonCraftEngine(pyglet.window.Window):
                 self.block_overlays
             )
             self.mesh_future_to_chunk[future] = (cx, cz)
+            submitted_mesh += 1
+        t_submit_mesh_end = time.perf_counter()
+        
+        dur = (time.perf_counter() - t_start) * 1000.0
+        if dur > 2.0:
+            self.log(f"  [_process_chunk_queues] took {dur:.2f}ms | Unload: {(t_unload_end-t_unload_start)*1000.0:.2f}ms | DoneGen: {(t_gen_end-t_gen_start)*1000.0:.2f}ms | SubmitGen: {(t_submit_gen_end-t_submit_gen_start)*1000.0:.2f}ms | ApplyMesh: {(t_mesh_end-t_mesh_start)*1000.0:.2f}ms | SubmitMesh: {(t_submit_mesh_end-t_submit_mesh_start)*1000.0:.2f}ms")
 
     def _apply_chunk_mesh(self, cx, cz, meshes):
+        import time
+        t_start = time.perf_counter()
         if (cx, cz) not in self.chunk_indices:
             return
             
@@ -518,6 +583,10 @@ class PythonCraftEngine(pyglet.window.Window):
             self.chunk_vaos_array[chunk_idx] = (o_vao, o_vbo, o_count, t_vao, t_vbo, t_count)
             self.total_verts += (o_count + t_count)
             self.chunk_active[chunk_idx] = (o_count > 0 or t_count > 0)
+            
+        dur = (time.perf_counter() - t_start) * 1000.0
+        if dur > 1.0:
+            self.log(f"    [_apply_chunk_mesh] ({cx}, {cz}) took {dur:.2f}ms")
     
     def get_block(self, x, y, z):
         if y < 0 or y >= CHUNK_HEIGHT: return 0
@@ -528,9 +597,17 @@ class PythonCraftEngine(pyglet.window.Window):
         return chunk[int(math.floor(x)) % CHUNK_SIZE, int(math.floor(y)), int(math.floor(z)) % CHUNK_SIZE]
     
     def update(self, dt):
+        import time
+        t_start = time.perf_counter()
         dt = min(dt, 0.05)
+        
+        t_load_start = time.perf_counter()
         self._update_chunk_loading()
+        t_load_end = time.perf_counter()
+        
+        t_queue_start = time.perf_counter()
         self._process_chunk_queues()
+        t_queue_end = time.perf_counter()
         
         front = self.camera.get_front()
         flat_front = normalize_vec([front[0], 0, front[2]])
@@ -554,13 +631,20 @@ class PythonCraftEngine(pyglet.window.Window):
         # Oyuncu yüklenmemiş bir chunk'taysa düşmesini engelle
         pcx = int(math.floor(self.player.x / CHUNK_SIZE))
         pcz = int(math.floor(self.player.z / CHUNK_SIZE))
+        
+        t_player_start = time.perf_counter()
         if (pcx, pcz) in self.world_chunks:
             self.player.update(dt, dx, dz, jump, crouch, sprint, self.get_block)
         else:
             self.player.vy = 0.0 # Yerçekimi birikmesini sıfırla
+        t_player_end = time.perf_counter()
             
         eye_pos = self.player.get_eye_position()
         self.camera.x, self.camera.y, self.camera.z = eye_pos[0], eye_pos[1], eye_pos[2]
+        
+        dur = (time.perf_counter() - t_start) * 1000.0
+        if dur > 2.0:
+            self.log(f"[SLOW UPDATE] Total: {dur:.2f}ms | Load: {(t_load_end-t_load_start)*1000.0:.2f}ms | Queues: {(t_queue_end-t_queue_start)*1000.0:.2f}ms | Player: {(t_player_end-t_player_start)*1000.0:.2f}ms")
     
     def on_mouse_press(self, x, y, button, modifiers):
         eye_pos = self.player.get_eye_position()
@@ -625,9 +709,9 @@ class PythonCraftEngine(pyglet.window.Window):
         ]
         
         for nx, ny, nz in neighbors:
-            if self.get_block(nx, ny, nz) == 13: # CACTUS
+            if self.get_block(nx, ny, nz) == CACTUS: # CACTUS
                 below = self.get_block(nx, ny - 1, nz)
-                survives = (below == 5 or below == 13) # SAND or CACTUS
+                survives = (below == SAND or below == CACTUS) # SAND or CACTUS
                 if survives:
                     for dx, dz in [(1,0), (-1,0), (0,1), (0,-1)]:
                         adj = self.get_block(nx + dx, ny, nz + dz)
@@ -666,7 +750,7 @@ class PythonCraftEngine(pyglet.window.Window):
             self.selected_block_id = 4 # WATER
             print("[PLAYER] Seçilen Blok: SU")
         elif symbol == key._6:
-            self.selected_block_id = 13 # CACTUS
+            self.selected_block_id = CACTUS # CACTUS
             print("[PLAYER] Seçilen Blok: KAKTÜS")
     
     def on_resize(self, width, height):
@@ -674,6 +758,8 @@ class PythonCraftEngine(pyglet.window.Window):
         return pyglet.event.EVENT_HANDLED
     
     def on_draw(self):
+        import time
+        t_start = time.perf_counter()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(self.program)
         
@@ -684,6 +770,7 @@ class PythonCraftEngine(pyglet.window.Window):
         glUniformMatrix4fv(self.u_projection, 1, GL_FALSE, proj)
         glUniformMatrix4fv(self.u_view, 1, GL_FALSE, view)
         
+        t_cull_start = time.perf_counter()
         # Proj * View matris çarpımı (Manuel)
         clip = [0.0] * 16
         for i in range(4):
@@ -694,11 +781,13 @@ class PythonCraftEngine(pyglet.window.Window):
         # Numba ile ışık hızında Culling
         visible_count = get_visible_chunk_indices(proj_view, self.chunk_bounds, self.chunk_active, self.visible_indices)
         self.rendered_chunks = visible_count
+        t_cull_end = time.perf_counter()
         
         # Yalnızca görünür chunk'ların draw call'larını tetikle
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
         
+        t_opaque_start = time.perf_counter()
         # OPAQUE PASS
         for i in range(visible_count):
             chunk_idx = self.visible_indices[i]
@@ -706,7 +795,9 @@ class PythonCraftEngine(pyglet.window.Window):
             if o_count > 0:
                 glBindVertexArray(o_vao)
                 glDrawArrays(GL_TRIANGLES, 0, o_count)
+        t_opaque_end = time.perf_counter()
                 
+        t_trans_start = time.perf_counter()
         # TRANSPARENT PASS
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -722,7 +813,13 @@ class PythonCraftEngine(pyglet.window.Window):
         glBindVertexArray(0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
         glUseProgram(0)
+        t_trans_end = time.perf_counter()
+        
         self._frame_count += 1
+        
+        dur = (time.perf_counter() - t_start) * 1000.0
+        if dur > 4.0:
+            self.log(f"[SLOW DRAW] Total: {dur:.2f}ms | Cull: {(t_cull_end-t_cull_start)*1000.0:.2f}ms | Opaque: {(t_opaque_end-t_opaque_start)*1000.0:.2f}ms | Trans: {(t_trans_end-t_trans_start)*1000.0:.2f}ms")
     
     def _update_title(self, dt):
         fps = self._frame_count / max(dt, 0.001)
@@ -745,14 +842,30 @@ def main():
     print("=============================================")
     
     distance = 4
+    fast_leaves = False
+    debug_mode = False
     if len(sys.argv) > 1:
-        try:
-            distance = int(sys.argv[1])
-            print(f"User requested Render Distance: {distance} ({distance*2}x{distance*2} = {distance*distance*4} chunks)")
-        except ValueError:
-            print("Invalid render distance argument. Using default (4).")
+        for arg in sys.argv[1:]:
+            if arg == "-fast":
+                fast_leaves = True
+                print("Fast mode enabled: Leaves are now opaque.")
+            elif arg == "-debug":
+                debug_mode = True
+                print("Debug mode enabled: Performance metrics will be printed to console.")
+            else:
+                try:
+                    distance = int(arg)
+                    print(f"User requested Render Distance: {distance} ({distance*2}x{distance*2} = {distance*distance*4} chunks)")
+                except ValueError:
+                    pass
+                    
+    if fast_leaves:
+        from world.terrain import BLOCK_OPAQUE_ARRAY
+        BLOCK_OPAQUE_ARRAY[12] = True
+        BLOCK_OPAQUE_ARRAY[16] = True
+        BLOCK_OPAQUE_ARRAY[17] = True
     
-    engine = PythonCraftEngine(render_distance=distance)
+    engine = PythonCraftEngine(render_distance=distance, fast_leaves=fast_leaves, debug_mode=debug_mode)
     pyglet.app.run()
 
 if __name__ == '__main__':

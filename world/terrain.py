@@ -7,47 +7,64 @@ import numpy as np
 from numba import njit, prange
 from core.world_db import load_chunk
 
-# Blok Türleri
-AIR   = 0
-STONE = 1
-DIRT  = 2
-GRASS = 3
-WATER = 4
-SAND  = 5
-SNOW  = 6
-ICE   = 7
-GRAVEL = 8
-SANDSTONE = 9
-MYCELIUM = 10
-WOOD  = 11
-LEAVES = 12
-CACTUS = 13
-BIRCH_WOOD = 14
-SPRUCE_WOOD = 15
-BIRCH_LEAVES = 16
-SPRUCE_LEAVES = 17
-GLASS = 20
-
-# Blok renkleri (R, G, B)
-BLOCK_COLORS = {
-    STONE: (0.45, 0.45, 0.45),
-    DIRT:  (0.40, 0.26, 0.13),
-    GRASS: (0.30, 0.65, 0.20),
-    WATER: (0.20, 0.40, 0.75),
-    SAND:  (0.85, 0.80, 0.55),
-    SNOW:  (0.95, 0.95, 0.95),
-    ICE:   (0.60, 0.80, 1.00),
-    GRAVEL:(0.50, 0.50, 0.50),
-    SANDSTONE:(0.80, 0.75, 0.50),
-    MYCELIUM: (0.45, 0.35, 0.40),
-    WOOD:     (0.40, 0.30, 0.15),
-    LEAVES:   (0.15, 0.50, 0.15),
-    CACTUS:   (0.10, 0.60, 0.20),
-    BIRCH_WOOD:(0.90, 0.90, 0.85),
-    SPRUCE_WOOD:(0.30, 0.20, 0.10),
-    BIRCH_LEAVES:(0.25, 0.55, 0.25),
-    SPRUCE_LEAVES:(0.10, 0.35, 0.15),
+# Blok Kayıt Sistemi (Block Registry)
+BLOCK_REGISTRY = {
+    "AIR": {"id": 0, "texture": None, "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "STONE": {"id": 1, "texture": "stone.png", "color": (0.45, 0.45, 0.45), "transparent": False, "light": 0},
+    "DIRT": {"id": 2, "texture": "dirt.png", "color": (0.40, 0.26, 0.13), "transparent": False, "light": 0},
+    "GRASS": {"id": 3, "texture": {"top": "grass_top.png", "bottom": "dirt.png", "side": "grass_side.png"}, "color": (0.30, 0.65, 0.20), "transparent": False, "light": 0},
+    "WATER": {"id": 4, "texture": "water.png", "color": (0.20, 0.40, 0.75), "transparent": True, "light": 0},
+    "SAND": {"id": 5, "texture": "sand.png", "color": (0.85, 0.80, 0.55), "transparent": False, "light": 0},
+    "SNOW": {"id": 6, "texture": "snow.png", "color": (0.95, 0.95, 0.95), "transparent": False, "light": 0},
+    "BEDROCK": {"id": 7, "texture": "bedrock.png", "color": (0.20, 0.20, 0.20), "transparent": False, "light": 0},
+    "ICE": {"id": 79, "texture": "ice.png", "color": (0.60, 0.80, 1.00), "transparent": True, "light": 0},
+    "GRAVEL": {"id": 8, "texture": "gravel.png", "color": (0.50, 0.50, 0.50), "transparent": False, "light": 0},
+    "SANDSTONE": {"id": 9, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": False, "light": 0},
+    "MYCELIUM": {"id": 10, "texture": {"top": "mycelium_top.png", "bottom": "dirt.png", "side": "mycelium_side.png"}, "color": (0.45, 0.35, 0.40), "transparent": False, "light": 0},
+    "WOOD": {"id": 11, "texture": {"top": "log_oak_top.png", "bottom": "log_oak_top.png", "side": "log_oak.png"}, "color": (0.40, 0.30, 0.15), "transparent": False, "light": 0},
+    "LEAVES": {"id": 12, "texture": "leaves_oak.png", "color": (0.15, 0.50, 0.15), "transparent": True, "light": 0},
+    "CACTUS": {"id": 13, "texture": {"top": "cactus_top.png", "bottom": "cactus_bottom.png", "side": "cactus_side.png"}, "color": (0.10, 0.60, 0.20), "transparent": True, "light": 0},
+    "BIRCH_WOOD": {"id": 14, "texture": {"top": "log_birch_top.png", "bottom": "log_birch_top.png", "side": "log_birch.png"}, "color": (0.90, 0.90, 0.85), "transparent": False, "light": 0},
+    "SPRUCE_WOOD": {"id": 15, "texture": {"top": "log_spruce_top.png", "bottom": "log_spruce_top.png", "side": "log_spruce.png"}, "color": (0.30, 0.20, 0.10), "transparent": False, "light": 0},
+    "BIRCH_LEAVES": {"id": 16, "texture": "leaves_birch.png", "color": (0.25, 0.55, 0.25), "transparent": True, "light": 0},
+    "SPRUCE_LEAVES": {"id": 17, "texture": "leaves_spruce.png", "color": (0.10, 0.35, 0.15), "transparent": True, "light": 0},
+    "GLASS": {"id": 20, "texture": "glass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "LAVA": {"id": 22, "texture": "lava_still.png", "color": (0.90, 0.40, 0.10), "transparent": False, "light": 15},
+    
+    # Ores and new blocks
+    "GOLD_ORE": {"id": 40, "texture": "gold_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "IRON_ORE": {"id": 41, "texture": "iron_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "COAL_ORE": {"id": 42, "texture": "coal_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "LAPIS_ORE": {"id": 21, "texture": "lapis_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "DIAMOND_ORE": {"id": 56, "texture": "diamond_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "REDSTONE_ORE": {"id": 73, "texture": "redstone_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "EMERALD_ORE": {"id": 129, "texture": "emerald_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    
+    "TALLGRASS": {"id": 31, "texture": "tallgrass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "DANDELION": {"id": 37, "texture": "flower_dandelion.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "ROSE": {"id": 38, "texture": "flower_rose.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "DOUBLE_GRASS_BTM": {"id": 175, "texture": "double_plant_grass_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "DOUBLE_GRASS_TOP": {"id": 176, "texture": "double_plant_grass_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "DOUBLE_ROSE_BTM": {"id": 177, "texture": "double_plant_rose_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "DOUBLE_ROSE_TOP": {"id": 178, "texture": "double_plant_rose_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
 }
+
+# Dinamik Global Değişkenler
+for name, data in BLOCK_REGISTRY.items():
+    globals()[name] = data["id"]
+
+# Numba için hızlı erişim dizileri (0-1024 ID'ler için)
+BLOCK_OPAQUE_ARRAY = np.ones(1024, dtype=np.bool_)
+BLOCK_LIGHT_EMISSION_ARRAY = np.zeros(1024, dtype=np.uint8)
+BLOCK_COLORS_ARRAY = np.ones((1024, 3), dtype=np.float32)
+
+for name, data in BLOCK_REGISTRY.items():
+    bid = data["id"]
+    if bid < 1024:
+        BLOCK_OPAQUE_ARRAY[bid] = not data["transparent"]
+        BLOCK_LIGHT_EMISSION_ARRAY[bid] = data["light"]
+        if "color" in data:
+            BLOCK_COLORS_ARRAY[bid] = data["color"]
 
 CHUNK_SIZE = 16
 CHUNK_HEIGHT = 64

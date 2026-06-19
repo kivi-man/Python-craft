@@ -6,6 +6,8 @@ from world.mc_biomes import PLAINS, DESERT, FOREST, TAIGA, EXTREME_HILLS, JUNGLE
 from world.mc_biomes_layer import get_biome_layer_data
 from world.mc_trees import generate_oak_tree, generate_birch_tree, generate_spruce_tree, generate_cactus, generate_grass_cluster, generate_flower_cluster, generate_double_plant_cluster
 from core.world_db import load_chunk
+from world.mc_caves import carve_caves, carve_canyons
+from world.mc_ores import carve_ores
 
 from world.terrain import *
 
@@ -202,6 +204,12 @@ def build_surfaces(cx, cz, blocks, random, biome_grid):
                     elif run > 0:
                         run -= 1
                         blocks[x, y, z] = filler_block
+            
+            # Bedrock layer (Y=0 to 4)
+            for y in range(5):
+                if y == 0 or random.nextInt(5) > y:
+                    blocks[x, y, z] = BEDROCK
+
 
 @njit(cache=True)
 def generate_trees_for_chunk(cx, cz, blocks, random, biome_grid):
@@ -327,7 +335,9 @@ def _calc_light_jit(blocks, light_map):
             light = 15
             for y in range(CHUNK_HEIGHT - 1, -1, -1):
                 b = blocks[x, y, z]
-                if b != AIR and b != WATER and b != 13 and b != 12 and b != 16 and b != 17 and b != 20 and b != 31 and b != 37 and b != 38 and b != 175 and b != 176 and b != 177 and b != 178:
+                if b == 22: # LAVA emits light
+                    light = 15
+                elif b < 1024 and BLOCK_OPAQUE_ARRAY[b]:
                     light = 0
                 light_map[x, y, z] = light
 
@@ -367,7 +377,7 @@ def _calc_light_jit(blocks, light_map):
             
             if 0 <= nx < CHUNK_SIZE and 0 <= ny < CHUNK_HEIGHT and 0 <= nz < CHUNK_SIZE:
                 b = blocks[nx, ny, nz]
-                if b == AIR or b == WATER or b == 13 or b == 12 or b == 16 or b == 17 or b == 20 or b == 31 or b == 37 or b == 38 or b == 175 or b == 176 or b == 177 or b == 178:
+                if b < 1024 and not BLOCK_OPAQUE_ARRAY[b]:
                     if light_map[nx, ny, nz] < new_light:
                         light_map[nx, ny, nz] = new_light
                         queue_x[tail] = nx
@@ -398,8 +408,15 @@ def generate_chunk(cx, cz):
     # Prepare heights (3D interpolation)
     blocks = prepare_heights(cx, cz, buffer)
     
-    # Build surfaces (top grass, filler dirt)
+    # Build surfaces (top grass, filler dirt, bedrock)
     build_surfaces(cx, cz, blocks, random, biome_grid)
+    
+    # Generate ores
+    carve_ores(cx, cz, blocks, _WORLD_SEED)
+    
+    # Carve caves and canyons
+    carve_caves(cx, cz, blocks, _WORLD_SEED, biome_grid)
+    carve_canyons(cx, cz, blocks, _WORLD_SEED, biome_grid)
     
     # Generate trees and decorations
     out_of_bounds = generate_trees_for_chunk(cx, cz, blocks, random, biome_grid)

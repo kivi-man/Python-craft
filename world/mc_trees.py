@@ -16,8 +16,8 @@ def place_block(blocks, wx, wy, wz, cx, cz, block_id, out_of_bounds, out_count):
     if 0 <= lx < CHUNK_SIZE and 0 <= lz < CHUNK_SIZE:
         # Don't replace solid blocks with leaves
         current = blocks[lx, ly, lz]
-        if block_id == LEAVES:
-            if current != AIR and current != LEAVES and current != SNOW:
+        if block_id == LEAVES or block_id == BIRCH_LEAVES or block_id == SPRUCE_LEAVES:
+            if current != AIR and current != LEAVES and current != BIRCH_LEAVES and current != SPRUCE_LEAVES and current != SNOW:
                 return out_count
         blocks[lx, ly, lz] = block_id
     else:
@@ -126,7 +126,7 @@ def can_cactus_survive(blocks, lx, wy, lz):
     # Check below (must be SAND or CACTUS)
     if wy > 0:
         below = blocks[lx, wy - 1, lz]
-        if below != 5 and below != 13: # 5=SAND, 13=CACTUS
+        if below != SAND and below != CACTUS: # 5=SAND, 13=CACTUS
             return False
     return True
 
@@ -141,7 +141,7 @@ def generate_cactus(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count
     for hh in range(height):
         # Check survival BEFORE placing
         if can_cactus_survive(blocks, lx, wy + hh, lz):
-            out_count = place_block(blocks, wx, wy + hh, wz, cx, cz, 13, out_of_bounds, out_count) # 13=CACTUS
+            out_count = place_block(blocks, wx, wy + hh, wz, cx, cz, CACTUS, out_of_bounds, out_count) # 13=CACTUS
         else:
             break # Stop growing if it can't survive
             

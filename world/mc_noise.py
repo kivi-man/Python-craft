@@ -31,6 +31,18 @@ class JavaRandom:
         if v2 < 0: v2 += 4294967296
         return ((v1 << 27) + v2) / float(1 << 53)
         
+    def nextFloat(self) -> float:
+        v = self.next(24)
+        if v < 0: v += 16777216
+        return v / 16777216.0
+        
+    def nextLong(self) -> int:
+        v1 = self.next(32)
+        if v1 < 0: v1 += 4294967296
+        v2 = self.next(32)
+        if v2 < 0: v2 += 4294967296
+        return int((v1 << 32) + v2)
+        
     def nextInt(self, n: int) -> int:
         if (n & -n) == n:
             v = self.next(31)

@@ -90,7 +90,7 @@ class Player:
         # C++: bb->grow(0, -0.4f, 0) — AABB'yi Y'de 0.4 küçültür
         # Bu sayede oyuncu yüzeye çıkınca isInWater=false olur → impulse kesilir → geri batar → bobbing/çırpınma!
         water_aabb = self._get_player_aabb(self.x, self.y, self.z)
-        shrunk_aabb = (water_aabb[0], water_aabb[1] + 0.4, water_aabb[2],
+        shrunk_aabb = (water_aabb[0], water_aabb[1], water_aabb[2],
                        water_aabb[3], water_aabb[4] - 0.4, water_aabb[5])
         self.in_water = self._check_in_water(get_block, shrunk_aabb)
         
@@ -115,7 +115,7 @@ class Player:
             if self.in_water:
                 # Su fiziği
                 if jump:
-                    vy_tick += 0.04        # C++ aiStep(): yd += 0.04
+                    vy_tick += 0.08        # Artırıldı: Sudan daha rahat çıkabilmek için
                 vy_tick *= 0.8             # C++ travel(): yd *= 0.8
                 vy_tick -= 0.02            # C++ travel(): yd -= 0.02
             else:
@@ -130,7 +130,7 @@ class Player:
                 else:
                     # Hava fiziği
                     if jump and self.on_ground:
-                        vy_tick = 0.42     # C++ jumpFromGround()
+                        vy_tick = 0.50     # Artırıldı: 1 bloğun üzerine çıkabilmek için
                         self.on_ground = False
                     
                     vy_tick -= 0.08        # C++ travel() yerçekimi
@@ -170,7 +170,8 @@ class Player:
         if not self._check_collision(get_block, self._get_player_aabb(self.x, new_y, self.z)) or self.is_flying:
             self.y = new_y
             if not self.is_flying:
-                self.on_ground = False
+                if not self._check_collision(get_block, self._get_player_aabb(self.x, self.y - 0.01, self.z)):
+                    self.on_ground = False
         else:
             # Yere değdik veya kafayı tavana vurduk
             if self.vy < 0:
