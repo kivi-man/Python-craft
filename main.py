@@ -220,6 +220,10 @@ class PythonCraftEngine(pyglet.window.Window):
         self.player = Player(32.0, 100.0, 32.0)
         self.selected_block_id = 3 # GRASS
         
+        # Mouse basılı tutma kontrolü ve cooldown takibi
+        self.mouse_held = {mouse.LEFT: False, mouse.RIGHT: False}
+        self.mouse_action_cooldown = 0.0
+        
         self.world_chunks = {}
         self.world_light_maps = {}
         self.world_biomes = {}
@@ -602,6 +606,18 @@ class PythonCraftEngine(pyglet.window.Window):
         t_start = time.perf_counter()
         dt = min(dt, 0.05)
         
+        # Mouse basılı tutma aksiyonları (Sürekli kırma/koyma)
+        if self.mouse_action_cooldown > 0.0:
+            self.mouse_action_cooldown -= dt
+            
+        if self.mouse_action_cooldown <= 0.005:
+            if self.mouse_held[mouse.LEFT]:
+                self._handle_mouse_action(mouse.LEFT)
+                self.mouse_action_cooldown = 0.20
+            elif self.mouse_held[mouse.RIGHT]:
+                self._handle_mouse_action(mouse.RIGHT)
+                self.mouse_action_cooldown = 0.20
+        
         t_load_start = time.perf_counter()
         self._update_chunk_loading()
         t_load_end = time.perf_counter()
@@ -647,7 +663,7 @@ class PythonCraftEngine(pyglet.window.Window):
         if dur > 2.0:
             self.log(f"[SLOW UPDATE] Total: {dur:.2f}ms | Load: {(t_load_end-t_load_start)*1000.0:.2f}ms | Queues: {(t_queue_end-t_queue_start)*1000.0:.2f}ms | Player: {(t_player_end-t_player_start)*1000.0:.2f}ms")
     
-    def on_mouse_press(self, x, y, button, modifiers):
+    def _handle_mouse_action(self, button):
         eye_pos = self.player.get_eye_position()
         direction = self.camera.get_front()
         hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
@@ -660,11 +676,35 @@ class PythonCraftEngine(pyglet.window.Window):
             target_x, target_y, target_z = hx, hy, hz
             new_block_id = 0
         elif button == mouse.RIGHT and px is not None:
+            # GÜVENLİK KATMANI: Oyuncunun kendi içine katı blok koymasını engelle (0: Hava, 4: Su hariç)
+            if self.selected_block_id > 0 and self.selected_block_id != 4:
+                player_aabb = self.player._get_player_aabb(self.player.x, self.player.y, self.player.z)
+                block_aabb = (px, py, pz, px + 1.0, py + 1.0, pz + 1.0)
+                
+                # AABB kesişim kontrolü
+                intersects = (
+                    player_aabb[0] < block_aabb[3] and player_aabb[3] > block_aabb[0] and
+                    player_aabb[1] < block_aabb[4] and player_aabb[4] > block_aabb[1] and
+                    player_aabb[2] < block_aabb[5] and player_aabb[5] > block_aabb[2]
+                )
+                if intersects:
+                    return
+            
             target_x, target_y, target_z = px, py, pz
             new_block_id = self.selected_block_id
-                
+                 
         if target_x is not None:
             self.set_block(target_x, target_y, target_z, new_block_id)
+            
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button in (mouse.LEFT, mouse.RIGHT):
+            self.mouse_held[button] = True
+            self._handle_mouse_action(button)
+            self.mouse_action_cooldown = 0.20 # 4 tick (0.2s) cooldown
+            
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button in (mouse.LEFT, mouse.RIGHT):
+            self.mouse_held[button] = False
             
     def set_block(self, wx, wy, wz, block_id):
         wx = int(math.floor(wx))
@@ -723,6 +763,11 @@ class PythonCraftEngine(pyglet.window.Window):
                     self.set_block(nx, ny, nz, 0) # Break cactus
     
     def on_mouse_motion(self, x, y, dx, dy):
+        self.camera.yaw += dx * self.camera.sensitivity
+        self.camera.pitch += dy * self.camera.sensitivity
+        self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
+        
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.camera.yaw += dx * self.camera.sensitivity
         self.camera.pitch += dy * self.camera.sensitivity
         self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))

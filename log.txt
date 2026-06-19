@@ -1,2 +1,1223 @@
 
 === NEW SESSION STARTED AT 2026-06-19 12:37:10.805171 ===
+
+=== NEW SESSION STARTED AT 2026-06-19 12:39:29.323566 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 643.39ms | Cull: 642.14ms | Opaque: 0.00ms | Trans: 0.13ms
+[SLOW DRAW] Total: 22.12ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 26.14ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 38.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 24.92ms
+[SLOW DRAW] Total: 10.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.65ms
+[SLOW DRAW] Total: 36.83ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 9.20ms
+[SLOW DRAW] Total: 18.01ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 13.82ms
+[SLOW DRAW] Total: 41.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.30ms
+[SLOW DRAW] Total: 13.50ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.17ms
+[SLOW DRAW] Total: 70.30ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.13ms
+[SLOW DRAW] Total: 23.53ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.81ms
+[SLOW DRAW] Total: 8.77ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.97ms
+[SLOW DRAW] Total: 15.62ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.89ms
+[SLOW DRAW] Total: 15.66ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.00ms
+[SLOW DRAW] Total: 21.24ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.56ms
+[SLOW DRAW] Total: 34.78ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.83ms
+[SLOW DRAW] Total: 6.99ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 77.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 33.27ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.00ms
+[SLOW DRAW] Total: 16.81ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 11.35ms
+[SLOW DRAW] Total: 11.54ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.42ms
+[SLOW DRAW] Total: 16.98ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 59.73ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.67ms
+[SLOW DRAW] Total: 13.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.01ms
+[SLOW DRAW] Total: 20.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.64ms
+[SLOW DRAW] Total: 14.88ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.80ms
+[SLOW DRAW] Total: 31.91ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.08ms
+[SLOW DRAW] Total: 16.55ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.47ms
+[SLOW DRAW] Total: 18.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.99ms
+[SLOW DRAW] Total: 71.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.45ms
+[SLOW DRAW] Total: 18.30ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.37ms
+[SLOW DRAW] Total: 18.59ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.11ms
+[SLOW DRAW] Total: 64.88ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 54.21ms
+[SLOW DRAW] Total: 23.67ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 11.63ms
+[SLOW DRAW] Total: 14.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 10.41ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.07ms
+[SLOW DRAW] Total: 21.20ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.95ms
+[SLOW DRAW] Total: 70.55ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.30ms
+[SLOW DRAW] Total: 14.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.36ms
+[SLOW DRAW] Total: 20.78ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.02ms
+[SLOW DRAW] Total: 14.82ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 54.54ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 21.81ms
+[SLOW DRAW] Total: 35.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.26ms
+[SLOW DRAW] Total: 20.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.35ms
+[SLOW DRAW] Total: 20.61ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.36ms
+[SLOW DRAW] Total: 17.80ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.49ms
+[SLOW DRAW] Total: 9.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.07ms
+[SLOW DRAW] Total: 55.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.89ms
+[SLOW DRAW] Total: 41.38ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 15.58ms
+[SLOW DRAW] Total: 21.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 11.74ms
+[SLOW DRAW] Total: 17.28ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.42ms
+[SLOW DRAW] Total: 32.93ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.30ms
+[SLOW DRAW] Total: 81.76ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 43.45ms
+[SLOW DRAW] Total: 15.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.15ms
+[SLOW DRAW] Total: 20.91ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.46ms
+[SLOW DRAW] Total: 31.59ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.97ms
+[SLOW DRAW] Total: 18.25ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.27ms
+[SLOW DRAW] Total: 6.84ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.89ms
+[SLOW DRAW] Total: 7.05ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.62ms
+[SLOW DRAW] Total: 7.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 70.01ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.40ms
+[SLOW DRAW] Total: 54.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.87ms
+[SLOW DRAW] Total: 55.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.44ms
+[SLOW DRAW] Total: 7.32ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 65.81ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.15ms
+[SLOW DRAW] Total: 70.27ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.36ms
+[SLOW DRAW] Total: 70.38ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.58ms
+[SLOW DRAW] Total: 68.63ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 19.16ms
+[SLOW DRAW] Total: 9.93ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.73ms
+[SLOW DRAW] Total: 18.08ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.70ms
+[SLOW DRAW] Total: 10.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.10ms
+[SLOW DRAW] Total: 20.51ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.57ms
+[SLOW DRAW] Total: 44.59ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.91ms
+[SLOW DRAW] Total: 15.67ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.57ms
+[SLOW DRAW] Total: 56.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.13ms
+[SLOW DRAW] Total: 55.30ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 21.77ms
+[SLOW DRAW] Total: 71.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.64ms
+[SLOW DRAW] Total: 26.51ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.38ms
+[SLOW DRAW] Total: 64.80ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.36ms
+[SLOW DRAW] Total: 64.72ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.92ms
+[SLOW DRAW] Total: 87.35ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.84ms
+[SLOW DRAW] Total: 15.33ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.21ms
+[SLOW DRAW] Total: 15.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.68ms
+[SLOW DRAW] Total: 9.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.46ms
+[SLOW DRAW] Total: 13.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.99ms
+[SLOW DRAW] Total: 18.04ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.60ms
+[SLOW DRAW] Total: 47.60ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 27.12ms
+[SLOW DRAW] Total: 19.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.17ms
+[SLOW DRAW] Total: 26.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 18.25ms
+[SLOW DRAW] Total: 15.07ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.61ms
+[SLOW DRAW] Total: 18.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.72ms
+[SLOW DRAW] Total: 17.14ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 8.87ms
+[SLOW DRAW] Total: 7.87ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.65ms
+[SLOW DRAW] Total: 12.38ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.97ms
+[SLOW DRAW] Total: 65.30ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.21ms
+[SLOW DRAW] Total: 71.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.79ms
+[SLOW DRAW] Total: 70.59ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.13ms
+[SLOW DRAW] Total: 108.99ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 87.69ms
+[SLOW DRAW] Total: 7.20ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.53ms
+[SLOW DRAW] Total: 16.60ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.25ms
+[SLOW DRAW] Total: 17.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.44ms
+[SLOW DRAW] Total: 14.91ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.84ms
+[SLOW DRAW] Total: 55.17ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 33.14ms
+[SLOW DRAW] Total: 26.28ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 27.60ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 16.43ms
+[SLOW DRAW] Total: 4.02ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.35ms
+[SLOW DRAW] Total: 20.81ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 5.66ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.41ms
+[SLOW DRAW] Total: 24.94ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.52ms
+[SLOW DRAW] Total: 30.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.20ms
+[SLOW DRAW] Total: 16.73ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.42ms
+[SLOW DRAW] Total: 29.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.17ms
+[SLOW DRAW] Total: 9.19ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.65ms
+[SLOW DRAW] Total: 10.22ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 12.09ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.11ms
+[SLOW DRAW] Total: 20.09ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.20ms
+[SLOW DRAW] Total: 7.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 27.60ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.33ms
+[SLOW DRAW] Total: 15.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.03ms
+[SLOW DRAW] Total: 4.72ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.14ms
+[SLOW DRAW] Total: 32.75ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.00ms
+[SLOW DRAW] Total: 34.93ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.12ms
+[SLOW DRAW] Total: 27.00ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.59ms
+[SLOW DRAW] Total: 32.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.98ms
+[SLOW DRAW] Total: 15.09ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.61ms
+[SLOW DRAW] Total: 24.95ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.63ms
+[SLOW DRAW] Total: 13.85ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.96ms
+[SLOW DRAW] Total: 9.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 7.13ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.05ms
+[SLOW DRAW] Total: 18.10ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.02ms
+[SLOW DRAW] Total: 9.50ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.04ms
+[SLOW DRAW] Total: 11.94ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 22.56ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.92ms
+[SLOW DRAW] Total: 89.41ms | Cull: 0.03ms | Opaque: 0.01ms | Trans: 11.36ms
+[SLOW DRAW] Total: 32.77ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 21.58ms
+[SLOW DRAW] Total: 16.56ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 14.56ms
+[SLOW DRAW] Total: 38.65ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.72ms
+[SLOW DRAW] Total: 29.51ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 14.24ms
+[SLOW DRAW] Total: 21.91ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.10ms
+[SLOW DRAW] Total: 10.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.20ms
+[SLOW DRAW] Total: 12.46ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.50ms
+[SLOW DRAW] Total: 24.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.92ms
+[SLOW DRAW] Total: 29.32ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 25.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.67ms
+[SLOW DRAW] Total: 16.92ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 14.54ms
+[SLOW DRAW] Total: 21.56ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.80ms
+[SLOW DRAW] Total: 9.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.33ms
+[SLOW DRAW] Total: 11.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.73ms
+[SLOW DRAW] Total: 8.93ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 24.96ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.51ms
+[SLOW DRAW] Total: 15.64ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 24.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.43ms
+[SLOW DRAW] Total: 10.08ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 9.27ms
+[SLOW DRAW] Total: 4.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.04ms
+[SLOW DRAW] Total: 10.50ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 10.58ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 27.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.35ms
+[SLOW DRAW] Total: 6.44ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.81ms
+[SLOW DRAW] Total: 9.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 34.00ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.35ms
+[SLOW DRAW] Total: 7.81ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.30ms
+[SLOW DRAW] Total: 11.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 52.00ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 20.71ms
+[SLOW DRAW] Total: 11.73ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.40ms
+[SLOW DRAW] Total: 8.62ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.94ms
+[SLOW DRAW] Total: 7.26ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 4.83ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.65ms
+[SLOW DRAW] Total: 38.18ms | Cull: 0.04ms | Opaque: 0.01ms | Trans: 13.86ms
+[SLOW DRAW] Total: 25.15ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.04ms
+[SLOW DRAW] Total: 10.61ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.97ms
+[SLOW DRAW] Total: 38.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.27ms
+[SLOW DRAW] Total: 12.36ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.84ms
+[SLOW DRAW] Total: 10.97ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.14ms
+[SLOW DRAW] Total: 45.73ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 13.76ms
+[SLOW DRAW] Total: 6.71ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.83ms
+[SLOW DRAW] Total: 14.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.48ms
+[SLOW DRAW] Total: 19.76ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.81ms
+[SLOW DRAW] Total: 17.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.97ms
+[SLOW DRAW] Total: 34.03ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 22.46ms
+[SLOW DRAW] Total: 12.68ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.41ms
+[SLOW DRAW] Total: 38.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.37ms
+[SLOW DRAW] Total: 9.15ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.89ms
+[SLOW DRAW] Total: 49.22ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 27.12ms
+[SLOW DRAW] Total: 10.28ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.18ms
+[SLOW DRAW] Total: 12.35ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.42ms
+[SLOW DRAW] Total: 19.58ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.02ms
+[SLOW DRAW] Total: 25.40ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 16.14ms
+[SLOW DRAW] Total: 129.74ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.47ms
+[SLOW DRAW] Total: 54.85ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 0.52ms
+[SLOW DRAW] Total: 78.26ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 38.71ms
+[SLOW DRAW] Total: 28.01ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 27.72ms
+[SLOW DRAW] Total: 21.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.44ms
+[SLOW DRAW] Total: 49.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.21ms
+[SLOW DRAW] Total: 59.61ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.67ms
+[SLOW DRAW] Total: 57.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 35.69ms
+[SLOW DRAW] Total: 65.61ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.99ms
+[SLOW DRAW] Total: 60.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.89ms
+[SLOW DRAW] Total: 11.83ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 53.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 22.00ms
+[SLOW DRAW] Total: 11.84ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.84ms
+[SLOW DRAW] Total: 33.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 17.04ms
+[SLOW DRAW] Total: 4.11ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 24.26ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 17.45ms
+[SLOW DRAW] Total: 11.82ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.43ms
+[SLOW DRAW] Total: 23.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.05ms
+[SLOW DRAW] Total: 21.96ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.29ms
+[SLOW DRAW] Total: 33.43ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.26ms
+[SLOW DRAW] Total: 5.29ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 6.76ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 26.44ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.74ms
+[SLOW DRAW] Total: 26.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 25.26ms
+[SLOW DRAW] Total: 20.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.63ms
+[SLOW DRAW] Total: 108.25ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 106.58ms
+[SLOW DRAW] Total: 59.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.02ms
+[SLOW DRAW] Total: 9.54ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 8.64ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.99ms
+[SLOW DRAW] Total: 35.11ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.47ms
+[SLOW DRAW] Total: 18.10ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.67ms
+[SLOW DRAW] Total: 19.63ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.60ms
+[SLOW DRAW] Total: 13.15ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.72ms
+[SLOW DRAW] Total: 16.37ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.73ms
+[SLOW DRAW] Total: 24.28ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.59ms
+[SLOW DRAW] Total: 5.39ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 39.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 23.01ms
+[SLOW DRAW] Total: 36.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.15ms
+[SLOW DRAW] Total: 14.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 23.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.42ms
+[SLOW DRAW] Total: 10.40ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.40ms
+[SLOW DRAW] Total: 20.72ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 33.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.00ms
+[SLOW DRAW] Total: 64.68ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.90ms
+[SLOW DRAW] Total: 71.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.27ms
+[SLOW DRAW] Total: 66.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.24ms
+[SLOW DRAW] Total: 70.30ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 31.78ms
+[SLOW DRAW] Total: 55.41ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.78ms
+[SLOW DRAW] Total: 65.07ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.17ms
+[SLOW DRAW] Total: 53.29ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 20.70ms
+[SLOW DRAW] Total: 49.16ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 16.08ms
+[SLOW DRAW] Total: 49.14ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.25ms
+[SLOW DRAW] Total: 9.91ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.71ms
+[SLOW DRAW] Total: 6.87ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.21ms
+[SLOW DRAW] Total: 10.76ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.61ms
+[SLOW DRAW] Total: 10.98ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.44ms
+[SLOW DRAW] Total: 13.92ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.80ms
+[SLOW DRAW] Total: 21.37ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.05ms
+[SLOW DRAW] Total: 16.50ms | Cull: 0.04ms | Opaque: 0.01ms | Trans: 5.44ms
+[SLOW DRAW] Total: 8.70ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.94ms
+[SLOW DRAW] Total: 10.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.10ms
+[SLOW DRAW] Total: 7.71ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.67ms
+[SLOW DRAW] Total: 8.10ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.46ms
+[SLOW DRAW] Total: 7.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.23ms
+[SLOW DRAW] Total: 7.18ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.90ms
+[SLOW DRAW] Total: 16.33ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.16ms
+[SLOW DRAW] Total: 19.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.67ms
+[SLOW DRAW] Total: 12.12ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.51ms
+[SLOW DRAW] Total: 8.66ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.77ms
+[SLOW DRAW] Total: 8.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.61ms
+[SLOW DRAW] Total: 8.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.60ms
+[SLOW DRAW] Total: 33.70ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 29.55ms
+[SLOW DRAW] Total: 43.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 22.01ms
+[SLOW DRAW] Total: 31.01ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.20ms
+[SLOW DRAW] Total: 4.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+    [_apply_chunk_mesh] (2, 2) took 2.34ms
+  [_process_chunk_queues] took 2.48ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.04ms | ApplyMesh: 2.40ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 2.65ms | Load: 0.00ms | Queues: 2.59ms | Player: 0.04ms
+    [_apply_chunk_mesh] (1, 2) took 2.75ms
+  [_process_chunk_queues] took 2.90ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.04ms | ApplyMesh: 2.80ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 3.10ms | Load: 0.00ms | Queues: 3.03ms | Player: 0.05ms
+    [_apply_chunk_mesh] (2, 2) took 3.57ms
+  [_process_chunk_queues] took 3.69ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 3.61ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 3.84ms | Load: 0.00ms | Queues: 3.78ms | Player: 0.04ms
+    [_apply_chunk_mesh] (2, 1) took 4.63ms
+  [_process_chunk_queues] took 4.85ms | Unload: 0.00ms | DoneGen: 0.09ms | SubmitGen: 0.03ms | ApplyMesh: 4.70ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 5.00ms | Load: 0.00ms | Queues: 4.94ms | Player: 0.04ms
+[SLOW DRAW] Total: 4.05ms | Cull: 0.04ms | Opaque: 0.16ms | Trans: 3.63ms
+    [_apply_chunk_mesh] (2, 3) took 4.17ms
+  [_process_chunk_queues] took 4.27ms | Unload: 0.00ms | DoneGen: 0.02ms | SubmitGen: 0.01ms | ApplyMesh: 4.22ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.49ms | Load: 0.00ms | Queues: 4.41ms | Player: 0.05ms
+    [_apply_chunk_mesh] (3, 2) took 5.05ms
+  [_process_chunk_queues] took 5.17ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 5.10ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.40ms | Load: 0.00ms | Queues: 5.31ms | Player: 0.06ms
+    [_apply_chunk_mesh] (2, 1) took 4.24ms
+  [_process_chunk_queues] took 4.58ms | Unload: 0.00ms | DoneGen: 0.22ms | SubmitGen: 0.03ms | ApplyMesh: 4.30ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 4.81ms | Load: 0.00ms | Queues: 4.72ms | Player: 0.07ms
+    [_apply_chunk_mesh] (1, 1) took 4.88ms
+  [_process_chunk_queues] took 5.02ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 4.93ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 5.23ms | Load: 0.00ms | Queues: 5.15ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 3) took 3.45ms
+  [_process_chunk_queues] took 3.60ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 3.50ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 3.74ms | Load: 0.01ms | Queues: 3.68ms | Player: 0.04ms
+    [_apply_chunk_mesh] (3, 1) took 4.39ms
+  [_process_chunk_queues] took 4.53ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 4.44ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 4.74ms | Load: 0.00ms | Queues: 4.65ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 3) took 3.53ms
+  [_process_chunk_queues] took 3.64ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 3.56ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 3.81ms | Load: 0.00ms | Queues: 3.73ms | Player: 0.06ms
+[SLOW DRAW] Total: 4.45ms | Cull: 0.03ms | Opaque: 0.37ms | Trans: 3.83ms
+[SLOW DRAW] Total: 4.07ms | Cull: 0.03ms | Opaque: 3.40ms | Trans: 0.36ms
+    [_apply_chunk_mesh] (-1, 2) took 1.06ms
+[SLOW DRAW] Total: 4.69ms | Cull: 0.10ms | Opaque: 2.34ms | Trans: 1.64ms
+[SLOW DRAW] Total: 4.08ms | Cull: 0.11ms | Opaque: 2.36ms | Trans: 1.08ms
+[SLOW DRAW] Total: 4.40ms | Cull: 0.12ms | Opaque: 1.96ms | Trans: 1.98ms
+[SLOW DRAW] Total: 4.28ms | Cull: 0.10ms | Opaque: 2.01ms | Trans: 1.55ms
+    [_apply_chunk_mesh] (6, 0) took 1.81ms
+[SLOW UPDATE] Total: 2.02ms | Load: 0.00ms | Queues: 1.96ms | Player: 0.04ms
+    [_apply_chunk_mesh] (6, 1) took 1.19ms
+[SLOW DRAW] Total: 4.26ms | Cull: 0.08ms | Opaque: 2.01ms | Trans: 1.78ms
+[SLOW DRAW] Total: 4.28ms | Cull: 0.10ms | Opaque: 2.11ms | Trans: 1.63ms
+[SLOW DRAW] Total: 5.30ms | Cull: 0.10ms | Opaque: 2.32ms | Trans: 2.29ms
+[SLOW DRAW] Total: 5.33ms | Cull: 0.06ms | Opaque: 2.14ms | Trans: 2.81ms
+[SLOW DRAW] Total: 5.07ms | Cull: 0.11ms | Opaque: 2.14ms | Trans: 2.26ms
+[SLOW DRAW] Total: 5.19ms | Cull: 0.11ms | Opaque: 2.24ms | Trans: 2.19ms
+[SLOW DRAW] Total: 6.08ms | Cull: 0.11ms | Opaque: 3.69ms | Trans: 1.85ms
+[SLOW DRAW] Total: 4.70ms | Cull: 0.08ms | Opaque: 2.53ms | Trans: 1.71ms
+[SLOW DRAW] Total: 4.76ms | Cull: 0.06ms | Opaque: 2.34ms | Trans: 2.02ms
+[SLOW DRAW] Total: 5.04ms | Cull: 0.10ms | Opaque: 2.38ms | Trans: 2.04ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:42:58.765809 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 865.72ms | Cull: 863.54ms | Opaque: 0.00ms | Trans: 0.14ms
+[SLOW DRAW] Total: 21.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 39.08ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.84ms
+[SLOW DRAW] Total: 8.11ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.80ms
+[SLOW DRAW] Total: 33.90ms | Cull: 0.07ms | Opaque: 0.00ms | Trans: 7.67ms
+[SLOW DRAW] Total: 10.40ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.99ms
+[SLOW DRAW] Total: 66.67ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.99ms
+[SLOW DRAW] Total: 10.19ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.72ms
+[SLOW DRAW] Total: 70.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 37.90ms
+[SLOW DRAW] Total: 4.84ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.23ms
+[SLOW DRAW] Total: 13.49ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.14ms
+[SLOW DRAW] Total: 43.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.32ms
+[SLOW DRAW] Total: 11.02ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.83ms
+[SLOW DRAW] Total: 13.90ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 61.85ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.77ms
+[SLOW DRAW] Total: 5.68ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 16.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.90ms
+[SLOW DRAW] Total: 12.76ms | Cull: 0.03ms | Opaque: 0.01ms | Trans: 3.72ms
+[SLOW DRAW] Total: 8.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 11.07ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 12.58ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.12ms
+[SLOW DRAW] Total: 13.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 11.18ms
+[SLOW DRAW] Total: 9.89ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 24.73ms | Cull: 0.04ms | Opaque: 0.01ms | Trans: 1.10ms
+[SLOW DRAW] Total: 9.26ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.73ms
+[SLOW DRAW] Total: 15.27ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.97ms
+[SLOW DRAW] Total: 5.12ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.09ms
+[SLOW DRAW] Total: 23.05ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 22.77ms
+[SLOW DRAW] Total: 8.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.89ms
+[SLOW DRAW] Total: 13.21ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.92ms
+[SLOW DRAW] Total: 33.67ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.32ms
+[SLOW DRAW] Total: 10.82ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.29ms
+[SLOW DRAW] Total: 6.00ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 35.27ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.19ms
+[SLOW DRAW] Total: 10.24ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.80ms
+[SLOW DRAW] Total: 7.21ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.17ms
+[SLOW DRAW] Total: 6.13ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 23.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.00ms
+[SLOW DRAW] Total: 10.15ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.58ms
+[SLOW DRAW] Total: 8.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 37.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.77ms
+[SLOW DRAW] Total: 13.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.35ms
+[SLOW DRAW] Total: 39.63ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.00ms
+[SLOW DRAW] Total: 16.66ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.12ms
+[SLOW DRAW] Total: 15.37ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.29ms
+[SLOW DRAW] Total: 11.79ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 39.49ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.21ms
+[SLOW DRAW] Total: 21.75ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 7.18ms
+[SLOW DRAW] Total: 32.28ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.15ms
+[SLOW DRAW] Total: 11.11ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 9.79ms
+[SLOW DRAW] Total: 6.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 36.98ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.24ms
+[SLOW DRAW] Total: 14.73ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.89ms
+[SLOW DRAW] Total: 4.03ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.92ms
+[SLOW DRAW] Total: 13.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.22ms
+[SLOW DRAW] Total: 19.70ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.13ms
+[SLOW DRAW] Total: 18.06ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.76ms
+[SLOW DRAW] Total: 29.25ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 23.53ms
+[SLOW DRAW] Total: 65.73ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.24ms
+[SLOW UPDATE] Total: 6.02ms | Load: 0.00ms | Queues: 5.95ms | Player: 0.05ms
+  [_process_chunk_queues] took 5.90ms | Unload: 0.00ms | DoneGen: 0.05ms | SubmitGen: 0.02ms | ApplyMesh: 0.00ms | SubmitMesh: 5.82ms
+[SLOW DRAW] Total: 69.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 7.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.46ms
+
+[SLOW DRAW] Total: 25.70ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.19ms
+[SLOW DRAW] Total: 10.94ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.24ms
+[SLOW DRAW] Total: 37.35ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 18.84ms
+[SLOW DRAW] Total: 6.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 25.12ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.08ms
+[SLOW DRAW] Total: 23.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 88.07ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 59.34ms
+[SLOW DRAW] Total: 32.34ms | Cull: 0.08ms | Opaque: 0.00ms | Trans: 11.68ms
+[SLOW DRAW] Total: 49.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 17.21ms
+[SLOW DRAW] Total: 12.41ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.90ms
+[SLOW DRAW] Total: 13.35ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.69ms
+[SLOW DRAW] Total: 15.28ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.42ms
+[SLOW DRAW] Total: 13.97ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.61ms
+[SLOW DRAW] Total: 24.94ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.68ms
+[SLOW DRAW] Total: 10.53ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 4.71ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 18.96ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.93ms
+[SLOW DRAW] Total: 49.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 22.02ms
+[SLOW DRAW] Total: 11.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.74ms
+[SLOW DRAW] Total: 13.88ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.58ms
+[SLOW DRAW] Total: 9.81ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.75ms
+[SLOW DRAW] Total: 5.55ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.10ms
+[SLOW DRAW] Total: 14.90ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.08ms
+[SLOW DRAW] Total: 9.34ms | Cull: 0.04ms | Opaque: 0.01ms | Trans: 5.18ms
+[SLOW DRAW] Total: 6.39ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.81ms
+[SLOW DRAW] Total: 8.51ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.73ms
+[SLOW DRAW] Total: 7.00ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.30ms
+[SLOW DRAW] Total: 72.07ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 67.42ms
+[SLOW DRAW] Total: 17.12ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.33ms
+[SLOW DRAW] Total: 16.81ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.78ms
+[SLOW DRAW] Total: 21.08ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.52ms
+[SLOW DRAW] Total: 5.28ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.93ms
+[SLOW DRAW] Total: 9.86ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.25ms
+[SLOW DRAW] Total: 6.93ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.09ms
+[SLOW DRAW] Total: 6.37ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.17ms
+[SLOW DRAW] Total: 57.03ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.65ms
+[SLOW DRAW] Total: 6.62ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+    [_apply_chunk_mesh] (2, 2) took 5.99ms
+  [_process_chunk_queues] took 6.13ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.04ms | ApplyMesh: 6.04ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 6.35ms | Load: 0.00ms | Queues: 6.27ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 2) took 5.07ms
+  [_process_chunk_queues] took 5.18ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 5.11ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.34ms | Load: 0.00ms | Queues: 5.29ms | Player: 0.03ms
+    [_apply_chunk_mesh] (2, 1) took 5.06ms
+  [_process_chunk_queues] took 5.27ms | Unload: 0.00ms | DoneGen: 0.11ms | SubmitGen: 0.03ms | ApplyMesh: 5.10ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 5.47ms | Load: 0.00ms | Queues: 5.39ms | Player: 0.06ms
+    [_apply_chunk_mesh] (2, 3) took 7.39ms
+  [_process_chunk_queues] took 7.50ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 7.43ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 7.64ms | Load: 0.00ms | Queues: 7.58ms | Player: 0.03ms
+    [_apply_chunk_mesh] (3, 2) took 5.06ms
+  [_process_chunk_queues] took 5.19ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 5.11ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 5.39ms | Load: 0.00ms | Queues: 5.31ms | Player: 0.06ms
+    [_apply_chunk_mesh] (2, 1) took 4.19ms
+  [_process_chunk_queues] took 4.53ms | Unload: 0.00ms | DoneGen: 0.22ms | SubmitGen: 0.03ms | ApplyMesh: 4.25ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 4.72ms | Load: 0.00ms | Queues: 4.65ms | Player: 0.06ms
+  [_process_chunk_queues] took 4.50ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 4.43ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.70ms | Load: 0.00ms | Queues: 4.62ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 3) took 4.85ms
+  [_process_chunk_queues] took 4.98ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 4.90ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.12ms | Load: 0.00ms | Queues: 5.07ms | Player: 0.04ms
+[SLOW DRAW] Total: 4.20ms | Cull: 0.11ms | Opaque: 2.07ms | Trans: 1.59ms
+[SLOW DRAW] Total: 4.48ms | Cull: 0.09ms | Opaque: 2.28ms | Trans: 1.57ms
+[SLOW DRAW] Total: 4.67ms | Cull: 0.10ms | Opaque: 2.33ms | Trans: 1.64ms
+[SLOW DRAW] Total: 4.09ms | Cull: 0.09ms | Opaque: 1.88ms | Trans: 1.38ms
+[SLOW DRAW] Total: 4.34ms | Cull: 0.09ms | Opaque: 2.25ms | Trans: 1.56ms
+[SLOW DRAW] Total: 4.32ms | Cull: 0.10ms | Opaque: 2.06ms | Trans: 1.61ms
+    [_apply_chunk_mesh] (5, 1) took 1.21ms
+    [_apply_chunk_mesh] (5, 2) took 1.29ms
+    [_apply_chunk_mesh] (5, -1) took 1.39ms
+[SLOW DRAW] Total: 5.27ms | Cull: 0.10ms | Opaque: 2.88ms | Trans: 1.65ms
+[SLOW DRAW] Total: 5.61ms | Cull: 0.09ms | Opaque: 2.63ms | Trans: 2.38ms
+[SLOW DRAW] Total: 4.37ms | Cull: 0.10ms | Opaque: 2.30ms | Trans: 1.46ms
+[SLOW DRAW] Total: 4.58ms | Cull: 0.07ms | Opaque: 2.18ms | Trans: 1.77ms
+[SLOW DRAW] Total: 6.54ms | Cull: 0.10ms | Opaque: 3.07ms | Trans: 2.87ms
+[SLOW DRAW] Total: 6.13ms | Cull: 0.10ms | Opaque: 2.86ms | Trans: 2.66ms
+[SLOW DRAW] Total: 6.57ms | Cull: 0.06ms | Opaque: 0.92ms | Trans: 0.40ms
+[SLOW DRAW] Total: 7.37ms | Cull: 0.10ms | Opaque: 2.68ms | Trans: 3.98ms
+[SLOW DRAW] Total: 4.35ms | Cull: 0.09ms | Opaque: 2.19ms | Trans: 1.67ms
+[SLOW DRAW] Total: 4.01ms | Cull: 0.10ms | Opaque: 2.63ms | Trans: 0.68ms
+[SLOW DRAW] Total: 5.51ms | Cull: 0.10ms | Opaque: 2.59ms | Trans: 2.20ms
+[SLOW DRAW] Total: 6.09ms | Cull: 0.11ms | Opaque: 2.76ms | Trans: 2.63ms
+[SLOW DRAW] Total: 4.38ms | Cull: 0.08ms | Opaque: 2.01ms | Trans: 1.99ms
+[SLOW DRAW] Total: 4.28ms | Cull: 0.11ms | Opaque: 2.26ms | Trans: 1.34ms
+[SLOW DRAW] Total: 4.84ms | Cull: 0.11ms | Opaque: 2.13ms | Trans: 1.89ms
+[SLOW UPDATE] Total: 5.37ms | Load: 0.00ms | Queues: 5.30ms | Player: 0.05ms
+mitGen: 0.03ms | ApplyMesh: 0.00ms | SubmitMesh: 5.15ms
+    [_apply_chunk_mesh] (4, -2) took 1.01ms
+[SLOW DRAW] Total: 4.24ms | Cull: 0.06ms | Opaque: 2.07ms | Trans: 1.74ms
+[SLOW DRAW] Total: 4.65ms | Cull: 0.07ms | Opaque: 2.46ms | Trans: 1.77ms
+[SLOW DRAW] Total: 4.00ms | Cull: 0.03ms | Opaque: 1.07ms | Trans: 2.70ms
+[SLOW DRAW] Total: 4.77ms | Cull: 0.14ms | Opaque: 3.41ms | Trans: 0.78ms
+[SLOW DRAW] Total: 5.98ms | Cull: 0.10ms | Opaque: 2.97ms | Trans: 2.06ms
+[SLOW DRAW] Total: 6.51ms | Cull: 0.06ms | Opaque: 3.40ms | Trans: 2.75ms
+[SLOW DRAW] Total: 4.84ms | Cull: 0.11ms | Opaque: 2.48ms | Trans: 1.73ms
+[SLOW DRAW] Total: 5.28ms | Cull: 0.04ms | Opaque: 2.65ms | Trans: 2.35ms
+[SLOW DRAW] Total: 5.11ms | Cull: 0.07ms | Opaque: 2.54ms | Trans: 2.13ms
+[SLOW DRAW] Total: 5.51ms | Cull: 0.10ms | Opaque: 3.99ms | Trans: 0.88ms
+[SLOW DRAW] Total: 4.32ms | Cull: 0.06ms | Opaque: 2.15ms | Trans: 1.75ms
+[SLOW DRAW] Total: 6.96ms | Cull: 0.09ms | Opaque: 3.47ms | Trans: 2.82ms
+[SLOW DRAW] Total: 4.86ms | Cull: 0.05ms | Opaque: 2.41ms | Trans: 2.14ms
+[SLOW DRAW] Total: 4.24ms | Cull: 0.06ms | Opaque: 2.13ms | Trans: 1.76ms
+[SLOW DRAW] Total: 4.26ms | Cull: 0.07ms | Opaque: 2.26ms | Trans: 1.46ms
+[SLOW DRAW] Total: 5.15ms | Cull: 0.10ms | Opaque: 2.47ms | Trans: 2.00ms
+[SLOW DRAW] Total: 5.81ms | Cull: 0.09ms | Opaque: 3.03ms | Trans: 2.14ms
+[SLOW DRAW] Total: 4.15ms | Cull: 0.09ms | Opaque: 2.20ms | Trans: 1.43ms
+[SLOW DRAW] Total: 5.09ms | Cull: 0.10ms | Opaque: 2.61ms | Trans: 1.81ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:46:37.304320 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 664.68ms | Cull: 663.30ms | Opaque: 0.00ms | Trans: 0.13ms
+[SLOW DRAW] Total: 22.10ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 28.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 32.20ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.58ms
+[SLOW DRAW] Total: 10.42ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 31.08ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.36ms
+[SLOW DRAW] Total: 17.98ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 13.24ms
+[SLOW DRAW] Total: 31.11ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 114.31ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 11.97ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.50ms
+[SLOW DRAW] Total: 70.14ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 37.78ms
+[SLOW DRAW] Total: 18.84ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.19ms
+[SLOW DRAW] Total: 4.33ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.20ms
+[SLOW DRAW] Total: 10.80ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.34ms
+[SLOW DRAW] Total: 20.47ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.31ms
+[SLOW DRAW] Total: 14.92ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 42.25ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.15ms
+[SLOW DRAW] Total: 13.69ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.77ms
+[SLOW DRAW] Total: 11.85ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 4.68ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 60.18ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 22.86ms
+[SLOW DRAW] Total: 25.64ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 6.47ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.15ms
+[SLOW DRAW] Total: 26.87ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.80ms
+[SLOW DRAW] Total: 20.11ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.37ms
+[SLOW DRAW] Total: 13.03ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 24.87ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.43ms
+[SLOW DRAW] Total: 21.09ms | Cull: 0.03ms | Opaque: 0.01ms | Trans: 14.20ms
+[SLOW DRAW] Total: 14.85ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 30.43ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.45ms
+[SLOW DRAW] Total: 15.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.37ms
+[SLOW DRAW] Total: 19.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.67ms
+[SLOW DRAW] Total: 13.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.54ms
+[SLOW DRAW] Total: 19.21ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.13ms
+[SLOW DRAW] Total: 20.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 33.70ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.23ms
+[SLOW DRAW] Total: 14.57ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 12.70ms
+[SLOW DRAW] Total: 7.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 34.72ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.07ms
+[SLOW DRAW] Total: 9.56ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.41ms
+[SLOW DRAW] Total: 10.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 29.35ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.92ms
+[SLOW DRAW] Total: 7.50ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 30.05ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.41ms
+[SLOW DRAW] Total: 7.00ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.88ms
+[SLOW DRAW] Total: 9.45ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.45ms
+[SLOW DRAW] Total: 43.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 11.03ms
+[SLOW DRAW] Total: 16.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.86ms
+[SLOW DRAW] Total: 15.37ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 1.06ms
+[SLOW DRAW] Total: 12.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 16.94ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.83ms
+[SLOW DRAW] Total: 15.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.27ms
+[SLOW DRAW] Total: 36.23ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.92ms
+[SLOW DRAW] Total: 12.52ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 10.67ms
+[SLOW DRAW] Total: 5.73ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 58.33ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 30.70ms
+[SLOW DRAW] Total: 5.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.82ms
+[SLOW DRAW] Total: 15.07ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.98ms
+[SLOW DRAW] Total: 25.01ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 17.86ms
+[SLOW DRAW] Total: 26.83ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 22.73ms
+[SLOW DRAW] Total: 68.18ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 26.71ms
+[SLOW DRAW] Total: 79.58ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 39.76ms
+[SLOW DRAW] Total: 56.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 39.80ms
+[SLOW DRAW] Total: 5.35ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.06ms
+
+[SLOW DRAW] Total: 55.04ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 33.06ms
+[SLOW DRAW] Total: 27.31ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 16.60ms
+[SLOW DRAW] Total: 64.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.36ms
+[SLOW DRAW] Total: 44.45ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 22.71ms
+[SLOW DRAW] Total: 26.47ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.94ms
+[SLOW DRAW] Total: 54.13ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 33.46ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 6.08ms
+[SLOW DRAW] Total: 10.83ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 12.17ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.91ms
+[SLOW DRAW] Total: 59.20ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 27.34ms
+[SLOW DRAW] Total: 8.29ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 5.38ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.56ms
+[SLOW DRAW] Total: 11.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.64ms
+[SLOW DRAW] Total: 23.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 18.31ms
+[SLOW DRAW] Total: 11.22ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.64ms
+
+[SLOW DRAW] Total: 12.13ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.44ms
+[SLOW DRAW] Total: 27.60ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 33.43ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.27ms
+[SLOW DRAW] Total: 21.26ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.65ms
+[SLOW DRAW] Total: 72.22ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.45ms
+[SLOW DRAW] Total: 47.72ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 25.98ms
+[SLOW DRAW] Total: 26.38ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 24.46ms
+[SLOW DRAW] Total: 8.73ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 44.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.64ms
+[SLOW DRAW] Total: 14.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.53ms
+[SLOW DRAW] Total: 32.47ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 23.69ms
+[SLOW DRAW] Total: 19.54ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.38ms
+[SLOW DRAW] Total: 37.18ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 26.12ms
+[SLOW DRAW] Total: 37.18ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.01ms
+[SLOW DRAW] Total: 9.04ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 27.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.57ms
+[SLOW DRAW] Total: 42.35ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 14.87ms
+[SLOW DRAW] Total: 28.16ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 22.88ms
+[SLOW DRAW] Total: 5.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.32ms
+[SLOW DRAW] Total: 15.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.95ms
+[SLOW DRAW] Total: 9.81ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 64.89ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 32.46ms
+[SLOW DRAW] Total: 64.80ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 32.67ms
+[SLOW DRAW] Total: 54.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.67ms
+[SLOW DRAW] Total: 65.87ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 32.79ms
+[SLOW DRAW] Total: 65.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.17ms
+[SLOW DRAW] Total: 54.86ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.90ms
+[SLOW DRAW] Total: 54.13ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 27.05ms
+[SLOW DRAW] Total: 70.64ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.72ms
+[SLOW DRAW] Total: 65.30ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.72ms
+[SLOW DRAW] Total: 21.78ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.22ms
+[SLOW DRAW] Total: 6.44ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.70ms
+[SLOW DRAW] Total: 9.89ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.23ms
+[SLOW DRAW] Total: 13.88ms | Cull: 0.03ms | Opaque: 0.01ms | Trans: 9.31ms
+[SLOW DRAW] Total: 9.68ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.87ms
+[SLOW DRAW] Total: 13.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.49ms
+[SLOW DRAW] Total: 16.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.05ms
+[SLOW DRAW] Total: 5.99ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.81ms
+[SLOW DRAW] Total: 7.39ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.18ms
+[SLOW DRAW] Total: 9.67ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.99ms
+[SLOW DRAW] Total: 8.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.79ms
+[SLOW DRAW] Total: 9.22ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.45ms
+[SLOW DRAW] Total: 15.21ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.29ms
+[SLOW DRAW] Total: 17.48ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.30ms
+[SLOW DRAW] Total: 29.51ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.51ms
+[SLOW DRAW] Total: 13.02ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.82ms
+[SLOW DRAW] Total: 5.16ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.82ms
+[SLOW DRAW] Total: 10.39ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.35ms
+[SLOW DRAW] Total: 16.93ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 11.91ms
+[SLOW DRAW] Total: 65.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.25ms
+[SLOW DRAW] Total: 26.98ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 4.62ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+    [_apply_chunk_mesh] (2, 2) took 8.03ms
+  [_process_chunk_queues] took 8.12ms | Unload: 0.00ms | DoneGen: 0.01ms | SubmitGen: 0.00ms | ApplyMesh: 8.09ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 8.28ms | Load: 0.00ms | Queues: 8.20ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 2) took 2.36ms
+[SLOW UPDATE] Total: 2.71ms | Load: 0.00ms | Queues: 2.61ms | Player: 0.08ms
+mitGen: 0.02ms | ApplyMesh: 2.41ms | SubmitMesh: 0.02ms
+    [_apply_chunk_mesh] (2, 1) took 5.28ms
+  [_process_chunk_queues] took 5.41ms | Unload: 0.00ms | DoneGen: 0.02ms | SubmitGen: 0.03ms | ApplyMesh: 5.33ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 5.62ms | Load: 0.00ms | Queues: 5.53ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 2) took 3.76ms
+  [_process_chunk_queues] took 4.10ms | Unload: 0.00ms | DoneGen: 0.25ms | SubmitGen: 0.03ms | ApplyMesh: 3.81ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.31ms | Load: 0.00ms | Queues: 4.22ms | Player: 0.07ms
+    [_apply_chunk_mesh] (1, 1) took 4.38ms
+  [_process_chunk_queues] took 4.49ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 4.42ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.66ms | Load: 0.00ms | Queues: 4.59ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 3) took 4.14ms
+  [_process_chunk_queues] took 4.28ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.04ms | ApplyMesh: 4.19ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.51ms | Load: 0.00ms | Queues: 4.40ms | Player: 0.08ms
+[SLOW DRAW] Total: 4.04ms | Cull: 0.04ms | Opaque: 0.37ms | Trans: 3.38ms
+    [_apply_chunk_mesh] (3, 1) took 4.16ms
+ad: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 4.21ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.49ms | Load: 0.00ms | Queues: 4.39ms | Player: 0.07ms
+    [_apply_chunk_mesh] (0, 2) took 1.21ms
+    [_apply_chunk_mesh] (4, 2) took 1.06ms
+  [_process_chunk_queues] took 5.25ms | Unload: 0.00ms | DoneGen: 0.06ms | SubmitGen: 4.59ms | ApplyMesh: 0.57ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 5.41ms | Load: 0.00ms | Queues: 5.35ms | Player: 0.04ms
+[SLOW DRAW] Total: 5.54ms | Cull: 0.10ms | Opaque: 2.93ms | Trans: 1.99ms
+[SLOW DRAW] Total: 4.89ms | Cull: 0.03ms | Opaque: 4.35ms | Trans: 0.33ms
+[SLOW DRAW] Total: 4.39ms | Cull: 0.08ms | Opaque: 2.33ms | Trans: 1.51ms
+[SLOW DRAW] Total: 4.77ms | Cull: 0.08ms | Opaque: 2.47ms | Trans: 1.73ms
+[SLOW DRAW] Total: 5.02ms | Cull: 0.10ms | Opaque: 2.74ms | Trans: 1.83ms
+[SLOW DRAW] Total: 4.18ms | Cull: 0.11ms | Opaque: 2.36ms | Trans: 1.10ms
+[SLOW DRAW] Total: 4.15ms | Cull: 0.12ms | Opaque: 2.81ms | Trans: 0.66ms
+[SLOW DRAW] Total: 6.22ms | Cull: 0.10ms | Opaque: 3.30ms | Trans: 2.36ms
+[SLOW DRAW] Total: 4.36ms | Cull: 0.10ms | Opaque: 1.98ms | Trans: 1.68ms
+[SLOW DRAW] Total: 4.44ms | Cull: 0.11ms | Opaque: 2.10ms | Trans: 1.93ms
+[SLOW DRAW] Total: 6.54ms | Cull: 0.10ms | Opaque: 3.44ms | Trans: 2.30ms
+[SLOW DRAW] Total: 5.24ms | Cull: 0.07ms | Opaque: 2.57ms | Trans: 2.18ms
+[SLOW DRAW] Total: 4.67ms | Cull: 0.09ms | Opaque: 2.64ms | Trans: 1.65ms
+[SLOW DRAW] Total: 4.35ms | Cull: 0.08ms | Opaque: 2.41ms | Trans: 1.46ms
+[SLOW DRAW] Total: 6.28ms | Cull: 0.09ms | Opaque: 3.00ms | Trans: 2.67ms
+[SLOW DRAW] Total: 5.76ms | Cull: 0.09ms | Opaque: 2.96ms | Trans: 2.17ms
+[SLOW DRAW] Total: 6.27ms | Cull: 0.10ms | Opaque: 3.00ms | Trans: 2.66ms
+[SLOW DRAW] Total: 4.47ms | Cull: 0.04ms | Opaque: 2.30ms | Trans: 1.94ms
+[SLOW DRAW] Total: 5.82ms | Cull: 0.10ms | Opaque: 3.19ms | Trans: 2.09ms
+[SLOW DRAW] Total: 5.60ms | Cull: 0.09ms | Opaque: 2.98ms | Trans: 1.95ms
+[SLOW DRAW] Total: 6.54ms | Cull: 0.11ms | Opaque: 3.50ms | Trans: 2.30ms
+[SLOW DRAW] Total: 5.68ms | Cull: 0.09ms | Opaque: 3.56ms | Trans: 1.44ms
+[SLOW DRAW] Total: 5.25ms | Cull: 0.08ms | Opaque: 2.67ms | Trans: 2.09ms
+[SLOW DRAW] Total: 4.30ms | Cull: 0.07ms | Opaque: 2.14ms | Trans: 1.54ms
+[SLOW DRAW] Total: 4.76ms | Cull: 0.09ms | Opaque: 2.89ms | Trans: 1.38ms
+[SLOW DRAW] Total: 4.40ms | Cull: 0.11ms | Opaque: 3.27ms | Trans: 0.60ms
+[SLOW DRAW] Total: 4.29ms | Cull: 0.10ms | Opaque: 2.31ms | Trans: 1.55ms
+[SLOW DRAW] Total: 4.01ms | Cull: 0.03ms | Opaque: 3.20ms | Trans: 0.45ms
+[SLOW DRAW] Total: 4.43ms | Cull: 0.08ms | Opaque: 2.49ms | Trans: 1.61ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:47:43.006438 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 688.37ms | Cull: 686.87ms | Opaque: 0.00ms | Trans: 0.16ms
+[SLOW DRAW] Total: 36.78ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.75ms
+[SLOW DRAW] Total: 12.15ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.09ms
+[SLOW DRAW] Total: 35.85ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 79.72ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.05ms
+[SLOW DRAW] Total: 18.56ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.60ms
+[SLOW DRAW] Total: 65.32ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 37.93ms
+[SLOW DRAW] Total: 26.40ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.63ms
+[SLOW DRAW] Total: 4.64ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.53ms
+[SLOW DRAW] Total: 17.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.45ms
+[SLOW DRAW] Total: 21.99ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.91ms
+[SLOW DRAW] Total: 41.08ms | Cull: 0.04ms | Opaque: 0.01ms | Trans: 8.05ms
+[SLOW DRAW] Total: 11.36ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.98ms
+[SLOW DRAW] Total: 14.13ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 57.95ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 31.18ms
+[SLOW DRAW] Total: 39.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 17.26ms
+[SLOW DRAW] Total: 11.77ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 21.51ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.54ms
+[SLOW DRAW] Total: 10.82ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.46ms
+[SLOW DRAW] Total: 10.89ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.14ms
+[SLOW DRAW] Total: 17.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 21.82ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 14.39ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.99ms
+[SLOW DRAW] Total: 8.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 18.28ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.09ms
+[SLOW DRAW] Total: 28.74ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.65ms
+[SLOW DRAW] Total: 13.90ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.61ms
+[SLOW DRAW] Total: 14.94ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.51ms
+[SLOW DRAW] Total: 6.31ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 4.43ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.21ms
+[SLOW DRAW] Total: 24.82ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.40ms
+[SLOW DRAW] Total: 12.44ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.07ms
+[SLOW DRAW] Total: 27.13ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.33ms
+[SLOW DRAW] Total: 11.68ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.05ms
+[SLOW DRAW] Total: 5.17ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 29.21ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.51ms
+[SLOW DRAW] Total: 22.64ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 14.34ms
+[SLOW DRAW] Total: 17.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.60ms
+[SLOW DRAW] Total: 31.06ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.30ms
+[SLOW DRAW] Total: 8.57ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.11ms
+[SLOW DRAW] Total: 10.94ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 34.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.17ms
+[SLOW DRAW] Total: 6.64ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.96ms
+[SLOW DRAW] Total: 9.95ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 54.24ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 26.75ms
+[SLOW DRAW] Total: 15.02ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 11.18ms
+[SLOW DRAW] Total: 13.12ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.81ms
+[SLOW DRAW] Total: 6.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 22.86ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.23ms
+[SLOW DRAW] Total: 9.50ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.79ms
+[SLOW DRAW] Total: 35.66ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.60ms
+[SLOW DRAW] Total: 21.87ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 19.94ms
+[SLOW DRAW] Total: 31.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.62ms
+[SLOW DRAW] Total: 27.42ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 17.20ms
+[SLOW DRAW] Total: 49.31ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 22.15ms
+[SLOW DRAW] Total: 10.03ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.21ms
+[SLOW DRAW] Total: 17.71ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 10.68ms
+[SLOW DRAW] Total: 36.28ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 22.10ms
+[SLOW DRAW] Total: 31.11ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.94ms
+[SLOW DRAW] Total: 80.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.66ms
+[SLOW DRAW] Total: 79.85ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 32.62ms
+[SLOW DRAW] Total: 80.46ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.19ms
+[SLOW DRAW] Total: 12.78ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.25ms
+[SLOW DRAW] Total: 71.41ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 19.93ms
+[SLOW DRAW] Total: 41.80ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 21.35ms
+[SLOW DRAW] Total: 49.30ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 16.59ms
+[SLOW DRAW] Total: 48.94ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.55ms
+[SLOW DRAW] Total: 91.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 22.22ms
+[SLOW DRAW] Total: 35.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.52ms
+[SLOW DRAW] Total: 13.65ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.91ms
+[SLOW DRAW] Total: 11.78ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.20ms
+[SLOW DRAW] Total: 59.93ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 22.02ms
+[SLOW DRAW] Total: 11.40ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.95ms
+[SLOW DRAW] Total: 20.44ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 6.16ms
+[SLOW DRAW] Total: 18.12ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.01ms
+[SLOW DRAW] Total: 19.34ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 17.98ms
+[SLOW DRAW] Total: 24.39ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.39ms
+[SLOW DRAW] Total: 9.36ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.97ms
+[SLOW DRAW] Total: 7.51ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 21.41ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.27ms
+[SLOW DRAW] Total: 24.15ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.89ms
+[SLOW DRAW] Total: 32.37ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.97ms
+[SLOW DRAW] Total: 19.35ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.05ms
+[SLOW DRAW] Total: 5.85ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 87.79ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 18.44ms
+[SLOW DRAW] Total: 46.60ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 15.32ms
+[SLOW DRAW] Total: 10.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 16.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.43ms
+[SLOW DRAW] Total: 39.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 17.48ms
+[SLOW DRAW] Total: 23.88ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 14.98ms
+[SLOW DRAW] Total: 20.46ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 10.71ms
+[SLOW DRAW] Total: 17.37ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.11ms
+[SLOW DRAW] Total: 19.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.32ms
+[SLOW DRAW] Total: 29.45ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 24.17ms
+[SLOW DRAW] Total: 4.19ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 10.22ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 5.24ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 47.95ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 18.35ms
+[SLOW DRAW] Total: 21.50ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.37ms
+[SLOW DRAW] Total: 28.64ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.44ms
+[SLOW DRAW] Total: 13.23ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 9.01ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.46ms
+[SLOW DRAW] Total: 75.73ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.81ms
+[SLOW DRAW] Total: 12.75ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 77.33ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 44.40ms
+[SLOW DRAW] Total: 54.12ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.15ms
+[SLOW DRAW] Total: 43.40ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 16.19ms
+[SLOW DRAW] Total: 60.24ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.09ms
+[SLOW DRAW] Total: 66.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 38.62ms
+[SLOW DRAW] Total: 65.81ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.75ms
+[SLOW DRAW] Total: 44.36ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.70ms
+[SLOW DRAW] Total: 4.34ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.93ms
+[SLOW DRAW] Total: 12.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.01ms
+[SLOW DRAW] Total: 5.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.06ms
+[SLOW DRAW] Total: 14.22ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.31ms
+[SLOW DRAW] Total: 6.11ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.74ms
+[SLOW DRAW] Total: 6.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.63ms
+[SLOW DRAW] Total: 6.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.75ms
+[SLOW DRAW] Total: 9.98ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.04ms
+[SLOW DRAW] Total: 25.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.59ms
+[SLOW DRAW] Total: 14.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.51ms
+[SLOW DRAW] Total: 10.10ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.48ms
+[SLOW DRAW] Total: 5.11ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.20ms
+[SLOW DRAW] Total: 5.44ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.02ms
+[SLOW DRAW] Total: 12.71ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.24ms
+[SLOW DRAW] Total: 6.17ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.49ms
+[SLOW DRAW] Total: 53.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 26.12ms
+[SLOW DRAW] Total: 37.32ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 10.96ms
+[SLOW DRAW] Total: 10.03ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+    [_apply_chunk_mesh] (2, 2) took 2.69ms
+  [_process_chunk_queues] took 2.81ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 2.74ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 3.04ms | Load: 0.00ms | Queues: 2.94ms | Player: 0.08ms
+    [_apply_chunk_mesh] (1, 2) took 2.60ms
+  [_process_chunk_queues] took 2.74ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 2.66ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 2.93ms | Load: 0.00ms | Queues: 2.85ms | Player: 0.05ms
+    [_apply_chunk_mesh] (2, 2) took 4.15ms
+  [_process_chunk_queues] took 4.29ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.04ms | ApplyMesh: 4.20ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 4.50ms | Load: 0.00ms | Queues: 4.40ms | Player: 0.07ms
+    [_apply_chunk_mesh] (2, 1) took 4.26ms
+  [_process_chunk_queues] took 4.46ms | Unload: 0.00ms | DoneGen: 0.10ms | SubmitGen: 0.03ms | ApplyMesh: 4.30ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 4.62ms | Load: 0.00ms | Queues: 4.55ms | Player: 0.05ms
+    [_apply_chunk_mesh] (2, 3) took 5.13ms
+  [_process_chunk_queues] took 5.20ms | Unload: 0.00ms | DoneGen: 0.01ms | SubmitGen: 0.00ms | ApplyMesh: 5.18ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.43ms | Load: 0.01ms | Queues: 5.33ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 2) took 4.27ms
+  [_process_chunk_queues] took 4.60ms | Unload: 0.00ms | DoneGen: 0.25ms | SubmitGen: 0.03ms | ApplyMesh: 4.31ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.75ms | Load: 0.00ms | Queues: 4.69ms | Player: 0.05ms
+    [_apply_chunk_mesh] (2, 1) took 4.46ms
+  [_process_chunk_queues] took 4.62ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 4.52ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 4.83ms | Load: 0.00ms | Queues: 4.73ms | Player: 0.08ms
+    [_apply_chunk_mesh] (1, 1) took 3.52ms
+  [_process_chunk_queues] took 3.63ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 3.56ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 3.80ms | Load: 0.00ms | Queues: 3.73ms | Player: 0.05ms
+    [_apply_chunk_mesh] (1, 3) took 4.30ms
+  [_process_chunk_queues] took 4.40ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 4.34ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.56ms | Load: 0.00ms | Queues: 4.49ms | Player: 0.05ms
+    [_apply_chunk_mesh] (3, 1) took 4.39ms
+  [_process_chunk_queues] took 4.56ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.04ms | ApplyMesh: 4.44ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 4.78ms | Load: 0.00ms | Queues: 4.68ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 3) took 4.77ms
+  [_process_chunk_queues] took 4.87ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 4.80ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.02ms | Load: 0.00ms | Queues: 4.96ms | Player: 0.04ms
+    [_apply_chunk_mesh] (0, 2) took 1.11ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:48:46.050821 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 709.70ms | Cull: 708.28ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 23.14ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 30.42ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 36.46ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 20.30ms
+[SLOW DRAW] Total: 4.89ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.15ms
+[SLOW DRAW] Total: 8.49ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 29.55ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 8.42ms
+[SLOW DRAW] Total: 32.30ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 22.04ms
+[SLOW DRAW] Total: 25.16ms | Cull: 0.04ms | Opaque: 0.04ms | Trans: 0.17ms
+[SLOW DRAW] Total: 7.20ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.17ms
+[SLOW DRAW] Total: 9.62ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 7.40ms
+[SLOW DRAW] Total: 64.38ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.49ms
+[SLOW DRAW] Total: 42.62ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 15.14ms
+[SLOW DRAW] Total: 5.05ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.07ms
+[SLOW DRAW] Total: 13.73ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.06ms
+[SLOW DRAW] Total: 15.44ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.04ms
+[SLOW DRAW] Total: 19.34ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 0.28ms
+[SLOW DRAW] Total: 83.37ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.51ms
+[SLOW DRAW] Total: 60.89ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 29.00ms
+[SLOW DRAW] Total: 14.86ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.28ms
+[SLOW DRAW] Total: 18.19ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 12.79ms
+[SLOW DRAW] Total: 22.22ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.10ms
+[SLOW DRAW] Total: 11.67ms | Cull: 0.03ms | Opaque: 0.01ms | Trans: 4.64ms
+[SLOW DRAW] Total: 10.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 16.14ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 28.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.79ms
+[SLOW DRAW] Total: 17.54ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 13.80ms
+[SLOW DRAW] Total: 24.76ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 31.32ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.32ms
+[SLOW DRAW] Total: 5.83ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:50:14.563332 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 860.89ms | Cull: 859.17ms | Opaque: 0.00ms | Trans: 0.14ms
+[SLOW DRAW] Total: 17.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 14.61ms
+[SLOW DRAW] Total: 29.32ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 19.77ms
+[SLOW DRAW] Total: 53.51ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 31.64ms
+[SLOW DRAW] Total: 14.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.92ms
+[SLOW DRAW] Total: 8.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 43.70ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.38ms
+[SLOW DRAW] Total: 21.84ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 14.12ms
+[SLOW DRAW] Total: 54.73ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 13.61ms
+[SLOW DRAW] Total: 5.51ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.56ms
+[SLOW DRAW] Total: 64.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.48ms
+[SLOW DRAW] Total: 4.94ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.68ms
+[SLOW DRAW] Total: 11.61ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.73ms
+[SLOW DRAW] Total: 11.93ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.87ms
+[SLOW DRAW] Total: 23.47ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 14.54ms
+[SLOW DRAW] Total: 49.69ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 38.74ms
+[SLOW DRAW] Total: 9.15ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.15ms
+[SLOW DRAW] Total: 32.00ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.99ms
+[SLOW DRAW] Total: 11.77ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.02ms
+[SLOW DRAW] Total: 16.27ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 21.01ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.17ms
+[SLOW DRAW] Total: 16.98ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.93ms
+[SLOW DRAW] Total: 27.83ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.45ms
+[SLOW DRAW] Total: 44.66ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.47ms
+[SLOW DRAW] Total: 14.04ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 9.37ms
+[SLOW DRAW] Total: 5.18ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 11.03ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 4.27ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.97ms
+[SLOW DRAW] Total: 4.85ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 30.53ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 3.80ms
+[SLOW DRAW] Total: 28.53ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.35ms
+[SLOW DRAW] Total: 37.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.54ms
+[SLOW DRAW] Total: 21.39ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 15.21ms
+[SLOW DRAW] Total: 5.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 53.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 20.86ms
+[SLOW DRAW] Total: 12.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.65ms
+[SLOW DRAW] Total: 41.91ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 19.79ms
+[SLOW DRAW] Total: 11.62ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.27ms
+[SLOW DRAW] Total: 21.44ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.92ms
+[SLOW DRAW] Total: 40.09ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.51ms
+[SLOW DRAW] Total: 6.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.28ms
+[SLOW DRAW] Total: 13.33ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 65.29ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.19ms
+[SLOW DRAW] Total: 5.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.47ms
+[SLOW DRAW] Total: 9.09ms | Cull: 0.05ms | Opaque: 0.01ms | Trans: 4.28ms
+[SLOW DRAW] Total: 17.10ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 9.44ms
+[SLOW DRAW] Total: 27.59ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.70ms
+[SLOW DRAW] Total: 13.98ms | Cull: 0.07ms | Opaque: 0.00ms | Trans: 12.33ms
+[SLOW DRAW] Total: 9.46ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.58ms
+[SLOW DRAW] Total: 4.37ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 41.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.09ms
+[SLOW DRAW] Total: 29.15ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.37ms
+[SLOW DRAW] Total: 54.49ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 21.45ms
+[SLOW DRAW] Total: 12.70ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.82ms
+[SLOW DRAW] Total: 5.97ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 54.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.03ms
+[SLOW DRAW] Total: 22.85ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.63ms
+[SLOW DRAW] Total: 54.40ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 27.19ms
+[SLOW DRAW] Total: 29.04ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 8.17ms
+[SLOW DRAW] Total: 6.47ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.64ms
+[SLOW DRAW] Total: 23.03ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.02ms
+[SLOW DRAW] Total: 19.58ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.57ms
+[SLOW DRAW] Total: 17.52ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.63ms
+[SLOW DRAW] Total: 39.84ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 31.16ms
+  [_process_chunk_queues] took 15.78ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 0.00ms | SubmitMesh: 15.71ms
+[SLOW UPDATE] Total: 15.90ms | Load: 0.00ms | Queues: 15.83ms | Player: 0.05ms
+[SLOW DRAW] Total: 78.41ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.72ms
+[SLOW DRAW] Total: 201.70ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 37.26ms
+[SLOW DRAW] Total: 69.37ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 32.19ms
+[SLOW DRAW] Total: 5.97ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.69ms
+[SLOW DRAW] Total: 51.21ms | Cull: 0.12ms | Opaque: 0.00ms | Trans: 16.46ms
+[SLOW DRAW] Total: 69.91ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 26.42ms
+[SLOW DRAW] Total: 68.57ms | Cull: 0.07ms | Opaque: 0.00ms | Trans: 32.67ms
+[SLOW DRAW] Total: 70.81ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 37.80ms
+[SLOW DRAW] Total: 76.40ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 44.08ms
+[SLOW DRAW] Total: 13.37ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.68ms
+[SLOW DRAW] Total: 15.04ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.93ms
+[SLOW DRAW] Total: 65.15ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.73ms
+[SLOW DRAW] Total: 44.28ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 11.99ms
+[SLOW DRAW] Total: 6.11ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 12.88ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.05ms
+[SLOW DRAW] Total: 35.99ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 10.32ms
+[SLOW DRAW] Total: 28.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 19.30ms
+[SLOW DRAW] Total: 27.35ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 16.45ms
+[SLOW DRAW] Total: 34.15ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 26.98ms
+[SLOW DRAW] Total: 17.81ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.58ms
+[SLOW DRAW] Total: 13.19ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 45.74ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 25.22ms
+[SLOW DRAW] Total: 5.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 20.63ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 16.45ms
+[SLOW DRAW] Total: 27.99ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 26.21ms
+[SLOW DRAW] Total: 60.27ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.44ms
+[SLOW DRAW] Total: 4.72ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 15.49ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 19.45ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.35ms
+[SLOW DRAW] Total: 4.78ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 24.06ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 8.57ms
+[SLOW DRAW] Total: 56.35ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 23.26ms
+[SLOW DRAW] Total: 15.54ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.90ms
+[SLOW DRAW] Total: 17.51ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.98ms
+[SLOW DRAW] Total: 14.82ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.92ms
+[SLOW DRAW] Total: 17.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 12.69ms
+[SLOW DRAW] Total: 26.61ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 15.50ms
+[SLOW DRAW] Total: 5.29ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 17.43ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.89ms
+[SLOW DRAW] Total: 41.84ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 19.78ms
+[SLOW DRAW] Total: 5.63ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.11ms
+[SLOW DRAW] Total: 59.45ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 22.46ms
+[SLOW DRAW] Total: 31.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 26.69ms
+[SLOW DRAW] Total: 23.56ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.75ms
+[SLOW DRAW] Total: 7.40ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.27ms
+[SLOW DRAW] Total: 29.77ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 21.79ms
+[SLOW DRAW] Total: 70.73ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 38.21ms
+[SLOW DRAW] Total: 72.17ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 38.75ms
+[SLOW DRAW] Total: 54.58ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.67ms
+[SLOW DRAW] Total: 69.55ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 37.52ms
+[SLOW DRAW] Total: 65.24ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.06ms
+[SLOW DRAW] Total: 66.07ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.29ms
+[SLOW DRAW] Total: 65.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.25ms
+[SLOW DRAW] Total: 60.24ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 27.63ms
+[SLOW DRAW] Total: 74.77ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 37.23ms
+[SLOW DRAW] Total: 59.47ms | Cull: 0.09ms | Opaque: 0.00ms | Trans: 27.11ms
+[SLOW DRAW] Total: 66.72ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.90ms
+[SLOW DRAW] Total: 27.72ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.69ms
+[SLOW DRAW] Total: 9.74ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 8.24ms
+[SLOW DRAW] Total: 10.66ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.29ms
+[SLOW DRAW] Total: 8.27ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.24ms
+
+[SLOW DRAW] Total: 6.54ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 13.98ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.19ms
+[SLOW DRAW] Total: 14.61ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.67ms
+[SLOW DRAW] Total: 20.10ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.56ms
+[SLOW DRAW] Total: 10.62ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.55ms
+[SLOW DRAW] Total: 15.65ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.21ms
+[SLOW DRAW] Total: 8.63ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.11ms
+[SLOW DRAW] Total: 8.50ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.23ms
+[SLOW DRAW] Total: 14.16ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.04ms
+[SLOW DRAW] Total: 5.39ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.58ms
+[SLOW DRAW] Total: 8.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.40ms
+[SLOW DRAW] Total: 17.31ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.41ms
+[SLOW DRAW] Total: 11.53ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.92ms
+[SLOW DRAW] Total: 29.84ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.91ms
+[SLOW DRAW] Total: 28.74ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.72ms
+[SLOW DRAW] Total: 14.59ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.22ms
+[SLOW DRAW] Total: 7.12ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.90ms
+[SLOW DRAW] Total: 8.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.61ms
+[SLOW DRAW] Total: 12.92ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.75ms
+[SLOW DRAW] Total: 7.46ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.64ms
+[SLOW DRAW] Total: 11.93ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 6.32ms
+[SLOW DRAW] Total: 41.69ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 32.83ms
+[SLOW DRAW] Total: 70.09ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 37.81ms
+[SLOW DRAW] Total: 22.37ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 0.10ms
+[SLOW DRAW] Total: 6.18ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+    [_apply_chunk_mesh] (2, 2) took 6.13ms
+[SLOW UPDATE] Total: 6.51ms | Load: 0.00ms | Queues: 6.41ms | Player: 0.08ms
+  [_process_chunk_queues] took 6.29ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.04ms | ApplyMesh: 6.19ms | SubmitMesh: 0.02ms
+    [_apply_chunk_mesh] (2, 2) took 1.02ms
+    [_apply_chunk_mesh] (1, 2) took 2.42ms
+  [_process_chunk_queues] took 2.50ms | Unload: 0.00ms | DoneGen: 0.01ms | SubmitGen: 0.00ms | ApplyMesh: 2.47ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 2.73ms | Load: 0.00ms | Queues: 2.62ms | Player: 0.08ms
+[SLOW DRAW] Total: 5.10ms | Cull: 0.04ms | Opaque: 4.37ms | Trans: 0.20ms
+    [_apply_chunk_mesh] (2, 1) took 5.69ms
+  [_process_chunk_queues] took 5.82ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 5.74ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 6.05ms | Load: 0.00ms | Queues: 5.95ms | Player: 0.08ms
+    [_apply_chunk_mesh] (2, 3) took 4.68ms
+  [_process_chunk_queues] took 4.80ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 4.73ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.04ms | Load: 0.00ms | Queues: 4.93ms | Player: 0.08ms
+    [_apply_chunk_mesh] (3, 2) took 4.57ms
+  [_process_chunk_queues] took 4.91ms | Unload: 0.00ms | DoneGen: 0.23ms | SubmitGen: 0.03ms | ApplyMesh: 4.63ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 5.14ms | Load: 0.00ms | Queues: 5.04ms | Player: 0.07ms
+[SLOW DRAW] Total: 4.97ms | Cull: 0.03ms | Opaque: 0.15ms | Trans: 4.18ms
+[SLOW UPDATE] Total: 4.67ms | Load: 0.00ms |  [_process_chunk_queues] took 4.46ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.02ms | ApplyMesh: 4.39ms | SubmitMesh: 0.02ms
+    [_apply_chunk_mesh] (1, 3) took 4.33ms
+  [_process_chunk_queues] took 4.47ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.04ms | ApplyMesh: 4.38ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 4.69ms | Load: 0.00ms | Queues: 4.59ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 1) took 4.90ms
+  [_process_chunk_queues] took 5.03ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 4.95ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 5.19ms | Load: 0.00ms | Queues: 5.12ms | Player: 0.05ms
+    [_apply_chunk_mesh] (3, 3) took 1.30ms
+    [_apply_chunk_mesh] (0, 2) took 1.28ms
+[SLOW DRAW] Total: 58.62ms | Cull: 0.05ms | Opaque: 24.49ms | Trans: 1.70ms
+[SLOW DRAW] Total: 5.83ms | Cull: 0.04ms | Opaque: 3.10ms | Trans: 2.30ms
+[SLOW DRAW] Total: 7.28ms | Cull: 0.07ms | Opaque: 0.68ms | Trans: 0.53ms
+[SLOW DRAW] Total: 25.95ms | Cull: 0.09ms | Opaque: 13.54ms | Trans: 0.50ms
+    [_apply_chunk_mesh] (2, -1) took 1.14ms
+[SLOW DRAW] Total: 4.64ms | Cull: 0.04ms | Opaque: 0.47ms | Trans: 0.29ms
+[SLOW DRAW] Total: 5.37ms | Cull: 0.05ms | Opaque: 0.84ms | Trans: 0.27ms
+[SLOW DRAW] Total: 8.23ms | Cull: 0.05ms | Opaque: 5.28ms | Trans: 0.27ms
+[SLOW DRAW] Total: 10.58ms | Cull: 0.05ms | Opaque: 9.19ms | Trans: 0.29ms
+[SLOW DRAW] Total: 6.22ms | Cull: 0.07ms | Opaque: 0.29ms | Trans: 2.86ms
+[SLOW DRAW] Total: 9.71ms | Cull: 0.06ms | Opaque: 1.41ms | Trans: 1.13ms
+[SLOW DRAW] Total: 12.43ms | Cull: 0.05ms | Opaque: 0.27ms | Trans: 11.92ms
+
+=== NEW SESSION STARTED AT 2026-06-19 12:53:23.300621 ===
+[WORLD] Dynamic Chunk System Initialized. Pool size: 64
+[SLOW DRAW] Total: 781.29ms | Cull: 779.42ms | Opaque: 0.00ms | Trans: 0.43ms
+[SLOW DRAW] Total: 28.34ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 30.13ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.16ms
+[SLOW DRAW] Total: 59.01ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 27.59ms
+[SLOW DRAW] Total: 23.02ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.36ms
+[SLOW DRAW] Total: 16.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.49ms
+[SLOW DRAW] Total: 43.62ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 16.78ms
+[SLOW DRAW] Total: 15.15ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.80ms
+[SLOW DRAW] Total: 14.18ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.73ms
+[SLOW DRAW] Total: 18.37ms | Cull: 0.07ms | Opaque: 0.00ms | Trans: 0.37ms
+[SLOW DRAW] Total: 26.16ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 18.11ms
+[SLOW DRAW] Total: 10.18ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.39ms
+[SLOW DRAW] Total: 31.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 37.59ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 5.56ms
+[SLOW DRAW] Total: 6.53ms | Cull: 0.14ms | Opaque: 0.00ms | Trans: 2.91ms
+[SLOW DRAW] Total: 14.22ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 1.30ms
+[SLOW DRAW] Total: 40.91ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 8.71ms
+[SLOW DRAW] Total: 41.88ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.29ms
+[SLOW DRAW] Total: 5.27ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 5.01ms
+[SLOW DRAW] Total: 41.53ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 2.31ms
+[SLOW DRAW] Total: 10.14ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 10.89ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.52ms
+[SLOW DRAW] Total: 17.92ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.49ms
+[SLOW DRAW] Total: 14.70ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.12ms
+[SLOW DRAW] Total: 22.01ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 12.78ms
+[SLOW DRAW] Total: 5.81ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.64ms
+[SLOW DRAW] Total: 15.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.77ms
+[SLOW DRAW] Total: 20.21ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 12.78ms
+[SLOW DRAW] Total: 13.25ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 9.26ms
+[SLOW DRAW] Total: 72.69ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.02ms
+  [_process_chunk_queues] took 11.02ms | Unload: 0.00ms | DoneGen: 0.04ms | SubmitGen: 0.03ms | ApplyMesh: 0.00ms | SubmitMesh: 10.95ms
+[SLOW UPDATE] Total: 11.16ms | Load: 0.00ms | Queues: 11.07ms | Player: 0.06ms
+[SLOW DRAW] Total: 96.17ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.18ms
+[SLOW DRAW] Total: 115.08ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 16.50ms
+[SLOW DRAW] Total: 88.50ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 37.16ms
+[SLOW DRAW] Total: 43.14ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 11.24ms
+[SLOW DRAW] Total: 81.63ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 43.76ms
+[SLOW DRAW] Total: 69.64ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 37.60ms
+[SLOW DRAW] Total: 11.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.92ms
+[SLOW DRAW] Total: 63.98ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 31.11ms
+[SLOW DRAW] Total: 8.56ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.34ms
+
+[SLOW DRAW] Total: 65.21ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.28ms
+[SLOW DRAW] Total: 9.58ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.61ms
+[SLOW DRAW] Total: 21.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.69ms
+[SLOW DRAW] Total: 8.76ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.94ms
+[SLOW DRAW] Total: 17.06ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.88ms
+[SLOW DRAW] Total: 25.86ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 12.51ms
+[SLOW DRAW] Total: 11.28ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.94ms
+[SLOW DRAW] Total: 37.74ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.20ms
+[SLOW DRAW] Total: 13.17ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.39ms
+[SLOW DRAW] Total: 32.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.96ms
+[SLOW DRAW] Total: 4.30ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+[SLOW DRAW] Total: 27.32ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 13.16ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.10ms
+[SLOW DRAW] Total: 5.94ms | Cull: 0.05ms | Opaque: 0.01ms | Trans: 0.10ms
+[SLOW DRAW] Total: 15.18ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.09ms
+[SLOW DRAW] Total: 61.80ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 24.17ms
+[SLOW DRAW] Total: 10.97ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 0.08ms
+[SLOW DRAW] Total: 19.38ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.10ms
+[SLOW DRAW] Total: 50.68ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.37ms
+[SLOW DRAW] Total: 16.53ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 4.78ms
+[SLOW DRAW] Total: 15.59ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 6.21ms
+[SLOW DRAW] Total: 18.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 10.48ms
+[SLOW DRAW] Total: 16.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.41ms
+[SLOW DRAW] Total: 32.66ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 26.84ms
+[SLOW DRAW] Total: 12.17ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.72ms
+[SLOW DRAW] Total: 24.81ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 3.97ms
+[SLOW DRAW] Total: 47.97ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 15.26ms
+[SLOW DRAW] Total: 20.29ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 3.72ms
+[SLOW DRAW] Total: 34.80ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 24.28ms
+[SLOW DRAW] Total: 4.66ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.45ms
+[SLOW DRAW] Total: 71.75ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.35ms
+[SLOW DRAW] Total: 70.69ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.67ms
+[SLOW DRAW] Total: 93.26ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 1.91ms
+[SLOW DRAW] Total: 54.02ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 22.19ms
+[SLOW DRAW] Total: 75.93ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 42.85ms
+[SLOW DRAW] Total: 66.57ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 33.76ms
+[SLOW DRAW] Total: 86.15ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 43.10ms
+[SLOW DRAW] Total: 64.90ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 33.30ms
+[SLOW DRAW] Total: 81.08ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 43.03ms
+[SLOW DRAW] Total: 54.68ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 22.10ms
+[SLOW DRAW] Total: 8.45ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.41ms
+[SLOW DRAW] Total: 12.09ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.14ms
+[SLOW DRAW] Total: 5.00ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 2.29ms
+[SLOW DRAW] Total: 8.42ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.57ms
+[SLOW DRAW] Total: 5.93ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.12ms
+[SLOW DRAW] Total: 17.78ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 7.44ms
+[SLOW DRAW] Total: 12.97ms | Cull: 0.06ms | Opaque: 0.00ms | Trans: 9.17ms
+[SLOW DRAW] Total: 10.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 1.74ms
+[SLOW DRAW] Total: 19.68ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 10.22ms
+[SLOW DRAW] Total: 9.32ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 4.60ms
+[SLOW DRAW] Total: 6.04ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.08ms
+[SLOW DRAW] Total: 11.53ms | Cull: 0.05ms | Opaque: 0.01ms | Trans: 6.72ms
+[SLOW DRAW] Total: 6.47ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.08ms
+[SLOW DRAW] Total: 10.26ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.28ms
+[SLOW DRAW] Total: 15.78ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 7.85ms
+[SLOW DRAW] Total: 88.74ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 2.25ms
+[SLOW DRAW] Total: 33.48ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 9.72ms
+[SLOW DRAW] Total: 13.96ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.16ms
+[SLOW DRAW] Total: 21.71ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 8.62ms
+[SLOW DRAW] Total: 8.60ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 4.59ms
+[SLOW DRAW] Total: 6.12ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 5.38ms
+[SLOW DRAW] Total: 8.23ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 6.43ms
+[SLOW DRAW] Total: 5.39ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 3.14ms
+[SLOW DRAW] Total: 30.80ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 21.19ms
+[SLOW DRAW] Total: 65.86ms | Cull: 0.05ms | Opaque: 0.00ms | Trans: 32.69ms
+[SLOW DRAW] Total: 20.85ms | Cull: 0.04ms | Opaque: 0.00ms | Trans: 0.05ms
+[SLOW DRAW] Total: 9.74ms | Cull: 0.03ms | Opaque: 0.00ms | Trans: 0.07ms
+    [_apply_chunk_mesh] (1, 2) took 6.41ms
+  [_process_chunk_queues] took 6.50ms | Unload: 0.00ms | DoneGen: 0.01ms | SubmitGen: 0.00ms | ApplyMesh: 6.47ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 6.73ms | Load: 0.00ms | Queues: 6.61ms | Player: 0.09ms
+    [_apply_chunk_mesh] (2, 2) took 1.84ms
+[SLOW UPDATE] Total: 2.21ms | Load: 0.00ms | Queues: 2.11ms | Player: 0.07ms
+    [_apply_chunk_mesh] (2, 3) took 7.21ms
+  [_process_chunk_queues] took 7.33ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 7.25ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 7.49ms | Load: 0.00ms | Queues: 7.42ms | Player: 0.05ms
+    [_apply_chunk_mesh] (2, 1) took 6.26ms
+  [_process_chunk_queues] took 6.95ms | Unload: 0.00ms | DoneGen: 0.54ms | SubmitGen: 0.05ms | ApplyMesh: 6.33ms | SubmitMesh: 0.03ms
+[SLOW UPDATE] Total: 7.20ms | Load: 0.00ms | Queues: 7.09ms | Player: 0.08ms
+    [_apply_chunk_mesh] (1, 1) took 4.09ms
+  [_process_chunk_queues] took 4.22ms | Unload: 0.00ms | DoneGen: 0.03ms | SubmitGen: 0.03ms | ApplyMesh: 4.14ms | SubmitMesh: 0.01ms
+[SLOW UPDATE] Total: 4.49ms | Load: 0.00ms | Queues: 4.35ms | Player: 0.10ms
+[SLOW DRAW] Total: 4.33ms | Cull: 0.04ms | Opaque: 0.27ms | Trans: 3.72ms
+  [_process_chunk_queues] took 4.88ms | Unload: 0.00ms | DoneGen: 0.14ms | SubmitGen: 0.02ms | ApplyMesh: 4.70ms | SubmitMesh: 0.02ms
+[SLOW UPDATE] Total: 5.10ms | Load: 0.00ms | Queues: 5.00ms | Player: 0.07ms
+    [_apply_chunk_mesh] (3, 1) took 1.35ms
+    [_apply_chunk_mesh] (0, 2) took 1.10ms
+    [_apply_chunk_mesh] (4, 2) took 1.62ms
+[SLOW UPDATE] Total: 2.02ms | Load: 0.00ms | Queues: 1.80ms | Player: 0.19ms
+    [_apply_chunk_mesh] (3, 0) took 1.06ms
+    [_apply_chunk_mesh] (4, 1) took 1.13ms
+    [_apply_chunk_mesh] (0, 0) took 1.05ms
+    [_apply_chunk_mesh] (4, 4) took 1.04ms
+[SLOW DRAW] Total: 5.90ms | Cull: 0.03ms | Opaque: 4.51ms | Trans: 0.52ms
+[SLOW UPDATE] Total: 5.65ms | Load: 0.00ms | Queues: 5.58ms | Player: 0.04ms
+  [_process_chunk_queues] took 5.48ms | Unload: 0.00ms | DoneGen: 0.22ms | SubmitGen: 0.03ms | ApplyMesh: 0.51ms | SubmitMesh: 4.71ms
+[SLOW DRAW] Total: 4.92ms | Cull: 0.04ms | Opaque: 0.69ms | Trans: 0.55ms
+    [_apply_chunk_mesh] (-1, 2) took 1.03ms
+[SLOW DRAW] Total: 4.61ms | Cull: 0.03ms | Opaque: 3.36ms | Trans: 1.03ms
+    [_apply_chunk_mesh] (4, -1) took 1.16ms

@@ -75,7 +75,66 @@ class Player:
                     block_id = get_block(x, y, z)
                     if block_id == 4:
                         return True
-        return False
+    def _push_out_of_blocks(self, get_block):
+        """Eğer oyuncu bir bloğun içine sıkışmışsa, onu en yakın boşluğa doğru iter."""
+        # Oyuncunun AABB'sini al
+        aabb = self._get_player_aabb(self.x, self.y, self.z)
+        min_x, min_y, min_z, max_x, max_y, max_z = aabb
+        
+        # Sıkışma kontrolü: AABB'nin altını hafifçe yukarı çekiyoruz (yerle teması sıkışma saymasın diye)
+        ix0, ix1 = int(math.floor(min_x)), int(math.floor(max_x))
+        iy0, iy1 = int(math.floor(min_y + 0.01)), int(math.floor(max_y))
+        iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
+        
+        stuck_blocks = []
+        for bx in range(ix0, ix1 + 1):
+            for by in range(iy0, iy1 + 1):
+                for bz in range(iz0, iz1 + 1):
+                    block_id = get_block(bx, by, bz)
+                    if block_id > 0 and block_id != 4:
+                        stuck_blocks.append((bx, by, bz))
+        
+        if not stuck_blocks:
+            return
+            
+        # Sıkışılan her bir blok için oyuncuyu en yakın kenara doğru it
+        for bx, by, bz in stuck_blocks:
+            b_min_x, b_max_x = bx, bx + 1.0
+            b_min_y, b_max_y = by, by + 1.0
+            b_min_z, b_max_z = bz, bz + 1.0
+            
+            dist_left = self.x - b_min_x
+            dist_right = b_max_x - self.x
+            dist_back = self.z - b_min_z
+            dist_front = b_max_z - self.z
+            dist_up = b_max_y - self.y
+            
+            min_dist = min(dist_left, dist_right, dist_back, dist_front, dist_up)
+            
+            push_speed = 0.1
+            if min_dist == dist_up:
+                if get_block(bx, by + 1, bz) in (0, 4):
+                    self.y += push_speed
+            elif min_dist == dist_left:
+                if get_block(bx - 1, by, bz) in (0, 4):
+                    self.x -= push_speed
+                else:
+                    self.y += push_speed
+            elif min_dist == dist_right:
+                if get_block(bx + 1, by, bz) in (0, 4):
+                    self.x += push_speed
+                else:
+                    self.y += push_speed
+            elif min_dist == dist_back:
+                if get_block(bx, by, bz - 1) in (0, 4):
+                    self.z -= push_speed
+                else:
+                    self.y += push_speed
+            else:
+                if get_block(bx, by, bz + 1) in (0, 4):
+                    self.z += push_speed
+                else:
+                    self.y += push_speed
 
     def update(self, dt, dx, dz, jump, crouch, sprint, get_block):
         """
@@ -83,6 +142,9 @@ class Player:
         dx, dz: Klavyeden gelen yön vektörü (Normalize edilmiş)
         get_block: Dünyadan blok okuma fonksiyonu callback'i
         """
+        # Sıkışma kurtarma mekanizmasını çalıştır
+        self._push_out_of_blocks(get_block)
+        
         self.is_crouching = crouch
         self.is_sprinting = sprint
         
@@ -152,14 +214,52 @@ class Player:
         # Her ekseni ayrı ayrı test ediyoruz (Slide effect için)
         
         # X Ekseninde Hareket
-        new_x = self.x + self.vx * dt
+        dx = self.vx * dt
+        if self.is_crouching and self.on_ground and not self.is_flying:
+            # Shift'teyken kenardan düşmemek için hareketi sınırla
+            while dx != 0.0:
+                support_aabb = (
+                    self.x + dx - self.radius, self.y - 0.5, self.z - self.radius,
+                    self.x + dx + self.radius, self.y - 0.01, self.z + self.radius
+                )
+                if self._check_collision(get_block, support_aabb):
+                    break
+                if abs(dx) <= 0.002:
+                    dx = 0.0
+                elif dx > 0.0:
+                    dx = max(0.0, dx - 0.002)
+                else:
+                    dx = min(0.0, dx + 0.002)
+            if dx == 0.0:
+                self.vx = 0.0
+                
+        new_x = self.x + dx
         if not self._check_collision(get_block, self._get_player_aabb(new_x, self.y, self.z)):
             self.x = new_x
         else:
             self.vx = 0.0
             
         # Z Ekseninde Hareket
-        new_z = self.z + self.vz * dt
+        dz = self.vz * dt
+        if self.is_crouching and self.on_ground and not self.is_flying:
+            # Shift'teyken kenardan düşmemek için hareketi sınırla
+            while dz != 0.0:
+                support_aabb = (
+                    self.x - self.radius, self.y - 0.5, self.z + dz - self.radius,
+                    self.x + self.radius, self.y - 0.01, self.z + dz + self.radius
+                )
+                if self._check_collision(get_block, support_aabb):
+                    break
+                if abs(dz) <= 0.002:
+                    dz = 0.0
+                elif dz > 0.0:
+                    dz = max(0.0, dz - 0.002)
+                else:
+                    dz = min(0.0, dz + 0.002)
+            if dz == 0.0:
+                self.vz = 0.0
+                
+        new_z = self.z + dz
         if not self._check_collision(get_block, self._get_player_aabb(self.x, self.y, new_z)):
             self.z = new_z
         else:

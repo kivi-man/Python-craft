@@ -21,10 +21,18 @@ def raycast(start_pos, direction, get_block_func, max_distance=5.0, step_size=0.
     x, y, z = start_pos
     dx, dy, dz = direction
     
+    # Başlangıç koordinatının kendisi zaten katı bir blok mu kontrol et
+    start_bx = int(math.floor(x))
+    start_by = int(math.floor(y))
+    start_bz = int(math.floor(z))
+    start_block_id = get_block_func(start_bx, start_by, start_bz)
+    if start_block_id > 0 and start_block_id != 4:
+        return (start_bx, start_by, start_bz, start_bx, start_by, start_bz)
+        
     distance_traveled = 0.0
     
     # Işının bir önceki adımında bulunduğu tamsayı koordinatları
-    prev_bx, prev_by, prev_bz = int(math.floor(x)), int(math.floor(y)), int(math.floor(z))
+    prev_bx, prev_by, prev_bz = start_bx, start_by, start_bz
     
     while distance_traveled < max_distance:
         x += dx * step_size
