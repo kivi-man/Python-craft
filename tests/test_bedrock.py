@@ -1,5 +1,5 @@
 import numpy as np
-from world.mc_terrain import generate_chunk
+from world.mc_terrain import generate_chunk, CHUNK_SIZE, CHUNK_HEIGHT
 
 def test_chunk_generation():
     blocks, lights, decorations, biomes = generate_chunk(0, 0)
@@ -15,11 +15,11 @@ def test_chunk_generation():
     print(f"Total Air: {total_air}")
 
     # Basic assertions to ensure chunk generation works
-    assert blocks.shape == (16, 64, 16), "Chunk shape is incorrect"
+    assert blocks.shape == (CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), "Chunk shape is incorrect"
     assert total_air > 0, "Chunk should have some air"
     assert total_stone > 0, "Chunk should have some stone"
     
-    # Check y slices (up to 64, which is CHUNK_HEIGHT)
-    for y in range(0, 64, 16):
+    # Check y slices
+    for y in range(0, CHUNK_HEIGHT, 16):
         slice_blocks = blocks[:, y, :]
         print(f"Y={y}: Air={np.sum(slice_blocks==0)}, Solid={np.sum(slice_blocks>0)}")
