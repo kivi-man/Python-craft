@@ -1,12 +1,12 @@
 """
-PythonCraft God-Tier Engine
-Ana dosya — Pencere, kamera, dünya üretimi ve render döngüsü.
+PythonCraft Engine
+Main entry point - Window, camera, world generation, and render loop.
 
-WASD: Hareket
-Mouse: Bakış yönü
-Space: Yukarı
-Shift: Aşağı
-ESC: Çıkış
+WASD: Movement
+Mouse: Look direction
+Space: Fly Up / Jump
+Shift: Fly Down / Crouch
+ESC: Exit
 """
 import math
 import os
@@ -41,7 +41,7 @@ def compile_shader(source, shader_type):
     glShaderSource(shader, 1, buf_pointer, ctypes.byref(length))
     glCompileShader(shader)
     
-    # Hata kontrolü
+    # Error checking
     status = ctypes.c_int(0)
     glGetShaderiv(shader, GL_COMPILE_STATUS, ctypes.byref(status))
     if not status.value:
@@ -55,9 +55,9 @@ def compile_shader(source, shader_type):
 def create_shader_program(vert_path, frag_path):
     with open(vert_path, 'r') as f:
         vert_src = f.read()
-    # İlk satırı atla (Python comment)
+    # Skip the first line
     if vert_src.startswith('#'):
-        pass  # GLSL # ile başlar, sorun yok
+        pass  # GLSL starts with #, which is fine
     # Python yorumunu temizle
     lines = vert_src.split('\n')
     clean_lines = [l for l in lines if not l.strip().startswith('# ')]
@@ -90,7 +90,7 @@ def create_shader_program(vert_path, frag_path):
     glDeleteShader(fs)
     return program
 
-# ─────────────────────── MATRİS HESAPLAMA ─────────────────────────────
+# ─────────────────────── MATRIX COMPUTATIONS ──────────────────────────
 
 def perspective_matrix(fov, aspect, near, far):
     f = 1.0 / math.tan(math.radians(fov) / 2.0)
@@ -127,13 +127,85 @@ def cross_vec(a, b):
 def dot_vec(a, b):
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
 
-# ─────────────────────── KAMERA SİSTEMİ ──────────────────────────────
+def get_hand_cube_vertices(block_id, block_layers):
+    vertices = []
+    faces = [
+        ([0, 1, 0], [
+            [-0.5, 0.5, -0.5, 0, 0],
+            [-0.5, 0.5,  0.5, 0, 1],
+            [ 0.5, 0.5,  0.5, 1, 1],
+            [-0.5, 0.5, -0.5, 0, 0],
+            [ 0.5, 0.5,  0.5, 1, 1],
+            [ 0.5, 0.5, -0.5, 1, 0]
+        ], 0),
+        ([0, -1, 0], [
+            [-0.5, -0.5, -0.5, 0, 0],
+            [ 0.5, -0.5, -0.5, 1, 0],
+            [ 0.5, -0.5,  0.5, 1, 1],
+            [-0.5, -0.5, -0.5, 0, 0],
+            [ 0.5, -0.5,  0.5, 1, 1],
+            [-0.5, -0.5,  0.5, 0, 1]
+        ], 1),
+        ([1, 0, 0], [
+            [0.5, -0.5, -0.5, 0, 0],
+            [0.5,  0.5, -0.5, 0, 1],
+            [0.5,  0.5,  0.5, 1, 1],
+            [0.5, -0.5, -0.5, 0, 0],
+            [0.5,  0.5,  0.5, 1, 1],
+            [0.5, -0.5,  0.5, 1, 0]
+        ], 2),
+        ([-1, 0, 0], [
+            [-0.5, -0.5, -0.5, 0, 0],
+            [-0.5, -0.5,  0.5, 1, 0],
+            [-0.5,  0.5,  0.5, 1, 1],
+            [-0.5, -0.5, -0.5, 0, 0],
+            [-0.5,  0.5,  0.5, 1, 1],
+            [-0.5,  0.5, -0.5, 0, 1]
+        ], 3),
+        ([0, 0, 1], [
+            [-0.5, -0.5, 0.5, 0, 0],
+            [ 0.5, -0.5, 0.5, 1, 0],
+            [ 0.5,  0.5, 0.5, 1, 1],
+            [-0.5, -0.5, 0.5, 0, 0],
+            [ 0.5,  0.5, 0.5, 1, 1],
+            [-0.5,  0.5, 0.5, 0, 1]
+        ], 4),
+        ([0, 0, -1], [
+            [-0.5, -0.5, -0.5, 0, 0],
+            [-0.5,  0.5, -0.5, 0, 1],
+            [ 0.5,  0.5, -0.5, 1, 1],
+            [-0.5, -0.5, -0.5, 0, 0],
+            [ 0.5,  0.5, -0.5, 1, 1],
+            [ 0.5, -0.5, -0.5, 1, 0]
+        ], 5)
+    ]
+    
+    for normal, quad_verts, face_idx in faces:
+        layer_idx = block_layers[block_id, face_idx]
+        shade = 1.0
+        if face_idx == 1: shade = 0.5
+        elif face_idx in (2, 3): shade = 0.8
+        elif face_idx in (4, 5): shade = 0.7
+        
+        for v in quad_verts:
+            px, py, pz, u, w = v
+            vertices.extend([
+                px, py, pz,
+                normal[0], normal[1], normal[2],
+                shade, shade, shade,
+                u, w, float(layer_idx),
+                3.0, 15.0, 0.0
+            ])
+            
+    return np.array(vertices, dtype=np.float32)
+
+# ─────────────────────── CAMERA SYSTEM ────────────────────────────────
 
 class Camera:
     def __init__(self):
         self.x, self.y, self.z = 32.0, 45.0, 32.0
-        self.yaw = -90.0   # Yatay bakış açısı
-        self.pitch = -25.0  # Dikey bakış açısı
+        self.yaw = -90.0   # Horizontal look angle (yaw)
+        self.pitch = -25.0  # Vertical look angle (pitch)
         self.speed = 30.0
         self.sensitivity = 0.15
         
@@ -165,7 +237,7 @@ from core.world_db import save_chunk
 
 class PythonCraftEngine(pyglet.window.Window):
     def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False):
-        super().__init__(width=1280, height=720, caption="PythonCraft God-Tier Engine",
+        super().__init__(width=1280, height=720, caption="PythonCraft Engine",
                          resizable=True, vsync=False)
         self.debug_mode = debug_mode
         
@@ -219,10 +291,10 @@ class PythonCraftEngine(pyglet.window.Window):
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
         self.hotbar_blocks = [1, 3, 20, 12, 4, CACTUS, 0, 0, 0]
-        self.selected_slot = 1 # Çimen (slot 1) seçili başlasın
+        self.selected_slot = 1 # Start with GRASS selected (slot 1)
         self.selected_block_id = self.hotbar_blocks[self.selected_slot]
         
-        # Mouse basılı tutma kontrolü ve cooldown takibi
+        # Mouse hold state and action cooldown tracking
         self.mouse_held = {mouse.LEFT: False, mouse.RIGHT: False}
         self.mouse_action_cooldown = 0.0
         
@@ -235,6 +307,9 @@ class PythonCraftEngine(pyglet.window.Window):
         
         self._init_world_system(render_distance)
         self._init_gui()
+        self.bob_time = 0.0
+        self.swing_time = 0.0
+        self._init_hand_blocks()
         
         self._frame_count = 0
         pyglet.clock.schedule_interval(self._update_title, 0.5)
@@ -242,7 +317,7 @@ class PythonCraftEngine(pyglet.window.Window):
         
         print("=============================================")
         print("   ENGINE READY. ENTERING MAIN GAME LOOP.    ")
-        print("   WASD: Hareket | Mouse: Bakış | ESC: Çıkış ")
+        print("   WASD: Movement | Mouse: Look | ESC: Exit ")
         print("=============================================")
 
     def _create_3d_block_sprite(self, top_name, left_name, right_name):
@@ -292,7 +367,7 @@ class PythonCraftEngine(pyglet.window.Window):
                     u = max(0, min(15, u))
                     v = max(0, min(15, v))
                     dest_pix[x, y] = top_pix[u, v]
-                # Left Face (Gölgeli 0.6)
+                # Left Face (Shaded 0.6)
                 elif (x >= 0) and (x < 32) and (y >= 16 + x/2) and (y < 48 + x/2):
                     u = int(x / 2)
                     v = int((y - (16 + x/2.0)) / 2)
@@ -300,7 +375,7 @@ class PythonCraftEngine(pyglet.window.Window):
                     v = max(0, min(15, v))
                     r, g, b, a = left_pix[u, v]
                     dest_pix[x, y] = (int(r * 0.6), int(g * 0.6), int(b * 0.6), a)
-                # Right Face (Gölgeli 0.8)
+                # Right Face (Shaded 0.8)
                 elif (x >= 32) and (x < 64) and (y >= 48 - x/2) and (y < 80 - x/2):
                     u = int((x - 32) / 2)
                     v = int((y - (48 - x/2.0)) / 2)
@@ -315,7 +390,7 @@ class PythonCraftEngine(pyglet.window.Window):
         pyglet_img = pyglet.image.ImageData(64, 64, 'RGBA', raw_data)
         tex = pyglet_img.get_texture()
         
-        # Kenarların keskin bir model gibi pürüzsüz durması için linear filtreleme yapıyoruz
+        # Apply linear filtering to make cube edges smooth like a high-res 3D model
         glBindTexture(tex.target, tex.id)
         glTexParameteri(tex.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(tex.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
@@ -334,12 +409,12 @@ class PythonCraftEngine(pyglet.window.Window):
         try:
             icons_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures', 'gui', 'icons.png')
             crosshair_img = pyglet.image.load(icons_path)
-            # icons.png dosyasındaki en sol üstteki 16x16 alan artı işaretidir.
-            # Pyglet koordinatları alttan başladığı için y = yükseklik - 16 yaparız.
+            # The top-left 16x16 region in icons.png is the crosshair
+            # Pyglet coordinates start from bottom-left, so we set y = height - 16
             region = crosshair_img.get_region(0, crosshair_img.height - 16, 16, 16)
             texture = region.get_texture()
             
-            # OpenGL düzeyinde dokunun bulanıklaşmasını (linear filtering) engellemek için NEAREST yapıyoruz
+            # Apply nearest-neighbor filtering to prevent texture blurring
             glBindTexture(texture.target, texture.id)
             glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameteri(texture.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
@@ -351,11 +426,11 @@ class PythonCraftEngine(pyglet.window.Window):
             self.crosshair_sprite = pyglet.sprite.Sprite(img=texture)
             self.crosshair_sprite.scale = 2
             
-            # Hotbar Dokuları Yükle
+            # Load Hotbar Textures
             gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures', 'gui', 'gui.png')
             gui_img = pyglet.image.load(gui_path)
             
-            # Alt Envanter Arka Planı (182x22)
+            # Hotbar Background (182x22)
             bg_region = gui_img.get_region(0, gui_img.height - 22, 182, 22)
             bg_tex = bg_region.get_texture()
             glBindTexture(bg_tex.target, bg_tex.id)
@@ -364,7 +439,7 @@ class PythonCraftEngine(pyglet.window.Window):
             self.hotbar_bg_sprite = pyglet.sprite.Sprite(img=bg_tex)
             self.hotbar_bg_sprite.scale = 2
             
-            # Seçim Çerçevesi (24x24)
+            # Active Slot Selection Frame (24x24)
             sel_region = gui_img.get_region(0, gui_img.height - 46, 24, 24)
             sel_tex = sel_region.get_texture()
             glBindTexture(sel_tex.target, sel_tex.id)
@@ -373,7 +448,7 @@ class PythonCraftEngine(pyglet.window.Window):
             self.hotbar_sel_sprite = pyglet.sprite.Sprite(img=sel_tex)
             self.hotbar_sel_sprite.scale = 2
             
-            # Blok Simgelerini 3D İzometrik Küp Olarak Yükle
+            # Load Block Icons as 3D Isometric Cubes
             self.block_icon_sprites = {}
             block_icons = {
                 1: ('stone.png', 'stone.png', 'stone.png'),
@@ -389,24 +464,61 @@ class PythonCraftEngine(pyglet.window.Window):
                 if sprite:
                     self.block_icon_sprites[b_id] = sprite
             
-            # Arayüz elemanlarını konumlandır
+            # Position user interface elements
             self._update_gui_positions(self.width, self.height)
         except Exception as e:
-            print(f"[GUI] Arayüz yüklenirken hata oluştu: {e}")
+            print(f"[GUI] Failed to load user interface: {e}")
             self.crosshair_sprite = None
             self.hotbar_bg_sprite = None
             self.hotbar_sel_sprite = None
 
     def _update_gui_positions(self, width, height):
         if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
-            # Koordinatları tam sayıya yuvarlayarak alt-piksel bulanıklığını önlüyoruz
+            # Round coordinates to integers to prevent sub-pixel rendering blurriness
             self.crosshair_sprite.x = int((width - self.crosshair_sprite.width) // 2)
             self.crosshair_sprite.y = int((height - self.crosshair_sprite.height) // 2)
             
         if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
-            # Hotbar'ı yatayda ortala, dikeyde 10 piksel boşluk bırak
+            # Center hotbar horizontally, keep 10 pixels margin from the bottom
             self.hotbar_bg_sprite.x = int((width - self.hotbar_bg_sprite.width) // 2)
             self.hotbar_bg_sprite.y = 10
+
+    def _init_hand_blocks(self):
+        self.hand_block_vaos = {}
+        
+        def create_hand_vao(mesh):
+            vao = GLuint(0)
+            glGenVertexArrays(1, ctypes.byref(vao))
+            glBindVertexArray(vao)
+            vbo = GLuint(0)
+            glGenBuffers(1, ctypes.byref(vbo))
+            glBindBuffer(GL_ARRAY_BUFFER, vbo)
+            glBufferData(GL_ARRAY_BUFFER, mesh.nbytes, mesh.ctypes.data, GL_STATIC_DRAW)
+            
+            stride = 15 * 4
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
+            glEnableVertexAttribArray(0)
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
+            glEnableVertexAttribArray(1)
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(24))
+            glEnableVertexAttribArray(2)
+            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(36))
+            glEnableVertexAttribArray(3)
+            glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(48))
+            glEnableVertexAttribArray(4)
+            glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(52))
+            glEnableVertexAttribArray(5)
+            glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(56))
+            glEnableVertexAttribArray(6)
+            
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
+            glBindVertexArray(0)
+            return vao, vbo
+
+        for b_id in [1, 3, 20, 12, 4, CACTUS]:
+            mesh = get_hand_cube_vertices(b_id, self.block_layers)
+            vao, vbo = create_hand_vao(mesh)
+            self.hand_block_vaos[b_id] = (vao, vbo)
 
     def _init_world_system(self, render_distance):
         self.RENDER_DISTANCE = render_distance
@@ -424,7 +536,7 @@ class PythonCraftEngine(pyglet.window.Window):
         self.chunk_vaos_array = [None] * self.TOTAL_CHUNKS # [ (vao, vbo, vertex_count) ]
         self.free_chunk_indices = list(range(self.TOTAL_CHUNKS))
         
-        # Multithreading İşçi Havuzu
+        # Multithreading Worker Pool
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
         self.future_to_chunk = {}      # future -> (cx, cz)
         self.mesh_future_to_chunk = {} # future -> (cx, cz)
@@ -478,7 +590,7 @@ class PythonCraftEngine(pyglet.window.Window):
             
         if (cx, cz) in self.world_chunks:
             if (cx, cz) in self.modified_chunks:
-                # Arka planda veritabanına kaydet
+                # Save to database in the background
                 b_copy = self.world_chunks[(cx, cz)].copy()
                 l_copy = self.world_light_maps[(cx, cz)].copy()
                 self.executor.submit(save_chunk, cx, cz, b_copy, l_copy)
@@ -508,7 +620,7 @@ class PythonCraftEngine(pyglet.window.Window):
                 if (cx, cz) not in self.chunk_unload_queue_set:
                     self.chunk_unload_queue.append((cx, cz))
                     self.chunk_unload_queue_set.add((cx, cz))
-                # Diğer kuyruklardan hemen temizle ki boşuna işlem yapılmasın
+                # Clean up from other queues to avoid redundant processing
                 if (cx, cz) in self.chunk_load_queue_set:
                     self.chunk_load_queue_set.remove((cx, cz))
                     if (cx, cz) in self.chunk_load_queue:
@@ -541,7 +653,7 @@ class PythonCraftEngine(pyglet.window.Window):
     def _process_chunk_queues(self):
         import time
         t_start = time.perf_counter()
-        # 0. Eski chunk'ları zamana yayarak sil (Kare başına maks 2 adet)
+        # 0. Unload old chunks gradually (max 2 per frame)
         px = int(self.player.x / CHUNK_SIZE)
         pz = int(self.player.z / CHUNK_SIZE)
         unload_dist = self.RENDER_DISTANCE + 2
@@ -550,20 +662,20 @@ class PythonCraftEngine(pyglet.window.Window):
         t_unload_start = time.perf_counter()
         while self.chunk_unload_queue and unloaded < 2:
             cx, cz = self.chunk_unload_queue.pop(0)
-            self.chunk_unload_queue_set.discard((cx, cz)) # Set'ten de çıkar
+            self.chunk_unload_queue_set.discard((cx, cz)) # Remove from set as well
             if abs(cx - px) > unload_dist or abs(cz - pz) > unload_dist:
                 self._unload_chunk(cx, cz)
                 unloaded += 1
         t_unload_end = time.perf_counter()
 
-        # 1. Bekleyen generation'ları kontrol et
+        # 1. Check pending generation tasks
         t_gen_start = time.perf_counter()
         done_gen = [f for f in self.future_to_chunk if f.done()]
-        for f in done_gen[:1]: # Her frame'de en fazla 1 chunk generation işle
+        for f in done_gen[:1]: # Process at most 1 chunk generation task per frame
             cx, cz = self.future_to_chunk.pop(f)
             blocks, light_map, out_of_bounds, biomes = f.result()
             
-            # Eğer yüklenirken oyuncu uzaklaştıysa, hemen çöpe at
+            # If player moved too far during load, discard the chunk immediately
             if abs(cx - self.last_player_cx) > self.RENDER_DISTANCE + 2 or abs(cz - self.last_player_cz) > self.RENDER_DISTANCE + 2:
                 continue
                 
@@ -624,7 +736,7 @@ class PythonCraftEngine(pyglet.window.Window):
                 self.chunk_mesh_queue.append((cx, cz))
                 self.chunk_mesh_queue_set.add((cx, cz))
             
-            # Komşuları da mesh sırasına ekle
+            # Add neighbors to the mesh queue
             for dx, dz in [(1,0), (-1,0), (0,1), (0,-1)]:
                 ncx, ncz = cx+dx, cz+dz
                 if (ncx, ncz) in self.world_chunks and (ncx, ncz) not in self.chunk_mesh_queue_set:
@@ -637,16 +749,16 @@ class PythonCraftEngine(pyglet.window.Window):
         submitted_gen = 0
         while self.chunk_load_queue and len(self.future_to_chunk) < 2 and submitted_gen < 1:
             cx, cz = self.chunk_load_queue.pop(0)
-            self.chunk_load_queue_set.discard((cx, cz)) # Set'ten de çıkar
+            self.chunk_load_queue_set.discard((cx, cz)) # Remove from set as well
             future = self.executor.submit(load_or_generate_chunk, cx, cz)
             self.future_to_chunk[future] = (cx, cz)
             submitted_gen += 1
         t_submit_gen_end = time.perf_counter()
             
-        # 3. Bekleyen mesh'leri kontrol et (GPU'ya yükle)
+        # 3. Check pending meshes (upload to GPU)
         t_mesh_start = time.perf_counter()
         done_mesh = [f for f in self.mesh_future_to_chunk if f.done()]
-        for f in done_mesh[:1]: # Her frame'de en fazla 1 mesh yükle
+        for f in done_mesh[:1]: # Upload at most 1 mesh to GPU per frame
             cx, cz = self.mesh_future_to_chunk.pop(f)
             mesh = f.result()
             self._apply_chunk_mesh(cx, cz, mesh)
@@ -773,15 +885,41 @@ class PythonCraftEngine(pyglet.window.Window):
         t_start = time.perf_counter()
         dt = min(dt, 0.05)
         
-        # Mouse basılı tutma aksiyonları (Sürekli kırma/koyma)
+        # Update hand swing and bobbing animations
+        if self.swing_time > 0.0:
+            self.swing_time += dt * 5.0
+            if self.swing_time >= 1.0:
+                self.swing_time = 0.0
+                
+        # Bobbing speed depends on walking state
+        is_moving = False
+        dx, dz = 0.0, 0.0
+        front = self.camera.get_front()
+        flat_front = normalize_vec([front[0], 0, front[2]])
+        right = normalize_vec(cross_vec(flat_front, [0, 1, 0]))
+        if self.keys[key.W]: dx += flat_front[0]; dz += flat_front[2]
+        if self.keys[key.S]: dx -= flat_front[0]; dz -= flat_front[2]
+        if self.keys[key.A]: dx -= right[0]; dz -= right[2]
+        if self.keys[key.D]: dx += right[0]; dz += right[2]
+        if math.sqrt(dx*dx + dz*dz) > 0.001:
+            is_moving = True
+            
+        if is_moving and not self.player.is_flying:
+            self.bob_time += dt * 10.0
+        else:
+            self.bob_time += dt * 1.5 # Slow breathing bobbing animation
+            
+        # Mouse hold actions (continuous block break/place)
         if self.mouse_action_cooldown > 0.0:
             self.mouse_action_cooldown -= dt
             
         if self.mouse_action_cooldown <= 0.005:
             if self.mouse_held[mouse.LEFT]:
+                self.swing_time = 0.01
                 self._handle_mouse_action(mouse.LEFT)
                 self.mouse_action_cooldown = 0.20
             elif self.mouse_held[mouse.RIGHT]:
+                self.swing_time = 0.01
                 self._handle_mouse_action(mouse.RIGHT)
                 self.mouse_action_cooldown = 0.20
         
@@ -812,7 +950,7 @@ class PythonCraftEngine(pyglet.window.Window):
         crouch = self.keys[key.LSHIFT]
         sprint = self.keys[key.LCTRL]
         
-        # Oyuncu yüklenmemiş bir chunk'taysa düşmesini engelle
+        # Prevent player from falling if inside an unloaded chunk
         pcx = int(math.floor(self.player.x / CHUNK_SIZE))
         pcz = int(math.floor(self.player.z / CHUNK_SIZE))
         
@@ -820,7 +958,7 @@ class PythonCraftEngine(pyglet.window.Window):
         if (pcx, pcz) in self.world_chunks:
             self.player.update(dt, dx, dz, jump, crouch, sprint, self.get_block)
         else:
-            self.player.vy = 0.0 # Yerçekimi birikmesini sıfırla
+            self.player.vy = 0.0 # Reset gravity accumulation
         t_player_end = time.perf_counter()
             
         eye_pos = self.player.get_eye_position()
@@ -843,12 +981,12 @@ class PythonCraftEngine(pyglet.window.Window):
             target_x, target_y, target_z = hx, hy, hz
             new_block_id = 0
         elif button == mouse.RIGHT and px is not None:
-            # GÜVENLİK KATMANI: Oyuncunun kendi içine katı blok koymasını engelle (0: Hava, 4: Su hariç)
+            # Collision prevention: Prevent player from placing a solid block inside their own body
             if self.selected_block_id > 0 and self.selected_block_id != 4:
                 player_aabb = self.player._get_player_aabb(self.player.x, self.player.y, self.player.z)
                 block_aabb = (px, py, pz, px + 1.0, py + 1.0, pz + 1.0)
                 
-                # AABB kesişim kontrolü
+                # AABB intersection check
                 intersects = (
                     player_aabb[0] < block_aabb[3] and player_aabb[3] > block_aabb[0] and
                     player_aabb[1] < block_aabb[4] and player_aabb[4] > block_aabb[1] and
@@ -866,6 +1004,7 @@ class PythonCraftEngine(pyglet.window.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         if button in (mouse.LEFT, mouse.RIGHT):
             self.mouse_held[button] = True
+            self.swing_time = 0.01 # Swing animasyonunu tetikle
             self._handle_mouse_action(button)
             self.mouse_action_cooldown = 0.20 # 4 tick (0.2s) cooldown
             
@@ -945,50 +1084,50 @@ class PythonCraftEngine(pyglet.window.Window):
             pyglet.app.exit()
         elif symbol == key.TAB:
             self.player.is_flying = not self.player.is_flying
-            mode = "AÇIK" if self.player.is_flying else "KAPALI"
-            print(f"[PLAYER] Fly Modu: {mode}")
+            mode = "ENABLED" if self.player.is_flying else "DISABLED"
+            print(f"[PLAYER] Flight Mode: {mode}")
         elif symbol == key._1:
             self.selected_slot = 0
             self.selected_block_id = self.hotbar_blocks[0]
-            print("[PLAYER] Seçilen Blok: TAŞ")
+            print("[PLAYER] Selected Block: STONE")
         elif symbol == key._2:
             self.selected_slot = 1
             self.selected_block_id = self.hotbar_blocks[1]
-            print("[PLAYER] Seçilen Blok: ÇİMEN")
+            print("[PLAYER] Selected Block: GRASS")
         elif symbol == key._3:
             self.selected_slot = 2
             self.selected_block_id = self.hotbar_blocks[2]
-            print("[PLAYER] Seçilen Blok: CAM")
+            print("[PLAYER] Selected Block: GLASS")
         elif symbol == key._4:
             self.selected_slot = 3
             self.selected_block_id = self.hotbar_blocks[3]
-            print("[PLAYER] Seçilen Blok: YAPRAK")
+            print("[PLAYER] Selected Block: LEAVES")
         elif symbol == key._5:
             self.selected_slot = 4
             self.selected_block_id = self.hotbar_blocks[4]
-            print("[PLAYER] Seçilen Blok: SU")
+            print("[PLAYER] Selected Block: WATER")
         elif symbol == key._6:
             self.selected_slot = 5
             self.selected_block_id = self.hotbar_blocks[5]
-            print("[PLAYER] Seçilen Blok: KAKTÜS")
+            print("[PLAYER] Selected Block: CACTUS")
             
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        # scroll_y: yukarı kaydırmada +1, aşağı kaydırmada -1
-        # Seçilebilir 6 slotumuz var (0-5)
+        # scroll_y: +1 for scrolling up, -1 for scrolling down
+        # We have 6 selectable slots (0-5)
         direction = -1 if scroll_y > 0 else 1
         self.selected_slot = (self.selected_slot + direction) % 6
         self.selected_block_id = self.hotbar_blocks[self.selected_slot]
         
         block_names = {
-            1: "TAŞ",
-            3: "ÇİMEN",
-            20: "CAM",
-            12: "YAPRAK",
-            4: "SU",
-            CACTUS: "KAKTÜS"
+            1: "STONE",
+            3: "GRASS",
+            20: "GLASS",
+            12: "LEAVES",
+            4: "WATER",
+            CACTUS: "CACTUS"
         }
-        name = block_names.get(self.selected_block_id, "BİLİNMEYEN")
-        print(f"[PLAYER] Seçilen Blok: {name}")
+        name = block_names.get(self.selected_block_id, "UNKNOWN")
+        print(f"[PLAYER] Selected Block: {name}")
     
     def on_resize(self, width, height):
         glViewport(0, 0, width, height)
@@ -1009,19 +1148,19 @@ class PythonCraftEngine(pyglet.window.Window):
         glUniformMatrix4fv(self.u_view, 1, GL_FALSE, view)
         
         t_cull_start = time.perf_counter()
-        # Proj * View matris çarpımı (Manuel)
+        # Proj * View matrix multiplication (Manual)
         clip = [0.0] * 16
         for i in range(4):
             for j in range(4):
                 clip[i*4+j] = proj[0*4+j]*view[i*4+0] + proj[1*4+j]*view[i*4+1] + proj[2*4+j]*view[i*4+2] + proj[3*4+j]*view[i*4+3]
         proj_view = np.array(clip, dtype=np.float32)
         
-        # Numba ile ışık hızında Culling
+        # Light-speed Frustum Culling using Numba
         visible_count = get_visible_chunk_indices(proj_view, self.chunk_bounds, self.chunk_active, self.visible_indices)
         self.rendered_chunks = visible_count
         t_cull_end = time.perf_counter()
         
-        # Yalnızca görünür chunk'ların draw call'larını tetikle
+        # Trigger draw calls only for visible chunks
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
         
@@ -1052,11 +1191,126 @@ class PythonCraftEngine(pyglet.window.Window):
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
         glUseProgram(0)
         
-        # 2D Arayüz Elemanları (Crosshair ve Hotbar)
+        # 3D Held Block Viewmodel Rendering
+        if hasattr(self, 'hand_block_vaos') and self.selected_block_id in self.hand_block_vaos:
+            glClear(GL_DEPTH_BUFFER_BIT)
+            glEnable(GL_DEPTH_TEST)
+            glEnable(GL_CULL_FACE)
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            
+            glUseProgram(self.program)
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
+            
+            # Bobbing and swing animations
+            bob_x = math.sin(self.bob_time) * 0.02
+            bob_y = math.cos(self.bob_time * 2.0) * 0.015 - 0.01
+            
+            # Movement checks
+            dx, dz = 0.0, 0.0
+            front = self.camera.get_front()
+            flat_front = normalize_vec([front[0], 0, front[2]])
+            right = normalize_vec(cross_vec(flat_front, [0, 1, 0]))
+            if self.keys[key.W]: dx += flat_front[0]; dz += flat_front[2]
+            if self.keys[key.S]: dx -= flat_front[0]; dz -= flat_front[2]
+            if self.keys[key.A]: dx -= right[0]; dz -= right[2]
+            if self.keys[key.D]: dx += right[0]; dz += right[2]
+            is_moving = math.sqrt(dx*dx + dz*dz) > 0.001
+            
+            if is_moving and not self.player.is_flying:
+                bob_x = math.sin(self.bob_time) * 0.04
+                bob_y = math.cos(self.bob_time * 2.0) * 0.03 - 0.02
+                
+            swing_tx = 0.0
+            swing_ty = 0.0
+            swing_tz = 0.0
+            swing_rx = 0.0
+            swing_ry = 0.0
+            swing_rz = 0.0
+            
+            if self.swing_time > 0.0:
+                swing = self.swing_time
+                swing1 = math.sin(swing * math.pi)
+                swing2 = math.sin(math.sqrt(swing) * math.pi)
+                swing3 = math.sin(swing * swing * math.pi)
+                
+                swing_tx = -swing2 * 0.4
+                swing_ty = math.sin(math.sqrt(swing) * math.pi * 2.0) * 0.2
+                swing_tz = -swing1 * 0.2
+                
+                swing_rx = -swing2 * 80.0
+                swing_ry = -swing3 * 20.0
+                swing_rz = -swing2 * 20.0
+                
+            tx = 0.45 + bob_x + swing_tx
+            ty = -0.45 + bob_y + swing_ty
+            tz = -0.6 + swing_tz
+            
+            scale = 0.28
+            
+            rad_y = math.radians(45 + swing_ry)
+            cy, sy = math.cos(rad_y), math.sin(rad_y)
+            ry = np.array([
+                [cy, 0, sy, 0],
+                [0, 1, 0, 0],
+                [-sy, 0, cy, 0],
+                [0, 0, 0, 1]
+            ], dtype=np.float32)
+            
+            rad_x = math.radians(-15 + swing_rx)
+            cx_val, sx_val = math.cos(rad_x), math.sin(rad_x)
+            rx = np.array([
+                [1, 0, 0, 0],
+                [0, cx_val, -sx_val, 0],
+                [0, sx_val, cx_val, 0],
+                [0, 0, 0, 1]
+            ], dtype=np.float32)
+            
+            rad_z = math.radians(10 + swing_rz)
+            cz, sz = math.cos(rad_z), math.sin(rad_z)
+            rz = np.array([
+                [cz, -sz, 0, 0],
+                [sz, cz, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ], dtype=np.float32)
+            
+            t_mat = np.array([
+                [1, 0, 0, tx],
+                [0, 1, 0, ty],
+                [0, 0, 1, tz],
+                [0, 0, 0, 1]
+            ], dtype=np.float32)
+            
+            s_mat = np.array([
+                [scale, 0, 0, 0],
+                [0, scale, 0, 0],
+                [0, 0, scale, 0],
+                [0, 0, 0, 1]
+            ], dtype=np.float32)
+            
+            hand_matrix = t_mat @ ry @ rx @ rz @ s_mat
+            flat_hand_matrix = hand_matrix.T.flatten()
+            
+            glUniformMatrix4fv(self.u_projection, 1, GL_FALSE, proj)
+            hand_view = (GLfloat * 16)(*flat_hand_matrix)
+            glUniformMatrix4fv(self.u_view, 1, GL_FALSE, hand_view)
+            
+            h_vao, _ = self.hand_block_vaos[self.selected_block_id]
+            glBindVertexArray(h_vao)
+            glDrawArrays(GL_TRIANGLES, 0, 36)
+            
+            glBindVertexArray(0)
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
+            glDisable(GL_BLEND)
+            glUseProgram(0)
+            
+        # 2D GUI Elements (Crosshair and Hotbar)
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         
-        # 1. Crosshair (Karşıtlık Blending ile)
+        # 1. Crosshair (using color inversion blending)
         glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR)
         if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
             self.crosshair_sprite.draw()
@@ -1067,7 +1321,7 @@ class PythonCraftEngine(pyglet.window.Window):
         if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
             self.hotbar_bg_sprite.draw()
             
-            # Blok simgelerini çiz (64x64'ten 13*scale boyutuna ölçekleyip ortalayarak)
+            # Render block icons (scaled from 64x64 to 13*scale and centered in slots)
             bg_scale = self.hotbar_bg_sprite.scale
             for slot_idx, b_id in enumerate(self.hotbar_blocks):
                 if b_id in self.block_icon_sprites:
@@ -1077,7 +1331,7 @@ class PythonCraftEngine(pyglet.window.Window):
                     sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
                     sprite.draw()
                     
-            # Seçici çerçeveyi çiz
+            # Render active slot selection frame
             if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
                 scale = self.hotbar_sel_sprite.scale
                 self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
