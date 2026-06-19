@@ -167,6 +167,7 @@ class PythonCraftEngine(pyglet.window.Window):
     def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False):
         super().__init__(width=1280, height=720, caption="PythonCraft God-Tier Engine",
                          resizable=True, vsync=False)
+        self.debug_mode = debug_mode
         
         self.set_exclusive_mouse(True)
         self.keys = key.KeyStateHandler()
