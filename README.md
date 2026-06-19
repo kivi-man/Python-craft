@@ -20,7 +20,7 @@ Pythoncraft is an open-source, voxel-based sandbox engine built with Python, Pyg
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Kivi-man/pythoncraft.git
+   git clone https://github.com/kivi-man/Python-craft.git
    cd pythoncraft
    ```
 2. Install the required dependencies:
