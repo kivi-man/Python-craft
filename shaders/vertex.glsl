@@ -1,4 +1,4 @@
-# PythonCraft Engine - Vertex Shader
+// PythonCraft Engine - Vertex Shader
 #version 330 core
 
 layout(location = 0) in vec3 aPos;

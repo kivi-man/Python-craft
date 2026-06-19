@@ -66,9 +66,16 @@ python main.py -fast -debug 6
 
 ## 🤝 Community Support & Update Guidelines
 
-We welcome community support, pull requests, and forks! However, this project is governed by strict update rules to maintain its vision:
+We welcome community support, pull requests, and forks! 
 
-**Update Rule:** Any new feature, mechanic, block, or system proposed in a Pull Request **MUST** be a system that currently exists in Minecraft. Custom or non-vanilla systems will not be accepted into the main branch.
+**Update Rule:** We generally aim to emulate vanilla Minecraft mechanics in the core engine. However, we are very open to community feedback, optimizations, bug fixes, and modular plugins. Feel free to submit a PR!
+
+## 📦 Building an Executable
+You can easily build a standalone Windows executable (`.exe`) by double-clicking `build.bat` or running:
+```bash
+build.bat
+```
+This will create a standalone executable in the `dist/` folder using PyInstaller.
 
 ## ⚖️ License & Attribution
 

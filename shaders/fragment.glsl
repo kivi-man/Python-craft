@@ -1,4 +1,4 @@
-# PythonCraft Engine - Fragment Shader (Vanilla Minecraft Style)
+// PythonCraft Engine - Fragment Shader (Vanilla Minecraft Style)
 #version 330 core
 
 in vec3 vColor;

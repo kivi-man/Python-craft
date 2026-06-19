@@ -1,4 +1,5 @@
-numpy
-pyglet
-numba
-Pillow
+numpy==2.4.6
+pyglet==2.1.14
+numba==0.65.1
+pillow==12.2.0
+noise==1.2.2
