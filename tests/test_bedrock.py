@@ -1,7 +1,7 @@
 import numpy as np
 from world.mc_terrain import generate_chunk
 
-blocks, lights = generate_chunk(0, 0)
+blocks, lights, decorations, biomes = generate_chunk(0, 0)
 total_stone = np.sum(blocks == 1)
 total_dirt = np.sum(blocks == 2)
 total_grass = np.sum(blocks == 3)
