@@ -218,7 +218,9 @@ class PythonCraftEngine(pyglet.window.Window):
         
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
-        self.selected_block_id = 3 # GRASS
+        self.hotbar_blocks = [1, 3, 20, 12, 4, CACTUS, 0, 0, 0]
+        self.selected_slot = 1 # Çimen (slot 1) seçili başlasın
+        self.selected_block_id = self.hotbar_blocks[self.selected_slot]
         
         # Mouse basılı tutma kontrolü ve cooldown takibi
         self.mouse_held = {mouse.LEFT: False, mouse.RIGHT: False}
@@ -232,6 +234,7 @@ class PythonCraftEngine(pyglet.window.Window):
         self.rendered_chunks = 0
         
         self._init_world_system(render_distance)
+        self._init_gui()
         
         self._frame_count = 0
         pyglet.clock.schedule_interval(self._update_title, 0.5)
@@ -241,6 +244,170 @@ class PythonCraftEngine(pyglet.window.Window):
         print("   ENGINE READY. ENTERING MAIN GAME LOOP.    ")
         print("   WASD: Hareket | Mouse: Bakış | ESC: Çıkış ")
         print("=============================================")
+
+    def _create_3d_block_sprite(self, top_name, left_name, right_name):
+        from PIL import Image
+        import pyglet.image
+        import pyglet.sprite
+        
+        blocks_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures', 'blocks')
+        
+        def load_pillow_img(name):
+            p = os.path.join(blocks_dir, name)
+            if os.path.exists(p):
+                return Image.open(p).convert("RGBA")
+            return None
+            
+        top_img = load_pillow_img(top_name)
+        left_img = load_pillow_img(left_name)
+        right_img = load_pillow_img(right_name)
+        
+        if not top_img and not left_img and not right_img:
+            # Fallback
+            fallback = Image.new("RGBA", (64, 64), (255, 255, 255, 255))
+            raw_data = fallback.tobytes()
+            p_img = pyglet.image.ImageData(64, 64, 'RGBA', raw_data)
+            tex = p_img.get_texture()
+            sprite = pyglet.sprite.Sprite(img=tex)
+            return sprite
+            
+        if not top_img: top_img = left_img or right_img
+        if not left_img: left_img = top_img or right_img
+        if not right_img: right_img = top_img or left_img
+        
+        dest = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        dest_pix = dest.load()
+        top_pix = top_img.load()
+        left_pix = left_img.load()
+        right_pix = right_img.load()
+        
+        for y in range(64):
+            for x in range(64):
+                # Top Face
+                if (x + 2*y >= 32) and (x - 2*y <= 32) and (x - 2*y >= -32) and (x + 2*y <= 96) and (y < 32):
+                    x_prime = (x - 32) / 32.0
+                    y_prime = (y - 16) / 16.0
+                    u = int(8 * (x_prime + y_prime + 1))
+                    v = int(8 * (-x_prime + y_prime + 1))
+                    u = max(0, min(15, u))
+                    v = max(0, min(15, v))
+                    dest_pix[x, y] = top_pix[u, v]
+                # Left Face (Gölgeli 0.6)
+                elif (x >= 0) and (x < 32) and (y >= 16 + x/2) and (y < 48 + x/2):
+                    u = int(x / 2)
+                    v = int((y - (16 + x/2.0)) / 2)
+                    u = max(0, min(15, u))
+                    v = max(0, min(15, v))
+                    r, g, b, a = left_pix[u, v]
+                    dest_pix[x, y] = (int(r * 0.6), int(g * 0.6), int(b * 0.6), a)
+                # Right Face (Gölgeli 0.8)
+                elif (x >= 32) and (x < 64) and (y >= 48 - x/2) and (y < 80 - x/2):
+                    u = int((x - 32) / 2)
+                    v = int((y - (48 - x/2.0)) / 2)
+                    u = max(0, min(15, u))
+                    v = max(0, min(15, v))
+                    r, g, b, a = right_pix[u, v]
+                    dest_pix[x, y] = (int(r * 0.8), int(g * 0.8), int(b * 0.8), a)
+                    
+        # Flip vertically for Pyglet coordinates compatibility
+        dest = dest.transpose(Image.FLIP_TOP_BOTTOM)
+        raw_data = dest.tobytes()
+        pyglet_img = pyglet.image.ImageData(64, 64, 'RGBA', raw_data)
+        tex = pyglet_img.get_texture()
+        
+        # Kenarların keskin bir model gibi pürüzsüz durması için linear filtreleme yapıyoruz
+        glBindTexture(tex.target, tex.id)
+        glTexParameteri(tex.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(tex.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glBindTexture(tex.target, 0)
+        
+        tex.min_filter = GL_LINEAR
+        tex.mag_filter = GL_LINEAR
+        
+        sprite = pyglet.sprite.Sprite(img=tex)
+        return sprite
+
+    def _init_gui(self):
+        import pyglet.image
+        import pyglet.sprite
+        
+        try:
+            icons_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures', 'gui', 'icons.png')
+            crosshair_img = pyglet.image.load(icons_path)
+            # icons.png dosyasındaki en sol üstteki 16x16 alan artı işaretidir.
+            # Pyglet koordinatları alttan başladığı için y = yükseklik - 16 yaparız.
+            region = crosshair_img.get_region(0, crosshair_img.height - 16, 16, 16)
+            texture = region.get_texture()
+            
+            # OpenGL düzeyinde dokunun bulanıklaşmasını (linear filtering) engellemek için NEAREST yapıyoruz
+            glBindTexture(texture.target, texture.id)
+            glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(texture.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            glBindTexture(texture.target, 0)
+            
+            texture.min_filter = GL_NEAREST
+            texture.mag_filter = GL_NEAREST
+            
+            self.crosshair_sprite = pyglet.sprite.Sprite(img=texture)
+            self.crosshair_sprite.scale = 2
+            
+            # Hotbar Dokuları Yükle
+            gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures', 'gui', 'gui.png')
+            gui_img = pyglet.image.load(gui_path)
+            
+            # Alt Envanter Arka Planı (182x22)
+            bg_region = gui_img.get_region(0, gui_img.height - 22, 182, 22)
+            bg_tex = bg_region.get_texture()
+            glBindTexture(bg_tex.target, bg_tex.id)
+            glTexParameteri(bg_tex.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(bg_tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            self.hotbar_bg_sprite = pyglet.sprite.Sprite(img=bg_tex)
+            self.hotbar_bg_sprite.scale = 2
+            
+            # Seçim Çerçevesi (24x24)
+            sel_region = gui_img.get_region(0, gui_img.height - 46, 24, 24)
+            sel_tex = sel_region.get_texture()
+            glBindTexture(sel_tex.target, sel_tex.id)
+            glTexParameteri(sel_tex.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(sel_tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            self.hotbar_sel_sprite = pyglet.sprite.Sprite(img=sel_tex)
+            self.hotbar_sel_sprite.scale = 2
+            
+            # Blok Simgelerini 3D İzometrik Küp Olarak Yükle
+            self.block_icon_sprites = {}
+            block_icons = {
+                1: ('stone.png', 'stone.png', 'stone.png'),
+                3: ('grass_top.png', 'grass_side.png', 'grass_side.png'),
+                20: ('glass.png', 'glass.png', 'glass.png'),
+                12: ('leaves_oak.png', 'leaves_oak.png', 'leaves_oak.png'),
+                4: ('water.png', 'water.png', 'water.png'),
+                CACTUS: ('cactus_top.png', 'cactus_side.png', 'cactus_side.png')
+            }
+            
+            for b_id, faces in block_icons.items():
+                sprite = self._create_3d_block_sprite(faces[0], faces[1], faces[2])
+                if sprite:
+                    self.block_icon_sprites[b_id] = sprite
+            
+            # Arayüz elemanlarını konumlandır
+            self._update_gui_positions(self.width, self.height)
+        except Exception as e:
+            print(f"[GUI] Arayüz yüklenirken hata oluştu: {e}")
+            self.crosshair_sprite = None
+            self.hotbar_bg_sprite = None
+            self.hotbar_sel_sprite = None
+
+    def _update_gui_positions(self, width, height):
+        if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
+            # Koordinatları tam sayıya yuvarlayarak alt-piksel bulanıklığını önlüyoruz
+            self.crosshair_sprite.x = int((width - self.crosshair_sprite.width) // 2)
+            self.crosshair_sprite.y = int((height - self.crosshair_sprite.height) // 2)
+            
+        if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
+            # Hotbar'ı yatayda ortala, dikeyde 10 piksel boşluk bırak
+            self.hotbar_bg_sprite.x = int((width - self.hotbar_bg_sprite.width) // 2)
+            self.hotbar_bg_sprite.y = 10
+
     def _init_world_system(self, render_distance):
         self.RENDER_DISTANCE = render_distance
         # Add a +2 buffer so we have enough capacity for loading chunks before old ones unload
@@ -781,26 +948,51 @@ class PythonCraftEngine(pyglet.window.Window):
             mode = "AÇIK" if self.player.is_flying else "KAPALI"
             print(f"[PLAYER] Fly Modu: {mode}")
         elif symbol == key._1:
-            self.selected_block_id = 1 # STONE
+            self.selected_slot = 0
+            self.selected_block_id = self.hotbar_blocks[0]
             print("[PLAYER] Seçilen Blok: TAŞ")
         elif symbol == key._2:
-            self.selected_block_id = 3 # GRASS
+            self.selected_slot = 1
+            self.selected_block_id = self.hotbar_blocks[1]
             print("[PLAYER] Seçilen Blok: ÇİMEN")
         elif symbol == key._3:
-            self.selected_block_id = 20 # GLASS
+            self.selected_slot = 2
+            self.selected_block_id = self.hotbar_blocks[2]
             print("[PLAYER] Seçilen Blok: CAM")
         elif symbol == key._4:
-            self.selected_block_id = 12 # LEAVES
+            self.selected_slot = 3
+            self.selected_block_id = self.hotbar_blocks[3]
             print("[PLAYER] Seçilen Blok: YAPRAK")
         elif symbol == key._5:
-            self.selected_block_id = 4 # WATER
+            self.selected_slot = 4
+            self.selected_block_id = self.hotbar_blocks[4]
             print("[PLAYER] Seçilen Blok: SU")
         elif symbol == key._6:
-            self.selected_block_id = CACTUS # CACTUS
+            self.selected_slot = 5
+            self.selected_block_id = self.hotbar_blocks[5]
             print("[PLAYER] Seçilen Blok: KAKTÜS")
+            
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        # scroll_y: yukarı kaydırmada +1, aşağı kaydırmada -1
+        # Seçilebilir 6 slotumuz var (0-5)
+        direction = -1 if scroll_y > 0 else 1
+        self.selected_slot = (self.selected_slot + direction) % 6
+        self.selected_block_id = self.hotbar_blocks[self.selected_slot]
+        
+        block_names = {
+            1: "TAŞ",
+            3: "ÇİMEN",
+            20: "CAM",
+            12: "YAPRAK",
+            4: "SU",
+            CACTUS: "KAKTÜS"
+        }
+        name = block_names.get(self.selected_block_id, "BİLİNMEYEN")
+        print(f"[PLAYER] Seçilen Blok: {name}")
     
     def on_resize(self, width, height):
         glViewport(0, 0, width, height)
+        self._update_gui_positions(width, height)
         return pyglet.event.EVENT_HANDLED
     
     def on_draw(self):
@@ -859,6 +1051,42 @@ class PythonCraftEngine(pyglet.window.Window):
         glBindVertexArray(0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
         glUseProgram(0)
+        
+        # 2D Arayüz Elemanları (Crosshair ve Hotbar)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+        
+        # 1. Crosshair (Karşıtlık Blending ile)
+        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR)
+        if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
+            self.crosshair_sprite.draw()
+            
+        # 2. Hotbar ve Blok Simgeleri (Standart Alpha Blending ile)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        
+        if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
+            self.hotbar_bg_sprite.draw()
+            
+            # Blok simgelerini çiz (64x64'ten 13*scale boyutuna ölçekleyip ortalayarak)
+            bg_scale = self.hotbar_bg_sprite.scale
+            for slot_idx, b_id in enumerate(self.hotbar_blocks):
+                if b_id in self.block_icon_sprites:
+                    sprite = self.block_icon_sprites[b_id]
+                    sprite.scale = (13.0 * bg_scale) / 64.0
+                    sprite.x = int(self.hotbar_bg_sprite.x + (3 + slot_idx * 20) * bg_scale + 1.5 * bg_scale)
+                    sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
+                    sprite.draw()
+                    
+            # Seçici çerçeveyi çiz
+            if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
+                scale = self.hotbar_sel_sprite.scale
+                self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
+                self.hotbar_sel_sprite.y = int(self.hotbar_bg_sprite.y - 1 * scale)
+                self.hotbar_sel_sprite.draw()
+            
+        glDisable(GL_BLEND)
+        glEnable(GL_DEPTH_TEST)
+        
         t_trans_end = time.perf_counter()
         
         self._frame_count += 1
