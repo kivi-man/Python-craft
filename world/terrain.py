@@ -49,9 +49,44 @@ BLOCK_REGISTRY = {
     "DOUBLE_ROSE_TOP": {"id": 178, "texture": "double_plant_rose_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
 }
 
-# Dinamik Global Değişkenler
-for name, data in BLOCK_REGISTRY.items():
-    globals()[name] = data["id"]
+# Dinamik yerine statik tanımlama (Flake8 ve Numba için daha güvenli)
+AIR = 0
+STONE = 1
+DIRT = 2
+GRASS = 3
+WATER = 4
+SAND = 5
+SNOW = 6
+BEDROCK = 7
+ICE = 79
+GRAVEL = 8
+SANDSTONE = 9
+MYCELIUM = 10
+WOOD = 11
+LEAVES = 12
+CACTUS = 13
+BIRCH_WOOD = 14
+SPRUCE_WOOD = 15
+BIRCH_LEAVES = 16
+SPRUCE_LEAVES = 17
+GLASS = 20
+LAVA = 22
+
+GOLD_ORE = 40
+IRON_ORE = 41
+COAL_ORE = 42
+LAPIS_ORE = 21
+DIAMOND_ORE = 56
+REDSTONE_ORE = 73
+EMERALD_ORE = 129
+
+TALLGRASS = 31
+DANDELION = 37
+ROSE = 38
+DOUBLE_GRASS_BTM = 175
+DOUBLE_GRASS_TOP = 176
+DOUBLE_ROSE_BTM = 177
+DOUBLE_ROSE_TOP = 178
 
 # Numba için hızlı erişim dizileri (0-1024 ID'ler için)
 BLOCK_OPAQUE_ARRAY = np.ones(1024, dtype=np.bool_)
