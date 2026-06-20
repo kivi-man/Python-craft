@@ -256,6 +256,8 @@ class ChunkMixin:
                             if e_data.get('type') == 'Pig':
                                 p = Pig()
                                 p.from_dict(e_data)
+                                if hasattr(p, 'set_level'):
+                                    p.set_level(self)
                                 self.entities.append(p)
                     except Exception as e:
                         self.log(f"[ERROR] Failed to load entities for {cx}, {cz}: {e}")
