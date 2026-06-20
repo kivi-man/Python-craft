@@ -22,6 +22,16 @@ def init_db():
             )
         ''')
         
+        # Chunk Entities Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chunk_entities (
+                cx INTEGER,
+                cz INTEGER,
+                entities_json TEXT,
+                PRIMARY KEY (cx, cz)
+            )
+        ''')
+        
         # Players Table: for future inventory and stats
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS players (
@@ -80,6 +90,24 @@ def load_chunk(cx, cz):
             cursor.execute("DELETE FROM chunks WHERE cx=? AND cz=?", (cx, cz))
             conn.commit()
         return None
+
+def save_chunk_entities(cx, cz, entities_json):
+    with sqlite3.connect(DB_PATH, timeout=10.0) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO chunk_entities (cx, cz, entities_json)
+            VALUES (?, ?, ?)
+        ''', (cx, cz, entities_json))
+        conn.commit()
+
+def load_chunk_entities(cx, cz):
+    with sqlite3.connect(DB_PATH, timeout=10.0) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT entities_json FROM chunk_entities WHERE cx = ? AND cz = ?', (cx, cz))
+        row = cursor.fetchone()
+    if row is None:
+        return None
+    return row[0]
 
 def save_player_data(player_id, json_data):
     """Save player data (inventory, position, health, etc.)"""

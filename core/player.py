@@ -57,7 +57,7 @@ class Player:
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
                     block_id = get_block(x, y, z)
-                    if block_id > 0 and block_id != 4:  # 0: Air, 4: Water
+                    if block_id == -1 or (block_id > 0 and block_id != 4):  # 0: Air, 4: Water
                         return True
         return False
 
@@ -91,7 +91,7 @@ class Player:
             for by in range(iy0, iy1 + 1):
                 for bz in range(iz0, iz1 + 1):
                     block_id = get_block(bx, by, bz)
-                    if block_id > 0 and block_id != 4:
+                    if block_id == -1 or (block_id > 0 and block_id != 4):
                         stuck_blocks.append((bx, by, bz))
         
         if not stuck_blocks:

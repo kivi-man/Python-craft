@@ -1,6 +1,49 @@
 import numpy as np
 from numba import njit
 from world.terrain import *
+from dataclasses import dataclass
+from typing import List, Dict
+
+@dataclass
+class MobSpawnerData:
+    mob_type: str
+    weight: int
+    min_count: int
+    max_count: int
+
+# Default lists from Biome.cpp
+DEFAULT_FRIENDLIES = [
+    MobSpawnerData("Sheep", 12, 4, 4),
+    MobSpawnerData("Pig", 10, 4, 4),
+    MobSpawnerData("Chicken", 10, 4, 4),
+    MobSpawnerData("Cow", 8, 4, 4),
+]
+
+DEFAULT_ENEMIES = [
+    MobSpawnerData("Spider", 10, 4, 4),
+    MobSpawnerData("Zombie", 10, 4, 4),
+    MobSpawnerData("Skeleton", 10, 4, 4),
+    MobSpawnerData("Creeper", 10, 4, 4),
+    MobSpawnerData("Slime", 10, 4, 4),
+    MobSpawnerData("Enderman", 1, 1, 4),
+]
+
+DEFAULT_WATER_FRIENDLIES = [
+    MobSpawnerData("Squid", 10, 4, 4),
+]
+
+BIOME_SPAWN_LISTS: Dict[int, Dict[str, List[MobSpawnerData]]] = {}
+
+def _init_biome_spawns(b_id, friendlies=None, enemies=None, water_friendlies=None):
+    if friendlies is None: friendlies = list(DEFAULT_FRIENDLIES)
+    if enemies is None: enemies = list(DEFAULT_ENEMIES)
+    if water_friendlies is None: water_friendlies = list(DEFAULT_WATER_FRIENDLIES)
+    
+    BIOME_SPAWN_LISTS[b_id] = {
+        "friendlies": friendlies,
+        "enemies": enemies,
+        "water_friendlies": water_friendlies
+    }
 
 # Biome IDs
 OCEAN = 0
@@ -65,6 +108,38 @@ _init_biome(TAIGA_HILLS,            0.3,  0.8,  0.05, 0.8, GRASS, DIRT)
 _init_biome(SMALLER_EXTREME_HILLS,  0.2,  0.8,  0.2,  0.3, GRASS, DIRT)
 _init_biome(JUNGLE,                 0.2,  0.4,  1.2,  0.9, GRASS, DIRT)
 _init_biome(JUNGLE_HILLS,           1.8,  0.5,  1.2,  0.9, GRASS, DIRT)
+
+# Initialize spawn lists for all biomes
+for b_id in range(BIOME_COUNT):
+    _init_biome_spawns(b_id)
+
+# Special overrides
+# Wolves in forests and taigas
+forest_friendlies = list(DEFAULT_FRIENDLIES) + [MobSpawnerData("Wolf", 5, 4, 4)]
+BIOME_SPAWN_LISTS[FOREST]["friendlies"] = forest_friendlies
+BIOME_SPAWN_LISTS[FOREST_HILLS]["friendlies"] = forest_friendlies
+BIOME_SPAWN_LISTS[TAIGA]["friendlies"] = forest_friendlies
+BIOME_SPAWN_LISTS[TAIGA_HILLS]["friendlies"] = forest_friendlies
+
+# Mushroom islands have no regular enemies or friendlies by default, just mooshrooms (added if needed later)
+BIOME_SPAWN_LISTS[MUSHROOM_ISLAND]["friendlies"] = [MobSpawnerData("MushroomCow", 8, 4, 8)]
+BIOME_SPAWN_LISTS[MUSHROOM_ISLAND]["enemies"] = []
+BIOME_SPAWN_LISTS[MUSHROOM_ISLAND_SHORE]["friendlies"] = [MobSpawnerData("MushroomCow", 8, 4, 8)]
+BIOME_SPAWN_LISTS[MUSHROOM_ISLAND_SHORE]["enemies"] = []
+
+# Hell has ghasts, pigzombies, lavaslimes
+BIOME_SPAWN_LISTS[HELL]["friendlies"] = []
+BIOME_SPAWN_LISTS[HELL]["water_friendlies"] = []
+BIOME_SPAWN_LISTS[HELL]["enemies"] = [
+    MobSpawnerData("Ghast", 50, 4, 4),
+    MobSpawnerData("PigZombie", 100, 4, 4),
+    MobSpawnerData("LavaSlime", 1, 4, 4)
+]
+
+# Sky (The End) has Endermen
+BIOME_SPAWN_LISTS[SKY]["friendlies"] = []
+BIOME_SPAWN_LISTS[SKY]["water_friendlies"] = []
+BIOME_SPAWN_LISTS[SKY]["enemies"] = [MobSpawnerData("Enderman", 10, 4, 4)]
 
 # Compile the static array into numba
 BIOME_DATA = biome_data.copy()

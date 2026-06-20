@@ -10,6 +10,7 @@ in float vLight;
 in float vOverlay;
 
 uniform sampler2DArray u_texture;
+uniform vec4 u_tint_color = vec4(1.0);
 
 out vec4 FragColor;
 
@@ -61,6 +62,9 @@ void main() {
         // Normal textures
         base_color = vColor * texColor.rgb;
     }
+    
+    // Uygula Tint Rengini (Hasar efekti vs. iin)
+    base_color *= u_tint_color.rgb;
     
     // Nihai Rengi Hesapla
     vec3 lit_color = base_color * light_factor * ao_multiplier * sky_light_factor;

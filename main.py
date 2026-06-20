@@ -47,12 +47,14 @@ from core.world_db import save_chunk
 from renderer.gui_mixin import GUIMixin
 from world.chunk_mixin import ChunkMixin
 from core.input_mixin import InputMixin
+from core.entity_mixin import EntityMixin
 
-class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
-    def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False):
+class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, EntityMixin):
+    def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False, flat_mode=False):
         super().__init__(width=1280, height=720, caption="PythonCraft Engine",
                          resizable=True, vsync=False)
         self.debug_mode = debug_mode
+        self.flat_mode = flat_mode
         
         self.set_exclusive_mouse(True)
         self.keys = key.KeyStateHandler()
@@ -68,11 +70,22 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
             os.path.join(shader_dir, 'vertex.glsl'),
             os.path.join(shader_dir, 'fragment.glsl')
         )
-        print("[GPU] Shader program compiled & linked.")
+        self.water_overlay_program = create_shader_program(
+            os.path.join(shader_dir, 'water_overlay_vertex.glsl'),
+            os.path.join(shader_dir, 'water_overlay_fragment.glsl')
+        )
+        print("[GPU] Shader programs compiled & linked.")
+        
+        self.dummy_vao = GLuint(0)
+        glGenVertexArrays(1, ctypes.byref(self.dummy_vao))
         
         self.u_projection = glGetUniformLocation(self.program, b"projection")
         self.u_view = glGetUniformLocation(self.program, b"view")
         self.u_texture = glGetUniformLocation(self.program, b"u_texture")
+        self.u_tint_color = glGetUniformLocation(self.program, b"u_tint_color")
+        
+        self.u_inv_proj_view_overlay = glGetUniformLocation(self.water_overlay_program, b"u_inv_proj_view")
+        self.u_water_surface_y_overlay = glGetUniformLocation(self.water_overlay_program, b"u_water_surface_y")
         
         glUseProgram(self.program)
         glUniform1i(self.u_texture, 0)
@@ -123,6 +136,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
         self.bob_time = 0.0
         self.swing_time = 0.0
         self._init_hand_blocks()
+        self._init_entities()
         
         self._frame_count = 0
         pyglet.clock.schedule_interval(self._update_title, 0.5)
@@ -213,6 +227,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
         else:
             self.player.vy = 0.0 # Reset gravity accumulation
         t_player_end = time.perf_counter()
+        
+        self._update_entities(dt)
             
         eye_pos = self.player.get_eye_position()
         self.camera.x, self.camera.y, self.camera.z = eye_pos[0], eye_pos[1], eye_pos[2]
@@ -260,7 +276,23 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
                 glBindVertexArray(o_vao)
                 glDrawArrays(GL_TRIANGLES, 0, o_count)
         t_opaque_end = time.perf_counter()
-                
+        
+        # ENTITY PASS
+        glEnable(GL_DEPTH_TEST)
+        glDisable(GL_CULL_FACE) # Disable culling for entities
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        self._render_entities(view, self.u_view, getattr(self, 'u_tint_color', -1))
+        
+        # Restore the original camera view after entity rendering
+        glUniformMatrix4fv(self.u_view, 1, GL_FALSE, view)
+        glEnable(GL_CULL_FACE) # Re-enable for chunks
+        
+        # Re-bind main chunk texture atlas
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
+
         t_trans_start = time.perf_counter()
         # TRANSPARENT PASS
         glEnable(GL_BLEND)
@@ -275,9 +307,40 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
                 
         glDisable(GL_BLEND)
         glBindVertexArray(0)
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
         glUseProgram(0)
         
+        # WATER OVERLAY PASS
+        cx, cy, cz = self.camera.x, self.camera.y, self.camera.z
+        cy_int = int(math.floor(cy))
+        
+        # Find closest water surface
+        u_water_surface_y = -1000.0
+        if self.get_block(cx, cy_int + 1, cz) == 4:
+            u_water_surface_y = cy_int + 2.0
+        elif self.get_block(cx, cy_int, cz) == 4:
+            u_water_surface_y = cy_int + 1.0
+        elif self.get_block(cx, cy_int - 1, cz) == 4:
+            u_water_surface_y = float(cy_int)
+            
+        if u_water_surface_y > -999.0:
+            glUseProgram(self.water_overlay_program)
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glDisable(GL_DEPTH_TEST) # Overlay covers screen
+            
+            # Inverse proj*view for world reconstruction
+            inv_pv = np.linalg.inv(proj_view.reshape(4,4)).flatten().astype(np.float32)
+            glUniformMatrix4fv(self.u_inv_proj_view_overlay, 1, GL_FALSE, (ctypes.c_float * 16)(*inv_pv))
+            glUniform1f(self.u_water_surface_y_overlay, u_water_surface_y)
+            
+            glBindVertexArray(self.dummy_vao)
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+            glBindVertexArray(0)
+            
+            glEnable(GL_DEPTH_TEST)
+            glDisable(GL_BLEND)
+            glUseProgram(0)
+
         # 3D Held Block Viewmodel Rendering
         if hasattr(self, 'hand_block_vaos') and self.selected_block_id in self.hand_block_vaos:
             glClear(GL_DEPTH_BUFFER_BIT)
@@ -330,13 +393,13 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
                 swing_ry = -swing3 * 20.0
                 swing_rz = -swing2 * 20.0
                 
-            tx = 0.45 + bob_x + swing_tx
+            tx = 0.48 + bob_x + swing_tx
             ty = -0.45 + bob_y + swing_ty
-            tz = -0.6 + swing_tz
+            tz = -0.75 + swing_tz
             
-            scale = 0.28
+            scale = 0.36
             
-            rad_y = math.radians(45 + swing_ry)
+            rad_y = math.radians(15 + swing_ry)
             cy, sy = math.cos(rad_y), math.sin(rad_y)
             ry = np.array([
                 [cy, 0, sy, 0],
@@ -354,7 +417,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
                 [0, 0, 0, 1]
             ], dtype=np.float32)
             
-            rad_z = math.radians(10 + swing_rz)
+            rad_z = math.radians(8 + swing_rz)
             cz, sz = math.cos(rad_z), math.sin(rad_z)
             rz = np.array([
                 [cz, -sz, 0, 0],
@@ -435,6 +498,12 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin):
         dur = (time.perf_counter() - t_start) * 1000.0
         if dur > 4.0:
             self.log(f"[SLOW DRAW] Total: {dur:.2f}ms | Cull: {(t_cull_end-t_cull_start)*1000.0:.2f}ms | Opaque: {(t_opaque_end-t_opaque_start)*1000.0:.2f}ms | Trans: {(t_trans_end-t_trans_start)*1000.0:.2f}ms")
+
+    def on_key_press(self, symbol, modifiers):
+        super().on_key_press(symbol, modifiers)
+        InputMixin.on_key_press(self, symbol, modifiers)
+        if symbol == key.P:
+            self.spawn_pig(self.player.x, self.player.y + 2.5, self.player.z)
     
     def _update_title(self, dt):
         fps = self._frame_count / max(dt, 0.001)
@@ -459,6 +528,7 @@ def main():
     distance = 4
     fast_leaves = False
     debug_mode = False
+    flat_mode = False
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             if arg == "-fast":
@@ -467,6 +537,9 @@ def main():
             elif arg == "-debug":
                 debug_mode = True
                 print("Debug mode enabled: Performance metrics will be printed to console.")
+            elif arg == "-flat":
+                flat_mode = True
+                print("Flat mode enabled: World will be generated as flat.")
             else:
                 try:
                     distance = int(arg)
@@ -480,7 +553,7 @@ def main():
         BLOCK_OPAQUE_ARRAY[16] = True
         BLOCK_OPAQUE_ARRAY[17] = True
     
-    engine = PythonCraftEngine(render_distance=distance, fast_leaves=fast_leaves, debug_mode=debug_mode)
+    engine = PythonCraftEngine(render_distance=distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode)
     pyglet.app.run()
 
 if __name__ == '__main__':

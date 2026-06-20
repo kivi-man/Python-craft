@@ -101,6 +101,25 @@ class ChunkMixin:
         if (cx, cz) in self.world_biomes:
             del self.world_biomes[(cx, cz)]
             
+        # Save and remove entities
+        if hasattr(self, 'entities'):
+            import json
+            from core.world_db import save_chunk_entities
+            entities_to_save = []
+            keep_entities = []
+            for e in self.entities:
+                ecx = int(math.floor(e.x / CHUNK_SIZE))
+                ecz = int(math.floor(e.z / CHUNK_SIZE))
+                if ecx == cx and ecz == cz:
+                    if hasattr(e, 'to_dict') and not getattr(e, 'dead', False):
+                        entities_to_save.append(e.to_dict())
+                else:
+                    keep_entities.append(e)
+            self.entities = keep_entities
+            if entities_to_save:
+                self.executor.submit(save_chunk_entities, cx, cz, json.dumps(entities_to_save))
+            else:
+                self.executor.submit(save_chunk_entities, cx, cz, "[]")
 
     def _update_chunk_loading(self):
         import time
@@ -223,6 +242,24 @@ class ChunkMixin:
             self.world_light_maps[(cx, cz)] = light_map
             self.world_biomes[(cx, cz)] = biomes
             
+            # Load entities
+            if hasattr(self, 'entities'):
+                import json
+                from core.world_db import load_chunk_entities
+                from core.entities.pig import Pig
+                
+                entities_json = load_chunk_entities(cx, cz)
+                if entities_json:
+                    try:
+                        entities_data = json.loads(entities_json)
+                        for e_data in entities_data:
+                            if e_data.get('type') == 'Pig':
+                                p = Pig()
+                                p.from_dict(e_data)
+                                self.entities.append(p)
+                    except Exception as e:
+                        self.log(f"[ERROR] Failed to load entities for {cx}, {cz}: {e}")
+            
             if not self.free_chunk_indices:
                 self.log(f"[WARNING] No free chunk indices for ({cx}, {cz})!")
                 continue
@@ -252,7 +289,12 @@ class ChunkMixin:
         while self.chunk_load_queue and len(self.future_to_chunk) < 2 and submitted_gen < 1:
             cx, cz = self.chunk_load_queue.pop(0)
             self.chunk_load_queue_set.discard((cx, cz)) # Remove from set as well
-            future = self.executor.submit(load_or_generate_chunk, cx, cz)
+            if hasattr(self, 'flat_mode') and self.flat_mode:
+                from world.mc_flat_terrain import load_or_generate_flat_chunk
+                func = load_or_generate_flat_chunk
+            else:
+                func = load_or_generate_chunk
+            future = self.executor.submit(func, cx, cz)
             self.future_to_chunk[future] = (cx, cz)
             submitted_gen += 1
         t_submit_gen_end = time.perf_counter()
@@ -381,7 +423,7 @@ class ChunkMixin:
         cx = int(math.floor(x / CHUNK_SIZE))
         cz = int(math.floor(z / CHUNK_SIZE))
         chunk = self.world_chunks.get((cx, cz))
-        if chunk is None: return 0
+        if chunk is None: return -1
         return chunk[int(math.floor(x)) % CHUNK_SIZE, int(math.floor(y)), int(math.floor(z)) % CHUNK_SIZE]
     
 

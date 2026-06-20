@@ -17,6 +17,43 @@ class InputMixin:
         new_block_id = 0
         
         if button == mouse.LEFT:
+            # Entity Raycast
+            hit_entity = None
+            min_t = 5.0
+            
+            for entity in getattr(self, 'entities', []):
+                if getattr(entity, 'dead', False): continue
+                hw = entity.width / 2.0
+                min_b = (entity.x - hw - 0.2, entity.y - 0.1, entity.z - hw - 0.2)
+                max_b = (entity.x + hw + 0.2, entity.y + entity.height + 0.1, entity.z + hw + 0.2)
+                
+                tx1 = (min_b[0] - eye_pos[0]) / (direction[0] + 1e-8)
+                tx2 = (max_b[0] - eye_pos[0]) / (direction[0] + 1e-8)
+                tmin = min(tx1, tx2)
+                tmax = max(tx1, tx2)
+                
+                ty1 = (min_b[1] - eye_pos[1]) / (direction[1] + 1e-8)
+                ty2 = (max_b[1] - eye_pos[1]) / (direction[1] + 1e-8)
+                tmin = max(tmin, min(ty1, ty2))
+                tmax = min(tmax, max(ty1, ty2))
+                
+                tz1 = (min_b[2] - eye_pos[2]) / (direction[2] + 1e-8)
+                tz2 = (max_b[2] - eye_pos[2]) / (direction[2] + 1e-8)
+                tmin = max(tmin, min(tz1, tz2))
+                tmax = min(tmax, max(tz1, tz2))
+                
+                if tmax >= tmin and tmin < min_t and tmax > 0:
+                    min_t = tmin
+                    hit_entity = entity
+            
+            if hit_entity is not None:
+                hit_entity.hurt(4) # Player hits for 4 damage
+                # Apply Knockback
+                hit_entity.dx += direction[0] * 0.4
+                hit_entity.dy = 0.3
+                hit_entity.dz += direction[2] * 0.4
+                return
+                
             target_x, target_y, target_z = hx, hy, hz
             new_block_id = 0
         elif button == mouse.RIGHT and px is not None:
