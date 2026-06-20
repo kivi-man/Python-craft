@@ -10,17 +10,17 @@ class InputMixin:
     def add_to_inventory(self, block_id):
         if block_id <= 0: return False
         
-        for i in range(9):
-            if self.hotbar_blocks[i] == block_id and self.hotbar_counts[i] < 64:
-                self.hotbar_counts[i] += 1
+        for i in range(36):
+            if self.inventory_blocks[i] == block_id and self.inventory_counts[i] < 64:
+                self.inventory_counts[i] += 1
                 if self.selected_slot == i:
                     self.selected_block_id = block_id
                 return True
                 
-        for i in range(9):
-            if self.hotbar_blocks[i] == 0:
-                self.hotbar_blocks[i] = block_id
-                self.hotbar_counts[i] = 1
+        for i in range(36):
+            if self.inventory_blocks[i] == 0:
+                self.inventory_blocks[i] = block_id
+                self.inventory_counts[i] = 1
                 if self.selected_slot == i:
                     self.selected_block_id = block_id
                 return True
@@ -112,12 +112,17 @@ class InputMixin:
             if button == mouse.RIGHT and 0 < new_block_id < 256:
                 self.hotbar_counts[self.selected_slot] -= 1
                 if self.hotbar_counts[self.selected_slot] <= 0:
-                    self.hotbar_blocks[self.selected_slot] = 0
+                    self.inventory_blocks[self.selected_slot] = 0
                     self.selected_block_id = 0
                 self.set_block(target_x, target_y, target_z, new_block_id)
             
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if getattr(self, 'inventory_open', False):
+            if hasattr(self, '_handle_inventory_click'):
+                self._handle_inventory_click(x, y, button)
+            return
+
         if button in (mouse.LEFT, mouse.RIGHT):
             self.mouse_held[button] = True
             self.swing_time = 0.01 # Swing animasyonunu tetikle
@@ -143,12 +148,18 @@ class InputMixin:
                 self.breaking_progress = 0.0
 
     def on_mouse_motion(self, x, y, dx, dy):
+        self.mouse_pos = (x, y)
+        if getattr(self, 'inventory_open', False): return
+
         self.camera.yaw += dx * self.camera.sensitivity
         self.camera.pitch += dy * self.camera.sensitivity
         self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
         
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.mouse_pos = (x, y)
+        if getattr(self, 'inventory_open', False): return
+
         self.camera.yaw += dx * self.camera.sensitivity
         self.camera.pitch += dy * self.camera.sensitivity
         self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
@@ -179,7 +190,7 @@ class InputMixin:
                 )
                 
                 if self.hotbar_counts[self.selected_slot] <= 0:
-                    self.hotbar_blocks[self.selected_slot] = 0
+                    self.inventory_blocks[self.selected_slot] = 0
                     self.selected_block_id = 0
                     
         elif symbol == key.TAB:
@@ -233,7 +244,7 @@ class InputMixin:
         # We have 9 selectable slots (0-8)
         direction = -1 if scroll_y > 0 else 1
         self.selected_slot = (self.selected_slot + direction) % 9
-        self.selected_block_id = self.hotbar_blocks[self.selected_slot]
+        self.selected_block_id = self.inventory_blocks[self.selected_slot]
         
         block_names = {
             1: "STONE",

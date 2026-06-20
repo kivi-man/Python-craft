@@ -221,6 +221,21 @@ class GUIMixin:
             glTexParameteri(sel_tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
             self.hotbar_sel_sprite = pyglet.sprite.Sprite(img=sel_tex)
             self.hotbar_sel_sprite.scale = 2
+
+            # Load Full Inventory Background
+            inv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'gui', 'container', 'inventory.png')
+            if os.path.exists(inv_path):
+                inv_img = pyglet.image.load(inv_path)
+                # The active GUI region in inventory.png is 176x166 (top-left aligned, but Pyglet is bottom-left, so y=height-166)
+                inv_region = inv_img.get_region(0, inv_img.height - 166, 176, 166)
+                inv_tex = inv_region.get_texture()
+                glBindTexture(inv_tex.target, inv_tex.id)
+                glTexParameteri(inv_tex.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                glTexParameteri(inv_tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                self.inventory_bg_sprite = pyglet.sprite.Sprite(img=inv_tex)
+            else:
+                self.inventory_bg_sprite = None
+
             
             # Load Block Icons as 3D Isometric Cubes
             self.block_icon_sprites = {}
@@ -275,6 +290,10 @@ class GUIMixin:
             # Center hotbar horizontally, keep 10 pixels margin from the bottom
             self.hotbar_bg_sprite.x = int((width - self.hotbar_bg_sprite.width) // 2)
             self.hotbar_bg_sprite.y = 10
+
+        if hasattr(self, 'inventory_bg_sprite') and self.inventory_bg_sprite is not None:
+            self.inventory_bg_sprite.x = int((width - self.inventory_bg_sprite.width) // 2)
+            self.inventory_bg_sprite.y = int((height - self.inventory_bg_sprite.height) // 2)
 
 
     def _init_hand_blocks(self):

@@ -183,10 +183,13 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
-        self.hotbar_blocks = [0] * 9
-        self.hotbar_counts = [0] * 9
+        self.inventory_blocks = [0] * 45
+        self.inventory_counts = [0] * 45
         self.selected_slot = 0
-        self.selected_block_id = self.hotbar_blocks[self.selected_slot]
+        self.selected_block_id = self.inventory_blocks[self.selected_slot]
+        self.inventory_open = False
+        self.cursor_item_id = 0
+        self.cursor_item_count = 0
         
         # Mouse hold state and action cooldown tracking
         self.mouse_held = {mouse.LEFT: False, mouse.RIGHT: False}
@@ -246,87 +249,91 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         else:
             self.bob_time += dt * 1.5 # Slow breathing bobbing animation
             
-        # Mouse hold actions (continuous block break/place)
-        if self.mouse_action_cooldown > 0.0:
-            self.mouse_action_cooldown -= dt
-            
-        if self.mouse_action_cooldown <= 0.005:
-            if self.mouse_held[mouse.LEFT]:
-                self.swing_time = 0.01
-                self._handle_mouse_action(mouse.LEFT)
-                self.mouse_action_cooldown = 0.20
-            elif self.mouse_held[mouse.RIGHT]:
-                from world.terrain import PORKCHOP_RAW
-                if self.selected_block_id == PORKCHOP_RAW:
-                    pass # Handled below for continuous eating
-                else:
+        if not getattr(self, 'inventory_open', False):
+            # Mouse hold actions (continuous block break/place)
+            if self.mouse_action_cooldown > 0.0:
+                self.mouse_action_cooldown -= dt
+                
+            if self.mouse_action_cooldown <= 0.005:
+                if self.mouse_held[mouse.LEFT]:
                     self.swing_time = 0.01
-                    self._handle_mouse_action(mouse.RIGHT)
+                    self._handle_mouse_action(mouse.LEFT)
                     self.mouse_action_cooldown = 0.20
-                
-        # Continuous Eating Progress
-        if self.mouse_held[mouse.RIGHT]:
-            from world.terrain import PORKCHOP_RAW
-            if self.selected_block_id == PORKCHOP_RAW and self.player.hunger < 20.0:
-                if not hasattr(self, 'eating_progress'):
-                    self.eating_progress = 0.0
-                self.eating_progress += dt
-                # Bob hand slightly while eating
-                self.swing_time += dt * 3.0
-                
-                if self.eating_progress >= 1.6: # Takes 1.6 seconds to eat
-                    self.eating_progress = 0.0
-                    self.player.hunger = min(20.0, getattr(self.player, 'hunger', 20.0) + 4.0) # Restores 4 hunger points (2 shanks)
-                    self.hotbar_counts[self.selected_slot] -= 1
-                    if self.hotbar_counts[self.selected_slot] <= 0:
-                        self.hotbar_blocks[self.selected_slot] = 0
-                        self.selected_block_id = 0
-            else:
-                self.eating_progress = 0.0
-        else:
-            if hasattr(self, 'eating_progress'):
-                self.eating_progress = 0.0
-                
-        # Always update targeted block for highlighting
-        eye_pos = self.player.get_eye_position()
-        direction = self.camera.get_front()
-        from core.raycast import raycast
-        hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
-        if hx is not None:
-            self.targeted_block = (hx, hy, hz)
-        else:
-            self.targeted_block = None
-
-        # Continuous Block Breaking Progress
-        if self.mouse_held[mouse.LEFT]:
-            if self.targeted_block is not None:
-                hx, hy, hz = self.targeted_block
-                current_target = (hx, hy, hz)
-                if getattr(self, 'breaking_pos', None) == current_target:
-                    broken_id = self.get_block(hx, hy, hz)
-                    if broken_id > 0:
-                        from world.terrain import BLOCK_HARDNESS_ARRAY
-                        hardness = BLOCK_HARDNESS_ARRAY[broken_id]
-                        if hardness >= 0:
-                            self.breaking_progress += dt
-                            import random
-                            if random.random() < 0.25:
-                                self.spawn_crack_particles(hx, hy, hz, broken_id, 1)
-                                
-                            required_time = hardness * 5.0
-                            if self.breaking_progress >= required_time:
-                                self.spawn_destruction_particles(hx, hy, hz, broken_id)
-                                self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
-                                self.set_block(hx, hy, hz, 0)
-                                self.breaking_pos = None
-                                self.breaking_progress = 0.0
-                                self.mouse_action_cooldown = 0.20
+                elif self.mouse_held[mouse.RIGHT]:
+                    from world.terrain import PORKCHOP_RAW
+                    if self.selected_block_id == PORKCHOP_RAW:
+                        pass # Handled below for continuous eating
+                    else:
+                        self.swing_time = 0.01
+                        self._handle_mouse_action(mouse.RIGHT)
+                        self.mouse_action_cooldown = 0.20
+                    
+            # Continuous Eating Progress
+            if self.mouse_held[mouse.RIGHT]:
+                from world.terrain import PORKCHOP_RAW
+                if self.selected_block_id == PORKCHOP_RAW and self.player.hunger < 20.0:
+                    if not hasattr(self, 'eating_progress'):
+                        self.eating_progress = 0.0
+                    self.eating_progress += dt
+                    # Bob hand slightly while eating
+                    self.swing_time += dt * 3.0
+                    
+                    if self.eating_progress >= 1.6: # Takes 1.6 seconds to eat
+                        self.eating_progress = 0.0
+                        self.player.hunger = min(20.0, getattr(self.player, 'hunger', 20.0) + 4.0) # Restores 4 hunger points (2 shanks)
+                        self.inventory_counts[self.selected_slot] -= 1
+                        if self.inventory_counts[self.selected_slot] <= 0:
+                            self.inventory_blocks[self.selected_slot] = 0
+                            self.selected_block_id = 0
                 else:
-                    self.breaking_pos = current_target
-                    self.breaking_progress = 0.0
+                    self.eating_progress = 0.0
             else:
-                self.breaking_pos = None
-                self.breaking_progress = 0.0
+                if hasattr(self, 'eating_progress'):
+                    self.eating_progress = 0.0
+                    
+            # Always update targeted block for highlighting
+            eye_pos = self.player.get_eye_position()
+            direction = self.camera.get_front()
+            from core.raycast import raycast
+            hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
+            if hx is not None:
+                self.targeted_block = (hx, hy, hz)
+            else:
+                self.targeted_block = None
+
+            # Continuous Block Breaking Progress
+            if self.mouse_held[mouse.LEFT]:
+                if self.targeted_block is not None:
+                    hx, hy, hz = self.targeted_block
+                    current_target = (hx, hy, hz)
+                    if getattr(self, 'breaking_pos', None) == current_target:
+                        broken_id = self.get_block(hx, hy, hz)
+                        if broken_id > 0:
+                            from world.terrain import BLOCK_HARDNESS_ARRAY
+                            hardness = BLOCK_HARDNESS_ARRAY[broken_id]
+                            if hardness >= 0:
+                                self.breaking_progress += dt
+                                import random
+                                if random.random() < 0.25:
+                                    self.spawn_crack_particles(hx, hy, hz, broken_id, 1)
+                                    
+                                required_time = hardness * 5.0
+                                if self.breaking_progress >= required_time:
+                                    self.spawn_destruction_particles(hx, hy, hz, broken_id)
+                                    self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
+                                    self.set_block(hx, hy, hz, 0)
+                                    self.breaking_pos = None
+                                    self.breaking_progress = 0.0
+                                    self.mouse_action_cooldown = 0.20
+                    else:
+                        self.breaking_pos = current_target
+                        self.breaking_progress = 0.0
+                else:
+                    self.breaking_pos = None
+                    self.breaking_progress = 0.0
+        else:
+            self.breaking_pos = None
+            self.breaking_progress = 0.0
         
         t_load_start = time.perf_counter()
         self._update_chunk_loading()
@@ -375,6 +382,224 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         if dur > 2.0:
             self.log(f"[SLOW UPDATE] Total: {dur:.2f}ms | Load: {(t_load_end-t_load_start)*1000.0:.2f}ms | Queues: {(t_queue_end-t_queue_start)*1000.0:.2f}ms | Player: {(t_player_end-t_player_start)*1000.0:.2f}ms")
     
+
+    def _get_slot_rect(self, slot_idx):
+        if not hasattr(self, 'inventory_bg_sprite') or self.inventory_bg_sprite is None:
+            return 0, 0, 0, 0
+            
+        bg_x = self.inventory_bg_sprite.x
+        bg_y = self.inventory_bg_sprite.y
+        scale = self.inventory_bg_sprite.scale
+        
+        if 0 <= slot_idx <= 8:
+            px = 8 + slot_idx * 18
+            py = 8
+        elif 9 <= slot_idx <= 35:
+            rel = slot_idx - 9
+            col = rel % 9
+            row = rel // 9
+            px = 8 + col * 18
+            py = 30 + (2 - row) * 18
+        elif 36 <= slot_idx <= 39:
+            px = 8
+            py = 88 + (slot_idx - 36) * 18
+        elif 40 <= slot_idx <= 43:
+            rel = slot_idx - 40
+            col = rel % 2
+            row = rel // 2
+            px = 88 + col * 18
+            py = 124 - row * 18
+        elif slot_idx == 44:
+            px = 144
+            py = 114
+        else:
+            return 0, 0, 0, 0
+            
+        return bg_x + px * scale, bg_y + py * scale, 16 * scale, 16 * scale
+
+    def _draw_inventory_gui(self):
+        if hasattr(self, 'inventory_bg_sprite') and self.inventory_bg_sprite is not None:
+            self.inventory_bg_sprite.draw()
+            bg_scale = self.inventory_bg_sprite.scale
+            
+            # Init labels if not present
+            if not hasattr(self, 'count_labels'):
+                import pyglet.text
+                import pyglet.font
+                import os
+                font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
+                try:
+                    pyglet.font.add_file(font_path)
+                    target_font = 'Minecraftia'
+                except Exception:
+                    target_font = 'Arial'
+                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(45)]
+                self.crafting_label = pyglet.text.Label("Crafting", font_name=target_font, font_size=8, color=(64, 64, 64, 255), anchor_x="left", anchor_y="bottom")
+                
+            # Update and draw crafting label
+            if hasattr(self, 'crafting_label'):
+                self.crafting_label.font_size = max(8, int(8 * bg_scale))
+                # Pyglet coordinates for Crafting grid start at px=88. The text should be at px=98, py=142 roughly
+                self.crafting_label.x = int(self.inventory_bg_sprite.x + 98 * bg_scale)
+                self.crafting_label.y = int(self.inventory_bg_sprite.y + 144 * bg_scale)
+                self.crafting_label.draw()                
+            # Hovered slot
+            mouse_x, mouse_y = getattr(self, 'mouse_pos', (0, 0))
+            hovered_slot = -1
+            
+            # Draw items and labels
+            for slot_idx, b_id in enumerate(self.inventory_blocks):
+                x, y, w, h = self._get_slot_rect(slot_idx)
+                
+                # Check hover
+                if x <= mouse_x <= x + w and y <= mouse_y <= y + h:
+                    hovered_slot = slot_idx
+                    
+                if b_id > 0 and b_id in getattr(self, 'block_icon_sprites', {}):
+                    sprite = self.block_icon_sprites[b_id]
+                    sprite_size = getattr(sprite, 'original_width', 64.0)
+                    sprite.scale = (16.0 * bg_scale) / sprite_size
+                    sprite.x = int(x)
+                    sprite.y = int(y)
+                    sprite.draw()
+                    
+                    count = self.inventory_counts[slot_idx]
+                    if count > 0:
+                        lbl = self.count_labels[slot_idx]
+                        target_size = max(8, int(8 * bg_scale))
+                        if lbl.font_size != target_size:
+                            lbl.font_size = target_size
+                        if lbl.text != str(count):
+                            lbl.text = str(count)
+                        lbl.x = int(x + 16 * bg_scale)
+                        lbl.y = int(y)
+                        lbl.draw()
+                        
+            # Draw Hover highlight
+            if hovered_slot != -1:
+                hx, hy, hw, hh = self._get_slot_rect(hovered_slot)
+
+                import pyglet.shapes
+                hover_rect = pyglet.shapes.Rectangle(hx, hy, hw, hh, color=(255, 255, 255, 100))
+                hover_rect.draw()
+                
+            # Draw cursor item
+            cursor_id = getattr(self, 'cursor_item_id', 0)
+            if cursor_id > 0 and cursor_id in getattr(self, 'block_icon_sprites', {}):
+                sprite = self.block_icon_sprites[cursor_id]
+                sprite_size = getattr(sprite, 'original_width', 64.0)
+                sprite.scale = (16.0 * bg_scale) / sprite_size
+                sprite.x = int(mouse_x - 8 * bg_scale)
+                sprite.y = int(mouse_y - 8 * bg_scale)
+                sprite.draw()
+                
+                count = getattr(self, 'cursor_item_count', 0)
+                if count > 0:
+                    lbl = getattr(self, 'cursor_label', None)
+                    if not lbl:
+                        import pyglet.text
+                        self.cursor_label = pyglet.text.Label("", font_name='Arial', font_size=8, anchor_x="right", anchor_y="bottom")
+                        lbl = self.cursor_label
+                    target_size = max(8, int(8 * bg_scale))
+                    if lbl.font_size != target_size:
+                        lbl.font_size = target_size
+                    if lbl.text != str(count):
+                        lbl.text = str(count)
+                    lbl.x = int(sprite.x + 16 * bg_scale)
+                    lbl.y = int(sprite.y)
+                    lbl.draw()
+
+
+    def _handle_inventory_click(self, x, y, button):
+        from pyglet.window import mouse
+        
+        clicked_slot = -1
+        for i in range(45):
+            sx, sy, sw, sh = self._get_slot_rect(i)
+            if sx <= x <= sx + sw and sy <= y <= sy + sh:
+                clicked_slot = i
+                break
+                
+        if clicked_slot == -1:
+            if button == mouse.LEFT and getattr(self, 'cursor_item_id', 0) > 0:
+                for _ in range(self.cursor_item_count):
+                    self.spawn_item_entity(self.cursor_item_id, self.player.x, self.player.y + 1.5, self.player.z)
+                self.cursor_item_id = 0
+                self.cursor_item_count = 0
+            return
+            
+        if 36 <= clicked_slot <= 39:
+            if getattr(self, 'cursor_item_id', 0) > 0:
+                return
+                
+        if clicked_slot == 44:
+            if getattr(self, 'cursor_item_id', 0) > 0:
+                return
+                
+        slot_id = self.inventory_blocks[clicked_slot]
+        slot_count = self.inventory_counts[clicked_slot]
+        
+        cursor_id = getattr(self, 'cursor_item_id', 0)
+        cursor_count = getattr(self, 'cursor_item_count', 0)
+        
+        if button == mouse.LEFT:
+            if cursor_id == 0:
+                if slot_id > 0:
+                    self.cursor_item_id = slot_id
+                    self.cursor_item_count = slot_count
+                    self.inventory_blocks[clicked_slot] = 0
+                    self.inventory_counts[clicked_slot] = 0
+            else:
+                if slot_id == cursor_id:
+                    space = 64 - slot_count
+                    if space >= cursor_count:
+                        self.inventory_counts[clicked_slot] += cursor_count
+                        self.cursor_item_id = 0
+                        self.cursor_item_count = 0
+                    else:
+                        self.inventory_counts[clicked_slot] = 64
+                        self.cursor_item_count -= space
+                else:
+                    self.inventory_blocks[clicked_slot] = cursor_id
+                    self.inventory_counts[clicked_slot] = cursor_count
+                    self.cursor_item_id = slot_id
+                    self.cursor_item_count = slot_count
+        elif button == mouse.RIGHT:
+            if cursor_id == 0:
+                if slot_id > 0:
+                    half = int(slot_count / 2)
+                    rem = slot_count - half
+                    if half > 0:
+                        self.cursor_item_id = slot_id
+                        self.cursor_item_count = half
+                        self.inventory_counts[clicked_slot] = rem
+                    else:
+                        self.cursor_item_id = slot_id
+                        self.cursor_item_count = 1
+                        self.inventory_counts[clicked_slot] = 0
+                        self.inventory_blocks[clicked_slot] = 0
+            else:
+                if slot_id == 0:
+                    self.inventory_blocks[clicked_slot] = cursor_id
+                    self.inventory_counts[clicked_slot] = 1
+                    self.cursor_item_count -= 1
+                    if self.cursor_item_count <= 0:
+                        self.cursor_item_id = 0
+                elif slot_id == cursor_id:
+                    if slot_count < 64:
+                        self.inventory_counts[clicked_slot] += 1
+                        self.cursor_item_count -= 1
+                        if self.cursor_item_count <= 0:
+                            self.cursor_item_id = 0
+                else:
+                    self.inventory_blocks[clicked_slot] = cursor_id
+                    self.inventory_counts[clicked_slot] = cursor_count
+                    self.cursor_item_id = slot_id
+                    self.cursor_item_count = slot_count
+                    
+        # Synchronize selected block if hotbar is changed
+        self.selected_block_id = self.inventory_blocks[self.selected_slot]
+
     def on_draw(self):
         import time
         t_start = time.perf_counter()
@@ -731,170 +956,181 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             glDisable(GL_BLEND)
             glUseProgram(0)
             
-        # 2D GUI Elements (Crosshair and Hotbar)
+        # 2D GUI Elements
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         
-        # 1. Crosshair (using color inversion blending)
-        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR)
-        if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
-            self.crosshair_sprite.draw()
+        if getattr(self, 'inventory_open', False):
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             
-        # 2. Hotbar ve Blok Simgeleri (Standart Alpha Blending ile)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            # Draw dark overlay
+
+            import pyglet.shapes
+            overlay_rect = pyglet.shapes.Rectangle(0, 0, self.width, self.height, color=(0, 0, 0, 153))
+            overlay_rect.draw()
+            
+            self._draw_inventory_gui()
+        else:
+            # 1. Crosshair (using color inversion blending)
+            glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR)
+            if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
+                self.crosshair_sprite.draw()
+            
+            # 2. Hotbar ve Blok Simgeleri (Standart Alpha Blending ile)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         
-        if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
-            self.hotbar_bg_sprite.draw()
+            if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
+                self.hotbar_bg_sprite.draw()
             
-            # Render block icons (scaled from 64x64 to 13*scale and centered in slots)
-            bg_scale = self.hotbar_bg_sprite.scale
-            if not hasattr(self, 'count_labels'):
-                import pyglet.text
-                import pyglet.font
-                font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
-                try:
-                    pyglet.font.add_file(font_path)
-                    target_font = 'Minecraftia'
-                except Exception:
-                    target_font = 'Arial'
-                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(9)]
+                # Render block icons (scaled from 64x64 to 13*scale and centered in slots)
+                bg_scale = self.hotbar_bg_sprite.scale
+                if not hasattr(self, 'count_labels'):
+                    import pyglet.text
+                    import pyglet.font
+                    font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
+                    try:
+                        pyglet.font.add_file(font_path)
+                        target_font = 'Minecraftia'
+                    except Exception:
+                        target_font = 'Arial'
+                    self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(45)]
                 
-            # Render active slot selection frame FIRST (behind items and text)
-            if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
-                scale = self.hotbar_sel_sprite.scale
-                self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
-                self.hotbar_sel_sprite.y = int(self.hotbar_bg_sprite.y - 1 * scale)
-                self.hotbar_sel_sprite.draw()
+                # Render active slot selection frame FIRST (behind items and text)
+                if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
+                    scale = self.hotbar_sel_sprite.scale
+                    self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
+                    self.hotbar_sel_sprite.y = int(self.hotbar_bg_sprite.y - 1 * scale)
+                    self.hotbar_sel_sprite.draw()
 
-            for slot_idx, b_id in enumerate(self.hotbar_blocks):
-                if b_id > 0 and b_id in self.block_icon_sprites:
-                    sprite = self.block_icon_sprites[b_id]
-                    sprite_size = getattr(sprite, 'original_width', 64.0)
-                    sprite.scale = (13.0 * bg_scale) / sprite_size
-                    sprite.x = int(self.hotbar_bg_sprite.x + (3 + slot_idx * 20) * bg_scale + 1.5 * bg_scale)
-                    sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
-                    sprite.draw()
+                for slot_idx, b_id in enumerate(self.inventory_blocks[:9]):
+                    if b_id > 0 and b_id in self.block_icon_sprites:
+                        sprite = self.block_icon_sprites[b_id]
+                        sprite_size = getattr(sprite, 'original_width', 64.0)
+                        sprite.scale = (13.0 * bg_scale) / sprite_size
+                        sprite.x = int(self.hotbar_bg_sprite.x + (3 + slot_idx * 20) * bg_scale + 1.5 * bg_scale)
+                        sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
+                        sprite.draw()
                     
-                    count = self.hotbar_counts[slot_idx]
-                    if count > 0:
-                        lbl = self.count_labels[slot_idx]
+                        count = self.inventory_counts[slot_idx]
+                        if count > 0:
+                            lbl = self.count_labels[slot_idx]
                         
-                        target_size = max(8, int(8 * bg_scale))
-                        if lbl.font_size != target_size:
-                            lbl.font_size = target_size
+                            target_size = max(8, int(8 * bg_scale))
+                            if lbl.font_size != target_size:
+                                lbl.font_size = target_size
                             
-                        if lbl.text != str(count):
-                            lbl.text = str(count)
+                            if lbl.text != str(count):
+                                lbl.text = str(count)
                         
-                        # Position slightly outside the item bounds (x+20, y+2 relative to item top-left)
-                        base_x = self.hotbar_bg_sprite.x + (20 + slot_idx * 20) * bg_scale
-                        base_y = self.hotbar_bg_sprite.y + 2 * bg_scale
-                        offset = max(1, int(1 * bg_scale))
+                            # Position slightly outside the item bounds (x+20, y+2 relative to item top-left)
+                            base_x = self.hotbar_bg_sprite.x + (20 + slot_idx * 20) * bg_scale
+                            base_y = self.hotbar_bg_sprite.y + 2 * bg_scale
+                            offset = max(1, int(1 * bg_scale))
                         
-                        # Draw Shadow
-                        lbl.x = base_x + offset
-                        lbl.y = base_y - offset
-                        lbl.color = (63, 63, 63, 255)
-                        lbl.draw()
+                            # Draw Shadow
+                            lbl.x = base_x + offset
+                            lbl.y = base_y - offset
+                            lbl.color = (63, 63, 63, 255)
+                            lbl.draw()
                         
-                        # Draw Main Text
-                        lbl.x = base_x
-                        lbl.y = base_y
-                        lbl.color = (255, 255, 255, 255)
-                        lbl.draw()
+                            # Draw Main Text
+                            lbl.x = base_x
+                            lbl.y = base_y
+                            lbl.color = (255, 255, 255, 255)
+                            lbl.draw()
 
-            # Render XP Bar (just for visual for now, 30% full)
-            if hasattr(self, 'spr_xp_empty') and hasattr(self, 'spr_xp_full'):
-                xp_x = self.hotbar_bg_sprite.x
-                xp_y = int(self.hotbar_bg_sprite.y + 24 * self.hotbar_bg_sprite.scale)
+                # Render XP Bar (just for visual for now, 30% full)
+                if hasattr(self, 'spr_xp_empty') and hasattr(self, 'spr_xp_full'):
+                    xp_x = self.hotbar_bg_sprite.x
+                    xp_y = int(self.hotbar_bg_sprite.y + 24 * self.hotbar_bg_sprite.scale)
                 
-                self.spr_xp_empty.scale = self.hotbar_bg_sprite.scale
-                self.spr_xp_empty.x = xp_x
-                self.spr_xp_empty.y = xp_y
-                self.spr_xp_empty.draw()
+                    self.spr_xp_empty.scale = self.hotbar_bg_sprite.scale
+                    self.spr_xp_empty.x = xp_x
+                    self.spr_xp_empty.y = xp_y
+                    self.spr_xp_empty.draw()
                 
-                # XP bar is completely empty for now
-                # self.spr_xp_full.draw()
+                    # XP bar is completely empty for now
+                    # self.spr_xp_full.draw()
 
-            # Render Health and Hunger Bars
-            if hasattr(self, 'spr_heart') and hasattr(self, 'spr_hunger'):
-                # Draw Health (10 hearts)
-                heart_start_x = self.hotbar_bg_sprite.x
-                bar_y = int(self.hotbar_bg_sprite.y + 32 * self.hotbar_bg_sprite.scale)
+                # Render Health and Hunger Bars
+                if hasattr(self, 'spr_heart') and hasattr(self, 'spr_hunger'):
+                    # Draw Health (10 hearts)
+                    heart_start_x = self.hotbar_bg_sprite.x
+                    bar_y = int(self.hotbar_bg_sprite.y + 32 * self.hotbar_bg_sprite.scale)
                 
-                player_health = getattr(self.player, 'health', 20.0)
-                player_hunger = getattr(self.player, 'hunger', 20.0)
-                tick_count = int(time.perf_counter() * 20)
+                    player_health = getattr(self.player, 'health', 20.0)
+                    player_hunger = getattr(self.player, 'hunger', 20.0)
+                    tick_count = int(time.perf_counter() * 20)
                 
-                heart_offset_index = -1
-                if player_health < 20.0 and player_hunger >= 18.0:
-                    heart_offset_index = tick_count % 25
+                    heart_offset_index = -1
+                    if player_health < 20.0 and player_hunger >= 18.0:
+                        heart_offset_index = tick_count % 25
                     
-                import random
-                for i in range(10):
-                    yo = bar_y
-                    if player_health <= 4.0:
-                        yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
-                    if i == heart_offset_index:
-                        yo += 2 * int(self.hotbar_bg_sprite.scale)
+                    import random
+                    for i in range(10):
+                        yo = bar_y
+                        if player_health <= 4.0:
+                            yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
+                        if i == heart_offset_index:
+                            yo += 2 * int(self.hotbar_bg_sprite.scale)
                         
-                    self.spr_heart.x = heart_start_x + i * 8 * self.spr_heart.scale
-                    self.spr_heart.y = yo
+                        self.spr_heart.x = heart_start_x + i * 8 * self.spr_heart.scale
+                        self.spr_heart.y = yo
                     
-                    # Always draw the empty heart (black frame) first
-                    self.spr_heart.image = self.tex_heart_empty
-                    self.spr_heart.draw()
-                    
-                    # Draw the red inner heart (full or half) on top if needed
-                    h_val = player_health - (i * 2)
-                    if h_val >= 2:
-                        self.spr_heart.image = self.tex_heart_full
-                        self.spr_heart.draw()
-                    elif h_val >= 1:
-                        self.spr_heart.image = self.tex_heart_half
+                        # Always draw the empty heart (black frame) first
+                        self.spr_heart.image = self.tex_heart_empty
                         self.spr_heart.draw()
                     
-                # Draw Hunger (10 icons, right-aligned)
-                hunger_start_x = self.hotbar_bg_sprite.x + self.hotbar_bg_sprite.width - 9 * self.spr_hunger.scale
-                for i in range(10):
-                    yo = bar_y
-                    if player_hunger <= 0.0 and tick_count % 20 < 10: # shake slightly when starving
-                         yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
+                        # Draw the red inner heart (full or half) on top if needed
+                        h_val = player_health - (i * 2)
+                        if h_val >= 2:
+                            self.spr_heart.image = self.tex_heart_full
+                            self.spr_heart.draw()
+                        elif h_val >= 1:
+                            self.spr_heart.image = self.tex_heart_half
+                            self.spr_heart.draw()
+                    
+                    # Draw Hunger (10 icons, right-aligned)
+                    hunger_start_x = self.hotbar_bg_sprite.x + self.hotbar_bg_sprite.width - 9 * self.spr_hunger.scale
+                    for i in range(10):
+                        yo = bar_y
+                        if player_hunger <= 0.0 and tick_count % 20 < 10: # shake slightly when starving
+                             yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
                          
-                    self.spr_hunger.x = hunger_start_x - i * 8 * self.spr_hunger.scale
-                    self.spr_hunger.y = yo
+                        self.spr_hunger.x = hunger_start_x - i * 8 * self.spr_hunger.scale
+                        self.spr_hunger.y = yo
                     
-                    # Always draw the empty hunger background first
-                    self.spr_hunger.image = self.tex_hunger_empty
-                    self.spr_hunger.draw()
+                        # Always draw the empty hunger background first
+                        self.spr_hunger.image = self.tex_hunger_empty
+                        self.spr_hunger.draw()
                     
-                    # Draw the inner food (full or half) on top if needed
-                    f_val = player_hunger - (i * 2)
-                    if f_val >= 2:
-                        self.spr_hunger.image = self.tex_hunger_full
-                        self.spr_hunger.draw()
-                    elif f_val >= 1:
-                        self.spr_hunger.image = self.tex_hunger_half
-                        self.spr_hunger.draw()
+                        # Draw the inner food (full or half) on top if needed
+                        f_val = player_hunger - (i * 2)
+                        if f_val >= 2:
+                            self.spr_hunger.image = self.tex_hunger_full
+                            self.spr_hunger.draw()
+                        elif f_val >= 1:
+                            self.spr_hunger.image = self.tex_hunger_half
+                            self.spr_hunger.draw()
 
-                # Render Bubbles if underwater
-                if getattr(self.player, 'is_head_in_water', False) and hasattr(self, 'spr_bubble'):
-                    bubble_y = bar_y + 10 * scale
-                    air_supply = getattr(self.player, 'air_supply', 300.0)
-                    air_scale = 10.0 / 300.0
-                    air_scaled = air_supply * air_scale
-                    count = int(math.ceil((air_supply - 2) * air_scale))
-                    extra = int(math.ceil(air_scaled)) - count
+                    # Render Bubbles if underwater
+                    if getattr(self.player, 'is_head_in_water', False) and hasattr(self, 'spr_bubble'):
+                        bubble_y = bar_y + 10 * scale
+                        air_supply = getattr(self.player, 'air_supply', 300.0)
+                        air_scale = 10.0 / 300.0
+                        air_scaled = air_supply * air_scale
+                        count = int(math.ceil((air_supply - 2) * air_scale))
+                        extra = int(math.ceil(air_scaled)) - count
                     
-                    for i in range(count + extra):
-                        bx = hunger_start_x - (i * 8 * scale)
-                        self.spr_bubble.x = bx
-                        self.spr_bubble.y = bubble_y
-                        if i < count:
-                            self.spr_bubble.image = self.tex_bubble_full
-                        else:
-                            self.spr_bubble.image = self.tex_bubble_popped
-                        self.spr_bubble.draw()
+                        for i in range(count + extra):
+                            bx = hunger_start_x - (i * 8 * scale)
+                            self.spr_bubble.x = bx
+                            self.spr_bubble.y = bubble_y
+                            if i < count:
+                                self.spr_bubble.image = self.tex_bubble_full
+                            else:
+                                self.spr_bubble.image = self.tex_bubble_popped
+                            self.spr_bubble.draw()
 
         glDisable(GL_BLEND)
         glEnable(GL_DEPTH_TEST)
@@ -915,6 +1151,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
             self.hotbar_bg_sprite.scale = scale
+        if hasattr(self, 'inventory_bg_sprite') and self.inventory_bg_sprite is not None:
+            self.inventory_bg_sprite.scale = scale
         if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
             self.crosshair_sprite.scale = scale
         if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
@@ -933,10 +1171,39 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         if hasattr(self, '_update_gui_positions'):
             self._update_gui_positions(width, height)
 
+    def _drop_inventory_excess(self):
+        # Drop cursor item
+        if getattr(self, 'cursor_item_count', 0) > 0 and getattr(self, 'cursor_item_id', 0) > 0:
+            for _ in range(self.cursor_item_count):
+                self.spawn_item_entity(self.cursor_item_id, self.player.x, self.player.y + 1.5, self.player.z)
+            self.cursor_item_count = 0
+            self.cursor_item_id = 0
+            
+        # Drop crafting grid items (slots 40, 41, 42, 43)
+        for i in range(40, 44):
+            if self.inventory_counts[i] > 0 and self.inventory_blocks[i] > 0:
+                for _ in range(self.inventory_counts[i]):
+                    self.spawn_item_entity(self.inventory_blocks[i], self.player.x, self.player.y + 1.5, self.player.z)
+                self.inventory_counts[i] = 0
+                self.inventory_blocks[i] = 0
+
     def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            if getattr(self, 'inventory_open', False):
+                self.inventory_open = False
+                self.set_exclusive_mouse(True)
+                self._drop_inventory_excess()
+                return pyglet.event.EVENT_HANDLED
+        
         super().on_key_press(symbol, modifiers)
         InputMixin.on_key_press(self, symbol, modifiers)
-        if symbol == key.P:
+        
+        if symbol == key.E:
+            self.inventory_open = not getattr(self, 'inventory_open', False)
+            self.set_exclusive_mouse(not self.inventory_open)
+            if not self.inventory_open:
+                self._drop_inventory_excess()
+        elif symbol == key.P:
             self.spawn_pig(self.player.x, self.player.y + 2.5, self.player.z)
     
     def _update_title(self, dt):
