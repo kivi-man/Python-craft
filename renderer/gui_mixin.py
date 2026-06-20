@@ -2,8 +2,9 @@ import os
 import ctypes
 import pyglet
 from pyglet.gl import *
+from pyglet.gl import *
 import numpy as np
-from core.math_utils import get_hand_cube_vertices
+from core.math_utils import get_hand_cube_vertices, get_item_sprite_vertices
 from PIL import Image
 
 # Import CACTUS which is used in _init_gui
@@ -93,6 +94,31 @@ class GUIMixin:
         sprite = pyglet.sprite.Sprite(img=tex)
         return sprite
 
+    def _create_2d_item_sprite(self, texture_name):
+        import os
+        from PIL import Image
+        import pyglet.image
+        import pyglet.sprite
+        
+        items_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'items')
+        p = os.path.join(items_dir, texture_name)
+        if not os.path.exists(p):
+            return None
+            
+        img = Image.open(p).convert("RGBA")
+        img = img.transpose(Image.FLIP_TOP_BOTTOM)
+        raw_data = img.tobytes()
+        pyglet_img = pyglet.image.ImageData(img.width, img.height, 'RGBA', raw_data)
+        tex = pyglet_img.get_texture()
+        
+        glBindTexture(tex.target, tex.id)
+        glTexParameteri(tex.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glBindTexture(tex.target, 0)
+        
+        sprite = pyglet.sprite.Sprite(img=tex)
+        sprite.original_width = float(img.width)
+        return sprite
 
     def _init_gui(self):
         import pyglet.image
@@ -117,6 +143,62 @@ class GUIMixin:
             
             self.crosshair_sprite = pyglet.sprite.Sprite(img=texture)
             self.crosshair_sprite.scale = 2
+            
+            # Health and Hunger Icons (9x9)
+            heart_y = crosshair_img.height - 9
+            hunger_y = crosshair_img.height - 36
+            
+            def get_icon_tex(x, y):
+                reg = crosshair_img.get_region(x, y, 9, 9).get_texture()
+                glBindTexture(reg.target, reg.id)
+                glTexParameteri(reg.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                glTexParameteri(reg.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                glBindTexture(reg.target, 0)
+                return reg
+                
+            self.tex_heart_empty = get_icon_tex(16, heart_y)
+            self.tex_heart_half = get_icon_tex(61, heart_y)
+            self.tex_heart_full = get_icon_tex(52, heart_y)
+            
+            self.tex_hunger_empty = get_icon_tex(16, hunger_y)
+            self.tex_hunger_half = get_icon_tex(61, hunger_y)
+            self.tex_hunger_full = get_icon_tex(52, hunger_y)
+            
+            # Bubble Icons (9x9)
+            bubble_y = crosshair_img.height - 27
+            self.tex_bubble_full = get_icon_tex(16, bubble_y)
+            self.tex_bubble_popped = get_icon_tex(25, bubble_y)
+            
+            # Create sprites for drawing dynamically
+            self.spr_heart = pyglet.sprite.Sprite(img=self.tex_heart_empty)
+            self.spr_heart.scale = 2
+            
+            self.spr_hunger = pyglet.sprite.Sprite(img=self.tex_hunger_empty)
+            self.spr_hunger.scale = 2
+            
+            self.spr_bubble = pyglet.sprite.Sprite(img=self.tex_bubble_full)
+            self.spr_bubble.scale = 2
+            
+            # XP Bar (182x5)
+            xp_empty_y = crosshair_img.height - 69
+            xp_full_y = crosshair_img.height - 74
+            
+            reg_xp_empty = crosshair_img.get_region(0, xp_empty_y, 182, 5).get_texture()
+            glBindTexture(reg_xp_empty.target, reg_xp_empty.id)
+            glTexParameteri(reg_xp_empty.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(reg_xp_empty.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            glBindTexture(reg_xp_empty.target, 0)
+            self.tex_xp_empty = reg_xp_empty
+            
+            reg_xp_full = crosshair_img.get_region(0, xp_full_y, 182, 5).get_texture()
+            glBindTexture(reg_xp_full.target, reg_xp_full.id)
+            glTexParameteri(reg_xp_full.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(reg_xp_full.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            glBindTexture(reg_xp_full.target, 0)
+            self.tex_xp_full = reg_xp_full
+            
+            self.spr_xp_empty = pyglet.sprite.Sprite(img=self.tex_xp_empty)
+            self.spr_xp_full = pyglet.sprite.Sprite(img=self.tex_xp_full)
             
             # Load Hotbar Textures
             gui_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'gui', 'gui.png')
@@ -144,17 +226,35 @@ class GUIMixin:
             self.block_icon_sprites = {}
             block_icons = {
                 1: ('stone.png', 'stone.png', 'stone.png'),
+                2: ('dirt.png', 'dirt.png', 'dirt.png'),
                 3: ('grass_top.png', 'grass_side.png', 'grass_side.png'),
-                20: ('glass.png', 'glass.png', 'glass.png'),
-                12: ('leaves_oak.png', 'leaves_oak.png', 'leaves_oak.png'),
                 4: ('water.png', 'water.png', 'water.png'),
+                5: ('planks_oak.png', 'planks_oak.png', 'planks_oak.png'),
+                12: ('leaves_oak.png', 'leaves_oak.png', 'leaves_oak.png'),
+                17: ('log_oak_top.png', 'log_oak.png', 'log_oak.png'),
+                18: ('sand.png', 'sand.png', 'sand.png'),
+                20: ('glass.png', 'glass.png', 'glass.png'),
                 CACTUS: ('cactus_top.png', 'cactus_side.png', 'cactus_side.png')
             }
             
-            for b_id, faces in block_icons.items():
-                sprite = self._create_3d_block_sprite(faces[0], faces[1], faces[2])
+            for b_id in range(1, 40):
+                if b_id in block_icons:
+                    faces = block_icons[b_id]
+                    sprite = self._create_3d_block_sprite(faces[0], faces[1], faces[2])
+                else:
+                    # Generic fallback icon
+                    sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
+                    
                 if sprite:
                     self.block_icon_sprites[b_id] = sprite
+                    
+            from world.terrain import PORKCHOP_RAW
+            item_sprite = self._create_2d_item_sprite('porkchop_raw.png')
+            if item_sprite:
+                self.block_icon_sprites[PORKCHOP_RAW] = item_sprite
+            else:
+                self.block_icon_sprites[PORKCHOP_RAW] = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png') # fallback
+            
             
             # Position user interface elements
             self._update_gui_positions(self.width, self.height)
@@ -207,10 +307,19 @@ class GUIMixin:
             
             glBindBuffer(GL_ARRAY_BUFFER, 0)
             glBindVertexArray(0)
-            return vao, vbo
+            num_verts = len(mesh) // 15
+            return vao, vbo, num_verts
 
-        for b_id in [1, 3, 20, 12, 4, CACTUS]:
-            mesh = get_hand_cube_vertices(b_id, self.block_layers)
-            vao, vbo = create_hand_vao(mesh)
-            self.hand_block_vaos[b_id] = (vao, vbo)
+        for b_id in range(1, 40):
+            if b_id > 0:
+                mesh = get_hand_cube_vertices(b_id, self.block_layers)
+                vao, vbo, num_verts = create_hand_vao(mesh)
+                self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
+                
+        from world.terrain import PORKCHOP_RAW
+        layer_idx = self.block_layers[PORKCHOP_RAW, 0]
+        mask = self.texture_manager.alpha_masks[int(layer_idx)]
+        mesh = get_item_sprite_vertices(layer_idx, mask)
+        vao, vbo, num_verts = create_hand_vao(mesh)
+        self.hand_block_vaos[PORKCHOP_RAW] = (vao, vbo, num_verts)
 

@@ -22,8 +22,10 @@ class TextureManager:
         
         # Layer 0 is the fallback white texture
         self.textures = [] # list of raw RGBA bytes
+        self.alpha_masks = []
         fallback = Image.new('RGBA', (self.tex_size, self.tex_size), (255, 255, 255, 255))
         self.textures.append(fallback.tobytes())
+        self.alpha_masks.append(np.ones((self.tex_size, self.tex_size), dtype=bool))
         self.tex_names_to_layer = {"fallback": 0}
         
         
@@ -68,6 +70,7 @@ class TextureManager:
             if img.size != (self.tex_size, self.tex_size):
                 img = img.resize((self.tex_size, self.tex_size), Image.NEAREST)
             self.tex_names_to_layer[filename] = len(self.textures)
+            self.alpha_masks.append(np.array(img)[:, :, 3] > 0)
             self.textures.append(img.tobytes())
         except Exception as e:
             print(f"[TEXTURE] Failed to load {filename}: {e}")

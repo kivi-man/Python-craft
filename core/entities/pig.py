@@ -20,3 +20,10 @@ class Pig(Animal):
         data = super().to_dict()
         data['type'] = 'Pig'
         return data
+
+    def hurt(self, damage):
+        was_dead = self.dead
+        super().hurt(damage)
+        if self.dead and not was_dead:
+            if hasattr(self, 'level') and self.level is not None:
+                self.level.spawn_item_entity(1000, self.x, self.y, self.z)

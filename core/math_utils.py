@@ -108,3 +108,80 @@ def get_hand_cube_vertices(block_id, block_layers):
             ])
             
     return np.array(vertices, dtype=np.float32)
+
+def get_item_sprite_vertices(layer_idx, mask):
+    vertices = []
+    dd = 1.0 / 16.0
+    for yp in range(16):
+        for xp in range(16):
+            if not mask[yp, xp]: continue
+            
+            uc = (xp + 0.5) * dd
+            vc = (yp + 0.5) * dd
+            
+            x0 = xp * dd - 0.5
+            x1 = x0 + dd
+            y0 = yp * dd - 0.5
+            y1 = y0 + dd
+            z0 = 0.0
+            z1 = -dd
+            
+            # FRONT (+Z)
+            vertices.extend([
+                x0, y0, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x1, y0, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x1, y1, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x0, y0, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x1, y1, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x0, y1, z0,  0, 0, 1,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+            ])
+            # BACK (-Z)
+            vertices.extend([
+                x1, y0, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x0, y0, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x0, y1, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x1, y0, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x0, y1, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                x1, y1, z1,  0, 0, -1,  0.8, 0.8, 0.8,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+            ])
+            # LEFT (-X)
+            if xp == 0 or not mask[yp, xp - 1]:
+                vertices.extend([
+                    x0, y0, z0,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y1, z1,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y0, z1,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y0, z0,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y1, z0,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y1, z1,  -1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                ])
+            # RIGHT (+X)
+            if xp == 15 or not mask[yp, xp + 1]:
+                vertices.extend([
+                    x1, y0, z1,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z0,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y0, z0,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y0, z1,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z1,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z0,  1, 0, 0,  0.6, 0.6, 0.6,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                ])
+            # BOTTOM (-Y)
+            if yp == 0 or not mask[yp - 1, xp]:
+                vertices.extend([
+                    x0, y0, z0,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y0, z1,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y0, z0,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y0, z0,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y0, z1,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y0, z1,  0, -1, 0,  0.4, 0.4, 0.4,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                ])
+            # TOP (+Y)
+            if yp == 15 or not mask[yp + 1, xp]:
+                vertices.extend([
+                    x0, y1, z1,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z0,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z1,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y1, z1,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x0, y1, z0,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                    x1, y1, z0,  0, 1, 0,  1.0, 1.0, 1.0,  uc, vc, float(layer_idx),  3.0, 15.0, 0.0,
+                ])
+    return np.array(vertices, dtype=np.float32)

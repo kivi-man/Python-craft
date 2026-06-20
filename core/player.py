@@ -35,6 +35,37 @@ class Player:
         self.radius = 0.3
         self.height = 1.8
         
+        # Health and Hunger
+        self.health = 20.0
+        self.hunger = 20.0
+        self.highest_y = y
+        self.fall_distance = 0.0
+        self.damage_cooldown = 0.0
+        self.hunger_timer = 0.0
+        self.heal_timer = 0.0
+        self.air_supply = 300.0
+        self.is_head_in_water = False
+        
+    def take_damage(self, amount):
+        if self.damage_cooldown <= 0.0:
+            self.health -= amount
+            if self.health < 0:
+                self.health = 0
+            self.damage_cooldown = 0.5 # half a second invulnerability
+
+    def _check_block_intersection(self, get_block, aabb, target_block_id):
+        min_x, min_y, min_z, max_x, max_y, max_z = aabb
+        ix0, ix1 = int(math.floor(min_x)), int(math.floor(max_x))
+        iy0, iy1 = int(math.floor(min_y)), int(math.floor(max_y))
+        iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
+        
+        for x in range(ix0, ix1 + 1):
+            for y in range(iy0, iy1 + 1):
+                for z in range(iz0, iz1 + 1):
+                    if get_block(x, y, z) == target_block_id:
+                        return True
+        return False
+        
     def _get_player_aabb(self, x, y, z):
         """Oyuncunun şu anki sınır kutusunu (MinX, MinY, MinZ, MaxX, MaxY, MaxZ) döndürür."""
         h = 1.5 if self.is_crouching else self.height
@@ -142,6 +173,46 @@ class Player:
         dx, dz: Klavyeden gelen yön vektörü (Normalize edilmiş)
         get_block: Dünyadan blok okuma fonksiyonu callback'i
         """
+        if self.damage_cooldown > 0:
+            self.damage_cooldown -= dt
+            
+        # Hunger system
+        self.hunger_timer += dt
+        if self.hunger_timer >= 15.0:  # Lose 1 hunger every 15 seconds
+            self.hunger_timer = 0.0
+            if self.hunger > 0:
+                self.hunger -= 1.0
+            else:
+                self.take_damage(1.0) # Starving damage
+                
+        # Natural Regeneration
+        if self.hunger >= 18.0 and self.health < 20.0:
+            self.heal_timer += dt
+            if self.heal_timer >= 4.0: # Heal 1 hp every 4 seconds
+                self.health += 1.0
+                if self.health > 20.0: self.health = 20.0
+                self.heal_timer = 0.0
+        else:
+            self.heal_timer = 0.0
+                
+        if self.hunger < 7.0: # 3.5 bars
+            sprint = False
+
+        # Head in water / Drowning logic
+        head_y = self.y + 1.62
+        head_block = get_block(int(math.floor(self.x)), int(math.floor(head_y)), int(math.floor(self.z)))
+        self.is_head_in_water = (head_block == 4)
+        
+        if self.is_head_in_water:
+            self.air_supply -= dt * 20.0
+            if self.air_supply <= -20.0:
+                self.take_damage(2.0)  # Drown damage (1 heart)
+                self.air_supply = 0.0
+        else:
+            self.air_supply += dt * 20.0 * 2  # Recover quickly
+            if self.air_supply > 300.0:
+                self.air_supply = 300.0
+
         # Sıkışma kurtarma mekanizmasını çalıştır
         self._push_out_of_blocks(get_block)
         
@@ -278,7 +349,24 @@ class Player:
                 self.on_ground = True
                 # Yere tam oturt
                 self.y = float(math.floor(self.y))
+                # Calculate fall damage
+                fall_dist = self.highest_y - self.y
+                if fall_dist > 3.0:
+                    damage = math.floor(fall_dist - 3.0)
+                    if damage > 0:
+                        self.take_damage(damage)
             self.vy = 0.0
+            
+        # Update highest_y for fall damage tracking
+        if self.on_ground or self.in_water:
+            self.highest_y = self.y
+        else:
+            if self.y > self.highest_y:
+                self.highest_y = self.y
+
+        # Check cactus collision
+        if self._check_block_intersection(get_block, self._get_player_aabb(self.x, self.y, self.z), 13): # 13 is CACTUS
+            self.take_damage(1.0)
             
     def get_eye_position(self):
         """Kameranın olması gereken yer (göz hizası)."""

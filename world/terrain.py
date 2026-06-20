@@ -9,44 +9,45 @@ from core.world_db import load_chunk
 
 # Blok Kayıt Sistemi (Block Registry)
 BLOCK_REGISTRY = {
-    "AIR": {"id": 0, "texture": None, "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "STONE": {"id": 1, "texture": "stone.png", "color": (0.45, 0.45, 0.45), "transparent": False, "light": 0},
-    "DIRT": {"id": 2, "texture": "dirt.png", "color": (0.40, 0.26, 0.13), "transparent": False, "light": 0},
-    "GRASS": {"id": 3, "texture": {"top": "grass_top.png", "bottom": "dirt.png", "side": "grass_side.png"}, "color": (0.30, 0.65, 0.20), "transparent": False, "light": 0},
-    "WATER": {"id": 4, "texture": "water.png", "color": (0.20, 0.40, 0.75), "transparent": True, "light": 0},
-    "SAND": {"id": 5, "texture": "sand.png", "color": (0.85, 0.80, 0.55), "transparent": False, "light": 0},
-    "SNOW": {"id": 6, "texture": "snow.png", "color": (0.95, 0.95, 0.95), "transparent": False, "light": 0},
-    "BEDROCK": {"id": 7, "texture": "bedrock.png", "color": (0.20, 0.20, 0.20), "transparent": False, "light": 0},
-    "ICE": {"id": 79, "texture": "ice.png", "color": (0.60, 0.80, 1.00), "transparent": True, "light": 0},
-    "GRAVEL": {"id": 8, "texture": "gravel.png", "color": (0.50, 0.50, 0.50), "transparent": False, "light": 0},
-    "SANDSTONE": {"id": 9, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": False, "light": 0},
-    "MYCELIUM": {"id": 10, "texture": {"top": "mycelium_top.png", "bottom": "dirt.png", "side": "mycelium_side.png"}, "color": (0.45, 0.35, 0.40), "transparent": False, "light": 0},
-    "WOOD": {"id": 11, "texture": {"top": "log_oak_top.png", "bottom": "log_oak_top.png", "side": "log_oak.png"}, "color": (0.40, 0.30, 0.15), "transparent": False, "light": 0},
-    "LEAVES": {"id": 12, "texture": "leaves_oak.png", "color": (0.15, 0.50, 0.15), "transparent": True, "light": 0},
-    "CACTUS": {"id": 13, "texture": {"top": "cactus_top.png", "bottom": "cactus_bottom.png", "side": "cactus_side.png"}, "color": (0.10, 0.60, 0.20), "transparent": True, "light": 0},
-    "BIRCH_WOOD": {"id": 14, "texture": {"top": "log_birch_top.png", "bottom": "log_birch_top.png", "side": "log_birch.png"}, "color": (0.90, 0.90, 0.85), "transparent": False, "light": 0},
-    "SPRUCE_WOOD": {"id": 15, "texture": {"top": "log_spruce_top.png", "bottom": "log_spruce_top.png", "side": "log_spruce.png"}, "color": (0.30, 0.20, 0.10), "transparent": False, "light": 0},
-    "BIRCH_LEAVES": {"id": 16, "texture": "leaves_birch.png", "color": (0.25, 0.55, 0.25), "transparent": True, "light": 0},
-    "SPRUCE_LEAVES": {"id": 17, "texture": "leaves_spruce.png", "color": (0.10, 0.35, 0.15), "transparent": True, "light": 0},
-    "GLASS": {"id": 20, "texture": "glass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "LAVA": {"id": 22, "texture": "lava_still.png", "color": (0.90, 0.40, 0.10), "transparent": False, "light": 15},
+    "AIR": {"id": 0, "texture": None, "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "STONE": {"id": 1, "texture": "stone.png", "color": (0.45, 0.45, 0.45), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "DIRT": {"id": 2, "texture": "dirt.png", "color": (0.40, 0.26, 0.13), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "GRASS": {"id": 3, "texture": {"top": "grass_top.png", "bottom": "dirt.png", "side": "grass_side.png"}, "color": (0.30, 0.65, 0.20), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
+    "WATER": {"id": 4, "texture": "water.png", "color": (0.20, 0.40, 0.75), "transparent": True, "light": 0, "hardness": -1.0, "tool_type": "NONE"},
+    "SAND": {"id": 5, "texture": "sand.png", "color": (0.85, 0.80, 0.55), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "SNOW": {"id": 6, "texture": "snow.png", "color": (0.95, 0.95, 0.95), "transparent": False, "light": 0, "hardness": 0.2, "tool_type": "SHOVEL"},
+    "BEDROCK": {"id": 7, "texture": "bedrock.png", "color": (0.20, 0.20, 0.20), "transparent": False, "light": 0, "hardness": -1.0, "tool_type": "NONE"},
+    "ICE": {"id": 79, "texture": "ice.png", "color": (0.60, 0.80, 1.00), "transparent": True, "light": 0, "hardness": 0.5, "tool_type": "PICKAXE"},
+    "GRAVEL": {"id": 8, "texture": "gravel.png", "color": (0.50, 0.50, 0.50), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
+    "SANDSTONE": {"id": 9, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "MYCELIUM": {"id": 10, "texture": {"top": "mycelium_top.png", "bottom": "dirt.png", "side": "mycelium_side.png"}, "color": (0.45, 0.35, 0.40), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
+    "WOOD": {"id": 11, "texture": {"top": "log_oak_top.png", "bottom": "log_oak_top.png", "side": "log_oak.png"}, "color": (0.40, 0.30, 0.15), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "LEAVES": {"id": 12, "texture": "leaves_oak.png", "color": (0.15, 0.50, 0.15), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "CACTUS": {"id": 13, "texture": {"top": "cactus_top.png", "bottom": "cactus_bottom.png", "side": "cactus_side.png"}, "color": (0.10, 0.60, 0.20), "transparent": True, "light": 0, "hardness": 0.4, "tool_type": "NONE"},
+    "BIRCH_WOOD": {"id": 14, "texture": {"top": "log_birch_top.png", "bottom": "log_birch_top.png", "side": "log_birch.png"}, "color": (0.90, 0.90, 0.85), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "SPRUCE_WOOD": {"id": 15, "texture": {"top": "log_spruce_top.png", "bottom": "log_spruce_top.png", "side": "log_spruce.png"}, "color": (0.30, 0.20, 0.10), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "BIRCH_LEAVES": {"id": 16, "texture": "leaves_birch.png", "color": (0.25, 0.55, 0.25), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "SPRUCE_LEAVES": {"id": 17, "texture": "leaves_spruce.png", "color": (0.10, 0.35, 0.15), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "GLASS": {"id": 20, "texture": "glass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "LAVA": {"id": 22, "texture": "lava_still.png", "color": (0.90, 0.40, 0.10), "transparent": False, "light": 15, "hardness": -1.0, "tool_type": "NONE"},
     
     # Ores and new blocks
-    "GOLD_ORE": {"id": 40, "texture": "gold_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "IRON_ORE": {"id": 41, "texture": "iron_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "COAL_ORE": {"id": 42, "texture": "coal_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "LAPIS_ORE": {"id": 21, "texture": "lapis_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "DIAMOND_ORE": {"id": 56, "texture": "diamond_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "REDSTONE_ORE": {"id": 73, "texture": "redstone_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
-    "EMERALD_ORE": {"id": 129, "texture": "emerald_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0},
+    "GOLD_ORE": {"id": 40, "texture": "gold_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "IRON_ORE": {"id": 41, "texture": "iron_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "COAL_ORE": {"id": 42, "texture": "coal_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "LAPIS_ORE": {"id": 21, "texture": "lapis_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "DIAMOND_ORE": {"id": 56, "texture": "diamond_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "REDSTONE_ORE": {"id": 73, "texture": "redstone_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "EMERALD_ORE": {"id": 129, "texture": "emerald_ore.png", "color": (1.0, 1.0, 1.0), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
     
-    "TALLGRASS": {"id": 31, "texture": "tallgrass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "DANDELION": {"id": 37, "texture": "flower_dandelion.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "ROSE": {"id": 38, "texture": "flower_rose.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "DOUBLE_GRASS_BTM": {"id": 175, "texture": "double_plant_grass_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "DOUBLE_GRASS_TOP": {"id": 176, "texture": "double_plant_grass_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "DOUBLE_ROSE_BTM": {"id": 177, "texture": "double_plant_rose_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
-    "DOUBLE_ROSE_TOP": {"id": 178, "texture": "double_plant_rose_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0},
+    "TALLGRASS": {"id": 31, "texture": "tallgrass.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DANDELION": {"id": 37, "texture": "flower_dandelion.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "ROSE": {"id": 38, "texture": "flower_rose.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DOUBLE_GRASS_BTM": {"id": 175, "texture": "double_plant_grass_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DOUBLE_GRASS_TOP": {"id": 176, "texture": "double_plant_grass_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DOUBLE_ROSE_BTM": {"id": 177, "texture": "double_plant_rose_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DOUBLE_ROSE_TOP": {"id": 178, "texture": "double_plant_rose_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "PORKCHOP_RAW": {"id": 1000, "texture": "porkchop_raw.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
 }
 
 # Dinamik yerine statik tanımlama (Flake8 ve Numba için daha güvenli)
@@ -87,17 +88,26 @@ DOUBLE_GRASS_BTM = 175
 DOUBLE_GRASS_TOP = 176
 DOUBLE_ROSE_BTM = 177
 DOUBLE_ROSE_TOP = 178
+PORKCHOP_RAW = 1000
 
 # Numba için hızlı erişim dizileri (0-1024 ID'ler için)
 BLOCK_OPAQUE_ARRAY = np.ones(1024, dtype=np.bool_)
 BLOCK_LIGHT_EMISSION_ARRAY = np.zeros(1024, dtype=np.uint8)
 BLOCK_COLORS_ARRAY = np.ones((1024, 3), dtype=np.float32)
+BLOCK_HARDNESS_ARRAY = np.zeros(1024, dtype=np.float32)
+
+# Tool Types mapping to integer for Numba:
+# 0: NONE, 1: PICKAXE, 2: AXE, 3: SHOVEL
+TOOL_TYPE_MAP = {"NONE": 0, "PICKAXE": 1, "AXE": 2, "SHOVEL": 3}
+BLOCK_TOOL_ARRAY = np.zeros(1024, dtype=np.uint8)
 
 for name, data in BLOCK_REGISTRY.items():
     bid = data["id"]
     if bid < 1024:
         BLOCK_OPAQUE_ARRAY[bid] = not data["transparent"]
         BLOCK_LIGHT_EMISSION_ARRAY[bid] = data["light"]
+        BLOCK_HARDNESS_ARRAY[bid] = data.get("hardness", 1.0)
+        BLOCK_TOOL_ARRAY[bid] = TOOL_TYPE_MAP.get(data.get("tool_type", "NONE"), 0)
         if "color" in data:
             BLOCK_COLORS_ARRAY[bid] = data["color"]
 

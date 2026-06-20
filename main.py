@@ -74,6 +74,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             os.path.join(shader_dir, 'water_overlay_vertex.glsl'),
             os.path.join(shader_dir, 'water_overlay_fragment.glsl')
         )
+        self.line_program = create_shader_program(
+            os.path.join(shader_dir, 'line_vertex.glsl'),
+            os.path.join(shader_dir, 'line_fragment.glsl')
+        )
+        self.break_program = create_shader_program(
+            os.path.join(shader_dir, 'break_vertex.glsl'),
+            os.path.join(shader_dir, 'break_fragment.glsl')
+        )
         print("[GPU] Shader programs compiled & linked.")
         
         self.dummy_vao = GLuint(0)
@@ -81,6 +89,57 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         self.u_projection = glGetUniformLocation(self.program, b"projection")
         self.u_view = glGetUniformLocation(self.program, b"view")
+        self.u_line_proj = glGetUniformLocation(self.line_program, b"u_projection")
+        self.u_line_view = glGetUniformLocation(self.line_program, b"u_view")
+        self.u_line_model = glGetUniformLocation(self.line_program, b"u_model")
+        
+        self.u_break_proj = glGetUniformLocation(self.break_program, b"u_projection")
+        self.u_break_view = glGetUniformLocation(self.break_program, b"u_view")
+        self.u_break_model = glGetUniformLocation(self.break_program, b"u_model")
+        self.u_break_texture = glGetUniformLocation(self.break_program, b"u_texture")
+        self.u_break_layer = glGetUniformLocation(self.break_program, b"u_layer")
+        
+        # Create wireframe cube VAO for block highlighting
+        cube_lines = [
+            0,0,0, 1,0,0,  1,0,0, 1,0,1,  1,0,1, 0,0,1,  0,0,1, 0,0,0, # bottom
+            0,1,0, 1,1,0,  1,1,0, 1,1,1,  1,1,1, 0,1,1,  0,1,1, 0,1,0, # top
+            0,0,0, 0,1,0,  1,0,0, 1,1,0,  1,0,1, 1,1,1,  0,0,1, 0,1,1  # sides
+        ]
+        line_data = (GLfloat * len(cube_lines))(*cube_lines)
+        self.line_vao = GLuint(0)
+        self.line_vbo = GLuint(0)
+        glGenVertexArrays(1, ctypes.byref(self.line_vao))
+        glGenBuffers(1, ctypes.byref(self.line_vbo))
+        glBindVertexArray(self.line_vao)
+        glBindBuffer(GL_ARRAY_BUFFER, self.line_vbo)
+        glBufferData(GL_ARRAY_BUFFER, ctypes.sizeof(line_data), line_data, GL_STATIC_DRAW)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * ctypes.sizeof(GLfloat), ctypes.c_void_p(0))
+        glEnableVertexAttribArray(0)
+        glBindVertexArray(0)
+
+        # Create break block VAO
+        cube_break = [
+            0,0,1, 0,0,  1,0,1, 1,0,  1,1,1, 1,1,  1,1,1, 1,1,  0,1,1, 0,1,  0,0,1, 0,0, # front
+            1,0,0, 0,0,  0,0,0, 1,0,  0,1,0, 1,1,  0,1,0, 1,1,  1,1,0, 0,1,  1,0,0, 0,0, # back
+            0,0,0, 0,0,  0,0,1, 1,0,  0,1,1, 1,1,  0,1,1, 1,1,  0,1,0, 0,1,  0,0,0, 0,0, # left
+            1,0,1, 0,0,  1,0,0, 1,0,  1,1,0, 1,1,  1,1,0, 1,1,  1,1,1, 0,1,  1,0,1, 0,0, # right
+            0,1,1, 0,0,  1,1,1, 1,0,  1,1,0, 1,1,  1,1,0, 1,1,  0,1,0, 0,1,  0,1,1, 0,0, # top
+            0,0,0, 0,0,  1,0,0, 1,0,  1,0,1, 1,1,  1,0,1, 1,1,  0,0,1, 0,1,  0,0,0, 0,0  # bottom
+        ]
+        break_data = (GLfloat * len(cube_break))(*cube_break)
+        self.break_vao = GLuint(0)
+        self.break_vbo = GLuint(0)
+        glGenVertexArrays(1, ctypes.byref(self.break_vao))
+        glGenBuffers(1, ctypes.byref(self.break_vbo))
+        glBindVertexArray(self.break_vao)
+        glBindBuffer(GL_ARRAY_BUFFER, self.break_vbo)
+        glBufferData(GL_ARRAY_BUFFER, ctypes.sizeof(break_data), break_data, GL_STATIC_DRAW)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * ctypes.sizeof(GLfloat), ctypes.c_void_p(0))
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * ctypes.sizeof(GLfloat), ctypes.c_void_p(3 * ctypes.sizeof(GLfloat)))
+        glEnableVertexAttribArray(1)
+        glBindVertexArray(0)
+
         self.u_texture = glGetUniformLocation(self.program, b"u_texture")
         self.u_tint_color = glGetUniformLocation(self.program, b"u_tint_color")
         
@@ -97,6 +156,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.texture_manager.load_textures()
         self.block_layers = self.texture_manager.get_uvs_for_blocks()
         self.block_overlays = self.texture_manager.get_overlays_for_blocks()
+        
+        self.destroy_stages = []
+        for i in range(10):
+            tex_name = f"destroy_stage_{i}.png"
+            if tex_name in self.texture_manager.tex_names_to_layer:
+                self.destroy_stages.append(self.texture_manager.tex_names_to_layer[tex_name])
+            else:
+                self.destroy_stages.append(0)
         
         tex_data, num_layers = self.texture_manager.get_texture_array_data()
         
@@ -116,13 +183,16 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
-        self.hotbar_blocks = [1, 3, 20, 12, 4, CACTUS, 0, 0, 0]
-        self.selected_slot = 1 # Start with GRASS selected (slot 1)
+        self.hotbar_blocks = [0] * 9
+        self.hotbar_counts = [0] * 9
+        self.selected_slot = 0
         self.selected_block_id = self.hotbar_blocks[self.selected_slot]
         
         # Mouse hold state and action cooldown tracking
         self.mouse_held = {mouse.LEFT: False, mouse.RIGHT: False}
         self.mouse_action_cooldown = 0.0
+        self.breaking_pos = None
+        self.breaking_progress = 0.0
         
         self.world_chunks = {}
         self.world_light_maps = {}
@@ -186,9 +256,77 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self._handle_mouse_action(mouse.LEFT)
                 self.mouse_action_cooldown = 0.20
             elif self.mouse_held[mouse.RIGHT]:
-                self.swing_time = 0.01
-                self._handle_mouse_action(mouse.RIGHT)
-                self.mouse_action_cooldown = 0.20
+                from world.terrain import PORKCHOP_RAW
+                if self.selected_block_id == PORKCHOP_RAW:
+                    pass # Handled below for continuous eating
+                else:
+                    self.swing_time = 0.01
+                    self._handle_mouse_action(mouse.RIGHT)
+                    self.mouse_action_cooldown = 0.20
+                
+        # Continuous Eating Progress
+        if self.mouse_held[mouse.RIGHT]:
+            from world.terrain import PORKCHOP_RAW
+            if self.selected_block_id == PORKCHOP_RAW and self.player.hunger < 20.0:
+                if not hasattr(self, 'eating_progress'):
+                    self.eating_progress = 0.0
+                self.eating_progress += dt
+                # Bob hand slightly while eating
+                self.swing_time += dt * 3.0
+                
+                if self.eating_progress >= 1.6: # Takes 1.6 seconds to eat
+                    self.eating_progress = 0.0
+                    self.player.hunger = min(20.0, getattr(self.player, 'hunger', 20.0) + 4.0) # Restores 4 hunger points (2 shanks)
+                    self.hotbar_counts[self.selected_slot] -= 1
+                    if self.hotbar_counts[self.selected_slot] <= 0:
+                        self.hotbar_blocks[self.selected_slot] = 0
+                        self.selected_block_id = 0
+            else:
+                self.eating_progress = 0.0
+        else:
+            if hasattr(self, 'eating_progress'):
+                self.eating_progress = 0.0
+                
+        # Always update targeted block for highlighting
+        eye_pos = self.player.get_eye_position()
+        direction = self.camera.get_front()
+        from core.raycast import raycast
+        hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
+        if hx is not None:
+            self.targeted_block = (hx, hy, hz)
+        else:
+            self.targeted_block = None
+
+        # Continuous Block Breaking Progress
+        if self.mouse_held[mouse.LEFT]:
+            if self.targeted_block is not None:
+                hx, hy, hz = self.targeted_block
+                current_target = (hx, hy, hz)
+                if getattr(self, 'breaking_pos', None) == current_target:
+                    broken_id = self.get_block(hx, hy, hz)
+                    if broken_id > 0:
+                        from world.terrain import BLOCK_HARDNESS_ARRAY
+                        hardness = BLOCK_HARDNESS_ARRAY[broken_id]
+                        if hardness >= 0:
+                            self.breaking_progress += dt
+                            import random
+                            if random.random() < 0.25:
+                                self.spawn_crack_particles(hx, hy, hz, broken_id, 1)
+                                
+                            required_time = hardness * 5.0
+                            if self.breaking_progress >= required_time:
+                                self.spawn_destruction_particles(hx, hy, hz, broken_id)
+                                self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
+                                self.set_block(hx, hy, hz, 0)
+                                self.breaking_pos = None
+                                self.breaking_progress = 0.0
+                                self.mouse_action_cooldown = 0.20
+                else:
+                    self.breaking_pos = current_target
+                    self.breaking_progress = 0.0
+            else:
+                self.breaking_pos = None
+                self.breaking_progress = 0.0
         
         t_load_start = time.perf_counter()
         self._update_chunk_loading()
@@ -308,6 +446,61 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glDisable(GL_BLEND)
         glBindVertexArray(0)
         glUseProgram(0)
+
+        # RENDER BLOCK HIGHLIGHT
+        if getattr(self, 'targeted_block', None) is not None:
+            bx, by, bz = self.targeted_block
+            glUseProgram(self.line_program)
+            glUniformMatrix4fv(self.u_line_proj, 1, GL_FALSE, proj)
+            glUniformMatrix4fv(self.u_line_view, 1, GL_FALSE, view)
+            
+            s = 1.005
+            o = (1.0 - s) / 2.0
+            model_mat = np.array([
+                [s, 0, 0, 0],
+                [0, s, 0, 0],
+                [0, 0, s, 0],
+                [bx + o, by + o, bz + o, 1]
+            ], dtype=np.float32)
+            
+            glUniformMatrix4fv(self.u_line_model, 1, GL_FALSE, (GLfloat * 16)(*model_mat.flatten()))
+            
+            glLineWidth(2.0)
+            glBindVertexArray(self.line_vao)
+            glDrawArrays(GL_LINES, 0, 24)
+            glBindVertexArray(0)
+            glLineWidth(1.0)
+            glUseProgram(0)
+            
+            # Break animation overlay
+            if getattr(self, 'breaking_pos', None) == (bx, by, bz) and getattr(self, 'breaking_progress', 0.0) > 0.0:
+                block_id = self.get_block(bx, by, bz)
+                if block_id > 0:
+                    from world.terrain import BLOCK_HARDNESS_ARRAY
+                    hardness = BLOCK_HARDNESS_ARRAY[block_id]
+                    if hardness > 0:
+                        req_time = hardness * 5.0
+                        stage = int((self.breaking_progress / req_time) * 10)
+                        if stage > 9: stage = 9
+                        layer_idx = self.destroy_stages[stage]
+                        if layer_idx > 0:
+                            glUseProgram(self.break_program)
+                            glUniformMatrix4fv(self.u_break_proj, 1, GL_FALSE, proj)
+                            glUniformMatrix4fv(self.u_break_view, 1, GL_FALSE, view)
+                            glUniformMatrix4fv(self.u_break_model, 1, GL_FALSE, (GLfloat * 16)(*model_mat.flatten()))
+                            glUniform1f(self.u_break_layer, float(layer_idx))
+                            
+                            glEnable(GL_BLEND)
+                            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                            glActiveTexture(GL_TEXTURE0)
+                            glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
+                            glUniform1i(self.u_break_texture, 0)
+                            
+                            glBindVertexArray(self.break_vao)
+                            glDrawArrays(GL_TRIANGLES, 0, 36)
+                            glBindVertexArray(0)
+                            glDisable(GL_BLEND)
+                            glUseProgram(0)
         
         # WATER OVERLAY PASS
         cx, cy, cz = self.camera.x, self.camera.y, self.camera.z
@@ -379,6 +572,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             swing_ry = 0.0
             swing_rz = 0.0
             
+            swing1 = 0.0
+            swing2 = 0.0
+            swing3 = 0.0
+            
             if self.swing_time > 0.0:
                 swing = self.swing_time
                 swing1 = math.sin(swing * math.pi)
@@ -399,57 +596,135 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
             scale = 0.36
             
-            rad_y = math.radians(15 + swing_ry)
-            cy, sy = math.cos(rad_y), math.sin(rad_y)
-            ry = np.array([
-                [cy, 0, sy, 0],
-                [0, 1, 0, 0],
-                [-sy, 0, cy, 0],
-                [0, 0, 0, 1]
-            ], dtype=np.float32)
-            
-            rad_x = math.radians(-15 + swing_rx)
-            cx_val, sx_val = math.cos(rad_x), math.sin(rad_x)
-            rx = np.array([
-                [1, 0, 0, 0],
-                [0, cx_val, -sx_val, 0],
-                [0, sx_val, cx_val, 0],
-                [0, 0, 0, 1]
-            ], dtype=np.float32)
-            
-            rad_z = math.radians(8 + swing_rz)
-            cz, sz = math.cos(rad_z), math.sin(rad_z)
-            rz = np.array([
-                [cz, -sz, 0, 0],
-                [sz, cz, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]
-            ], dtype=np.float32)
-            
-            t_mat = np.array([
-                [1, 0, 0, tx],
-                [0, 1, 0, ty],
-                [0, 0, 1, tz],
-                [0, 0, 0, 1]
-            ], dtype=np.float32)
-            
-            s_mat = np.array([
-                [scale, 0, 0, 0],
-                [0, scale, 0, 0],
-                [0, 0, scale, 0],
-                [0, 0, 0, 1]
-            ], dtype=np.float32)
-            
-            hand_matrix = t_mat @ ry @ rx @ rz @ s_mat
+            from world.terrain import PORKCHOP_RAW
+            if self.selected_block_id == PORKCHOP_RAW:
+                # Use Player gui ItemInHandRenderer transform
+                # glTranslatef(0.7f * d, -0.65f * d - (1 - h) * 0.6f, -0.9f * d);
+                # glRotatef(45, 0, 1, 0);
+                # glRotatef(-swing3 * 20, 0, 1, 0);
+                # glRotatef(-swing2 * 20, 0, 0, 1);
+                # glRotatef(-swing2 * 80, 1, 0, 0);
+                # glScalef(0.4, 0.4, 0.4)
+                tx = 0.7 * 0.8 - swing2 * 0.4 * 0.8
+                ty = -0.65 * 0.8 + math.sin(math.sqrt(self.swing_time)*math.pi*2)*0.2*0.8 + bob_y
+                tz = -0.9 * 0.8 - swing1 * 0.2 * 0.8
+                
+                scale = 0.4 * 1.5
+                
+                rad_y = math.radians(45 - swing3 * 20)
+                cy, sy = math.cos(rad_y), math.sin(rad_y)
+                ry = np.array([
+                    [cy, 0, sy, 0],
+                    [0, 1, 0, 0],
+                    [-sy, 0, cy, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                rad_x = math.radians(-swing2 * 80)
+                cx_val, sx_val = math.cos(rad_x), math.sin(rad_x)
+                rx = np.array([
+                    [1, 0, 0, 0],
+                    [0, cx_val, -sx_val, 0],
+                    [0, sx_val, cx_val, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                rad_z = math.radians(-swing2 * 20)
+                cz, sz = math.cos(rad_z), math.sin(rad_z)
+                rz = np.array([
+                    [cz, -sz, 0, 0],
+                    [sz, cz, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                t_mat = np.array([
+                    [1, 0, 0, tx],
+                    [0, 1, 0, ty],
+                    [0, 0, 1, tz],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                s_mat = np.array([
+                    [scale, 0, 0, 0],
+                    [0, scale, 0, 0],
+                    [0, 0, scale, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                # Extra item rotations to tilt it forward and right
+                rad_y_item = math.radians(50)
+                cy_item, sy_item = math.cos(rad_y_item), math.sin(rad_y_item)
+                ry_item = np.array([
+                    [cy_item, 0, sy_item, 0],
+                    [0, 1, 0, 0],
+                    [-sy_item, 0, cy_item, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                rad_z_item = math.radians(335)
+                cz_item, sz_item = math.cos(rad_z_item), math.sin(rad_z_item)
+                rz_item = np.array([
+                    [cz_item, -sz_item, 0, 0],
+                    [sz_item, cz_item, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                hand_matrix = t_mat @ ry @ rx @ rz @ s_mat @ ry_item @ rz_item
+            else:
+                rad_y = math.radians(15 + swing_ry)
+                cy, sy = math.cos(rad_y), math.sin(rad_y)
+                ry = np.array([
+                    [cy, 0, sy, 0],
+                    [0, 1, 0, 0],
+                    [-sy, 0, cy, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                rad_x = math.radians(-15 + swing_rx)
+                cx_val, sx_val = math.cos(rad_x), math.sin(rad_x)
+                rx = np.array([
+                    [1, 0, 0, 0],
+                    [0, cx_val, -sx_val, 0],
+                    [0, sx_val, cx_val, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                rad_z = math.radians(8 + swing_rz)
+                cz, sz = math.cos(rad_z), math.sin(rad_z)
+                rz = np.array([
+                    [cz, -sz, 0, 0],
+                    [sz, cz, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                t_mat = np.array([
+                    [1, 0, 0, tx],
+                    [0, 1, 0, ty],
+                    [0, 0, 1, tz],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                s_mat = np.array([
+                    [scale, 0, 0, 0],
+                    [0, scale, 0, 0],
+                    [0, 0, scale, 0],
+                    [0, 0, 0, 1]
+                ], dtype=np.float32)
+                
+                hand_matrix = t_mat @ ry @ rx @ rz @ s_mat
+                
             flat_hand_matrix = hand_matrix.T.flatten()
             
             glUniformMatrix4fv(self.u_projection, 1, GL_FALSE, proj)
             hand_view = (GLfloat * 16)(*flat_hand_matrix)
             glUniformMatrix4fv(self.u_view, 1, GL_FALSE, hand_view)
             
-            h_vao, _ = self.hand_block_vaos[self.selected_block_id]
+            h_vao, _, num_verts = self.hand_block_vaos[self.selected_block_id]
             glBindVertexArray(h_vao)
-            glDrawArrays(GL_TRIANGLES, 0, 36)
+            glDrawArrays(GL_TRIANGLES, 0, num_verts)
             
             glBindVertexArray(0)
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
@@ -473,21 +748,154 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
             # Render block icons (scaled from 64x64 to 13*scale and centered in slots)
             bg_scale = self.hotbar_bg_sprite.scale
-            for slot_idx, b_id in enumerate(self.hotbar_blocks):
-                if b_id in self.block_icon_sprites:
-                    sprite = self.block_icon_sprites[b_id]
-                    sprite.scale = (13.0 * bg_scale) / 64.0
-                    sprite.x = int(self.hotbar_bg_sprite.x + (3 + slot_idx * 20) * bg_scale + 1.5 * bg_scale)
-                    sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
-                    sprite.draw()
-                    
-            # Render active slot selection frame
+            if not hasattr(self, 'count_labels'):
+                import pyglet.text
+                import pyglet.font
+                font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
+                try:
+                    pyglet.font.add_file(font_path)
+                    target_font = 'Minecraftia'
+                except Exception:
+                    target_font = 'Arial'
+                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(9)]
+                
+            # Render active slot selection frame FIRST (behind items and text)
             if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
                 scale = self.hotbar_sel_sprite.scale
                 self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
                 self.hotbar_sel_sprite.y = int(self.hotbar_bg_sprite.y - 1 * scale)
                 self.hotbar_sel_sprite.draw()
-            
+
+            for slot_idx, b_id in enumerate(self.hotbar_blocks):
+                if b_id > 0 and b_id in self.block_icon_sprites:
+                    sprite = self.block_icon_sprites[b_id]
+                    sprite_size = getattr(sprite, 'original_width', 64.0)
+                    sprite.scale = (13.0 * bg_scale) / sprite_size
+                    sprite.x = int(self.hotbar_bg_sprite.x + (3 + slot_idx * 20) * bg_scale + 1.5 * bg_scale)
+                    sprite.y = int(self.hotbar_bg_sprite.y + 3 * bg_scale + 1.5 * bg_scale)
+                    sprite.draw()
+                    
+                    count = self.hotbar_counts[slot_idx]
+                    if count > 0:
+                        lbl = self.count_labels[slot_idx]
+                        
+                        target_size = max(8, int(8 * bg_scale))
+                        if lbl.font_size != target_size:
+                            lbl.font_size = target_size
+                            
+                        if lbl.text != str(count):
+                            lbl.text = str(count)
+                        
+                        # Position slightly outside the item bounds (x+20, y+2 relative to item top-left)
+                        base_x = self.hotbar_bg_sprite.x + (20 + slot_idx * 20) * bg_scale
+                        base_y = self.hotbar_bg_sprite.y + 2 * bg_scale
+                        offset = max(1, int(1 * bg_scale))
+                        
+                        # Draw Shadow
+                        lbl.x = base_x + offset
+                        lbl.y = base_y - offset
+                        lbl.color = (63, 63, 63, 255)
+                        lbl.draw()
+                        
+                        # Draw Main Text
+                        lbl.x = base_x
+                        lbl.y = base_y
+                        lbl.color = (255, 255, 255, 255)
+                        lbl.draw()
+
+            # Render XP Bar (just for visual for now, 30% full)
+            if hasattr(self, 'spr_xp_empty') and hasattr(self, 'spr_xp_full'):
+                xp_x = self.hotbar_bg_sprite.x
+                xp_y = int(self.hotbar_bg_sprite.y + 24 * self.hotbar_bg_sprite.scale)
+                
+                self.spr_xp_empty.scale = self.hotbar_bg_sprite.scale
+                self.spr_xp_empty.x = xp_x
+                self.spr_xp_empty.y = xp_y
+                self.spr_xp_empty.draw()
+                
+                # XP bar is completely empty for now
+                # self.spr_xp_full.draw()
+
+            # Render Health and Hunger Bars
+            if hasattr(self, 'spr_heart') and hasattr(self, 'spr_hunger'):
+                # Draw Health (10 hearts)
+                heart_start_x = self.hotbar_bg_sprite.x
+                bar_y = int(self.hotbar_bg_sprite.y + 32 * self.hotbar_bg_sprite.scale)
+                
+                player_health = getattr(self.player, 'health', 20.0)
+                player_hunger = getattr(self.player, 'hunger', 20.0)
+                tick_count = int(time.perf_counter() * 20)
+                
+                heart_offset_index = -1
+                if player_health < 20.0 and player_hunger >= 18.0:
+                    heart_offset_index = tick_count % 25
+                    
+                import random
+                for i in range(10):
+                    yo = bar_y
+                    if player_health <= 4.0:
+                        yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
+                    if i == heart_offset_index:
+                        yo += 2 * int(self.hotbar_bg_sprite.scale)
+                        
+                    self.spr_heart.x = heart_start_x + i * 8 * self.spr_heart.scale
+                    self.spr_heart.y = yo
+                    
+                    # Always draw the empty heart (black frame) first
+                    self.spr_heart.image = self.tex_heart_empty
+                    self.spr_heart.draw()
+                    
+                    # Draw the red inner heart (full or half) on top if needed
+                    h_val = player_health - (i * 2)
+                    if h_val >= 2:
+                        self.spr_heart.image = self.tex_heart_full
+                        self.spr_heart.draw()
+                    elif h_val >= 1:
+                        self.spr_heart.image = self.tex_heart_half
+                        self.spr_heart.draw()
+                    
+                # Draw Hunger (10 icons, right-aligned)
+                hunger_start_x = self.hotbar_bg_sprite.x + self.hotbar_bg_sprite.width - 9 * self.spr_hunger.scale
+                for i in range(10):
+                    yo = bar_y
+                    if player_hunger <= 0.0 and tick_count % 20 < 10: # shake slightly when starving
+                         yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
+                         
+                    self.spr_hunger.x = hunger_start_x - i * 8 * self.spr_hunger.scale
+                    self.spr_hunger.y = yo
+                    
+                    # Always draw the empty hunger background first
+                    self.spr_hunger.image = self.tex_hunger_empty
+                    self.spr_hunger.draw()
+                    
+                    # Draw the inner food (full or half) on top if needed
+                    f_val = player_hunger - (i * 2)
+                    if f_val >= 2:
+                        self.spr_hunger.image = self.tex_hunger_full
+                        self.spr_hunger.draw()
+                    elif f_val >= 1:
+                        self.spr_hunger.image = self.tex_hunger_half
+                        self.spr_hunger.draw()
+
+                # Render Bubbles if underwater
+                if getattr(self.player, 'is_head_in_water', False) and hasattr(self, 'spr_bubble'):
+                    bubble_y = bar_y + 10 * scale
+                    air_supply = getattr(self.player, 'air_supply', 300.0)
+                    air_scale = 10.0 / 300.0
+                    air_scaled = air_supply * air_scale
+                    count = int(math.ceil((air_supply - 2) * air_scale))
+                    extra = int(math.ceil(air_scaled)) - count
+                    
+                    for i in range(count + extra):
+                        bx = hunger_start_x - (i * 8 * scale)
+                        self.spr_bubble.x = bx
+                        self.spr_bubble.y = bubble_y
+                        if i < count:
+                            self.spr_bubble.image = self.tex_bubble_full
+                        else:
+                            self.spr_bubble.image = self.tex_bubble_popped
+                        self.spr_bubble.draw()
+
         glDisable(GL_BLEND)
         glEnable(GL_DEPTH_TEST)
         
@@ -498,6 +906,32 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         dur = (time.perf_counter() - t_start) * 1000.0
         if dur > 4.0:
             self.log(f"[SLOW DRAW] Total: {dur:.2f}ms | Cull: {(t_cull_end-t_cull_start)*1000.0:.2f}ms | Opaque: {(t_opaque_end-t_opaque_start)*1000.0:.2f}ms | Trans: {(t_trans_end-t_trans_start)*1000.0:.2f}ms")
+
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
+        
+        # Minecraft-style GUI scale (scales up in integer steps based on resolution)
+        scale = max(2, int(width // 400))
+        
+        if hasattr(self, 'hotbar_bg_sprite') and self.hotbar_bg_sprite is not None:
+            self.hotbar_bg_sprite.scale = scale
+        if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
+            self.crosshair_sprite.scale = scale
+        if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
+            self.hotbar_sel_sprite.scale = scale
+        if hasattr(self, 'spr_heart'):
+            self.spr_heart.scale = scale
+        if hasattr(self, 'spr_hunger'):
+            self.spr_hunger.scale = scale
+        if hasattr(self, 'spr_bubble'):
+            self.spr_bubble.scale = scale
+        if hasattr(self, 'spr_xp_empty'):
+            self.spr_xp_empty.scale = scale
+        if hasattr(self, 'spr_xp_full'):
+            self.spr_xp_full.scale = scale
+            
+        if hasattr(self, '_update_gui_positions'):
+            self._update_gui_positions(width, height)
 
     def on_key_press(self, symbol, modifiers):
         super().on_key_press(symbol, modifiers)

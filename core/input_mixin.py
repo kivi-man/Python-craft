@@ -7,6 +7,26 @@ from world.terrain import CACTUS, SAND
 
 class InputMixin:
 
+    def add_to_inventory(self, block_id):
+        if block_id <= 0: return False
+        
+        for i in range(9):
+            if self.hotbar_blocks[i] == block_id and self.hotbar_counts[i] < 64:
+                self.hotbar_counts[i] += 1
+                if self.selected_slot == i:
+                    self.selected_block_id = block_id
+                return True
+                
+        for i in range(9):
+            if self.hotbar_blocks[i] == 0:
+                self.hotbar_blocks[i] = block_id
+                self.hotbar_counts[i] = 1
+                if self.selected_slot == i:
+                    self.selected_block_id = block_id
+                return True
+                
+        return False
+
     def _handle_mouse_action(self, button):
         eye_pos = self.player.get_eye_position()
         direction = self.camera.get_front()
@@ -54,9 +74,13 @@ class InputMixin:
                 hit_entity.dz += direction[2] * 0.4
                 return
                 
-            target_x, target_y, target_z = hx, hy, hz
-            new_block_id = 0
+            # Block breaking is handled progressively in main loop update()
+            return
+            
         elif button == mouse.RIGHT and px is not None:
+            if self.selected_block_id == 0 or self.hotbar_counts[self.selected_slot] <= 0:
+                return
+                
             # Collision prevention: Prevent player from placing a solid block inside their own body
             if self.selected_block_id > 0 and self.selected_block_id != 4:
                 player_aabb = self.player._get_player_aabb(self.player.x, self.player.y, self.player.z)
@@ -85,21 +109,38 @@ class InputMixin:
                         return
                  
         if target_x is not None:
-            self.set_block(target_x, target_y, target_z, new_block_id)
+            if button == mouse.RIGHT and 0 < new_block_id < 256:
+                self.hotbar_counts[self.selected_slot] -= 1
+                if self.hotbar_counts[self.selected_slot] <= 0:
+                    self.hotbar_blocks[self.selected_slot] = 0
+                    self.selected_block_id = 0
+                self.set_block(target_x, target_y, target_z, new_block_id)
             
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button in (mouse.LEFT, mouse.RIGHT):
             self.mouse_held[button] = True
             self.swing_time = 0.01 # Swing animasyonunu tetikle
-            self._handle_mouse_action(button)
-            self.mouse_action_cooldown = 0.20 # 4 tick (0.2s) cooldown
             
+            if button == mouse.RIGHT:
+                self._handle_mouse_action(button)
+                self.mouse_action_cooldown = 0.20 # 4 tick (0.2s) cooldown
+            elif button == mouse.LEFT:
+                self._handle_mouse_action(button) # Only handles entity attack now
+                # Start block breaking raycast
+                eye_pos = self.player.get_eye_position()
+                direction = self.camera.get_front()
+                hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
+                if hx is not None:
+                    self.breaking_pos = (hx, hy, hz)
+                    self.breaking_progress = 0.0
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button in (mouse.LEFT, mouse.RIGHT):
             self.mouse_held[button] = False
-            
+            if button == mouse.LEFT:
+                self.breaking_pos = None
+                self.breaking_progress = 0.0
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.camera.yaw += dx * self.camera.sensitivity
@@ -117,6 +158,30 @@ class InputMixin:
         if symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
             pyglet.app.exit()
+        elif symbol == key.Q:
+            if self.selected_block_id > 0 and self.hotbar_counts[self.selected_slot] > 0:
+                self.hotbar_counts[self.selected_slot] -= 1
+                
+                # Calculate throw velocity based on camera
+                dir_x, dir_y, dir_z = self.camera.get_front()
+                
+                eye = self.player.get_eye_position()
+                
+                # Spawn slightly in front
+                self.spawn_item_entity(
+                    self.selected_block_id, 
+                    eye[0] + dir_x * 0.5, 
+                    eye[1] - 0.2, 
+                    eye[2] + dir_z * 0.5,
+                    xd=dir_x * 0.3,
+                    yd=dir_y * 0.3 + 0.1,
+                    zd=dir_z * 0.3
+                )
+                
+                if self.hotbar_counts[self.selected_slot] <= 0:
+                    self.hotbar_blocks[self.selected_slot] = 0
+                    self.selected_block_id = 0
+                    
         elif symbol == key.TAB:
             self.player.is_flying = not self.player.is_flying
             mode = "ENABLED" if self.player.is_flying else "DISABLED"
@@ -152,13 +217,22 @@ class InputMixin:
             self.selected_block_id = self.hotbar_blocks[5]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: CACTUS")
+        elif symbol == key._7:
+            self.selected_slot = 6
+            self.selected_block_id = self.hotbar_blocks[6]
+        elif symbol == key._8:
+            self.selected_slot = 7
+            self.selected_block_id = self.hotbar_blocks[7]
+        elif symbol == key._9:
+            self.selected_slot = 8
+            self.selected_block_id = self.hotbar_blocks[8]
             
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         # scroll_y: +1 for scrolling up, -1 for scrolling down
-        # We have 6 selectable slots (0-5)
+        # We have 9 selectable slots (0-8)
         direction = -1 if scroll_y > 0 else 1
-        self.selected_slot = (self.selected_slot + direction) % 6
+        self.selected_slot = (self.selected_slot + direction) % 9
         self.selected_block_id = self.hotbar_blocks[self.selected_slot]
         
         block_names = {
