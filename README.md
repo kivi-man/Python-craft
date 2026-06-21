@@ -1,6 +1,6 @@
 # Pythoncraft
 
-Pythoncraft is an open-source, voxel-based sandbox engine built with Python, Pyglet, and modern OpenGL (GLSL shaders). It features advanced multi-threaded chunk generation, custom lighting and shadow systems, water/air physics accurately mimicking classic mechanics, and a highly optimized render pipeline.
+Pythoncraft is an open-source, voxel-based sandbox engine and Minecraft clone built with Python, Pyglet, and modern OpenGL (GLSL shaders). It features advanced multithreaded part rendering, custom lighting and shadow systems, water/air physics that accurately replicate classic mechanics, and a highly optimized rendering pipeline.
 
 <img width="2559" height="1367" alt="image" src="https://github.com/user-attachments/assets/310551e9-c8ba-45ef-84f9-56abeda0b851" />
 
