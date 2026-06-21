@@ -144,7 +144,7 @@ BIOME_SPAWN_LISTS[SKY]["enemies"] = [MobSpawnerData("Enderman", 10, 4, 4)]
 # Compile the static array into numba
 BIOME_DATA = biome_data.copy()
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def get_biome(temp, downfall):
     """
     Finds the biome that best matches the given temperature and downfall.
@@ -172,7 +172,7 @@ def get_biome(temp, downfall):
             
     return best_biome
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def get_biome_properties(biome_id):
     """Returns depth, scale, topMaterial, material for the given biome ID"""
     return BIOME_DATA[biome_id, 0], BIOME_DATA[biome_id, 1], int(BIOME_DATA[biome_id, 4]), int(BIOME_DATA[biome_id, 5])

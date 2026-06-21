@@ -3,7 +3,7 @@ from numba import njit
 from world.terrain import *
 CHUNK_HEIGHT = 128
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def place_block(blocks, wx, wy, wz, cx, cz, block_id, out_of_bounds, out_count):
     # Calculate local chunk coordinates
     lx = wx - (cx * CHUNK_SIZE)
@@ -31,7 +31,7 @@ def place_block(blocks, wx, wy, wz, cx, cz, block_id, out_of_bounds, out_count):
             
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count):
     treeHeight = random.nextInt(3) + 4
     
@@ -54,7 +54,7 @@ def generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_cou
         
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_birch_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count):
     treeHeight = random.nextInt(3) + 5
     
@@ -77,7 +77,7 @@ def generate_birch_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_c
         
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_spruce_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count):
     treeHeight = random.nextInt(4) + 6
     trunkHeight = 1 + random.nextInt(2)
@@ -115,7 +115,7 @@ def generate_spruce_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_
         
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def can_cactus_survive(blocks, lx, wy, lz):
     if wy < 0 or wy >= CHUNK_HEIGHT: return False
     # Check neighbors (must be AIR)
@@ -130,7 +130,7 @@ def can_cactus_survive(blocks, lx, wy, lz):
             return False
     return True
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_cactus(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count):
     lx = wx - (cx * 16)
     lz = wz - (cz * 16)
@@ -147,7 +147,7 @@ def generate_cactus(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count
             
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_grass_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count):
     # wx, wy, wz is the center
     for i in range(128):
@@ -161,7 +161,7 @@ def generate_grass_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, ou
                 blocks[lx, ny, lz] = 31 # TALL_GRASS
     return out_count
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_flower_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count, flower_type):
     for i in range(64):
         nx = wx + random.nextInt(8) - random.nextInt(8)
@@ -174,7 +174,7 @@ def generate_flower_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, o
                 blocks[lx, ny, lz] = flower_type
     return out_count
     
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_double_plant_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count, btm_type, top_type):
     for i in range(64):
         nx = wx + random.nextInt(8) - random.nextInt(8)

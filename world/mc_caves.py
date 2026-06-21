@@ -5,7 +5,7 @@ from world.mc_noise import JavaRandom
 from world.mc_biomes import get_biome_properties
 from world.terrain import AIR, STONE, DIRT, GRASS, WATER, LAVA, CHUNK_HEIGHT
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _cave_add_tunnel(seed, cx, cz, blocks, xC_in, yC_in, zC_in, thick_in, yR_in, xR_in, step_in, dist_in, yS_in, biome_grid):
     # Stack arrays for simulated recursion
     s_seed = np.zeros(32, dtype=np.int64)
@@ -165,7 +165,7 @@ def _cave_add_tunnel(seed, cx, cz, blocks, xC_in, yC_in, zC_in, thick_in, yR_in,
             if singleStep:
                 break
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _cave_add_feature(random, x, z, cx, cz, blocks, biome_grid):
     caves = random.nextInt(random.nextInt(random.nextInt(40) + 1) + 1)
     if random.nextInt(15) != 0:
@@ -192,7 +192,7 @@ def _cave_add_feature(random, x, z, cx, cz, blocks, biome_grid):
             _cave_add_tunnel(random.nextLong(), cx, cz, blocks, xCave, yCave, zCave,
                              thickness, yRot, xRot, 0, 0, 1.0, biome_grid)
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def carve_caves(cx, cz, blocks, world_seed, biome_grid):
     radius = 8
     random = JavaRandom(world_seed)
@@ -208,7 +208,7 @@ def carve_caves(cx, cz, blocks, world_seed, biome_grid):
             random.setSeed(seed)
             _cave_add_feature(random, x, z, cx, cz, blocks, biome_grid)
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _canyon_add_tunnel(seed, cx, cz, blocks, xCave, yCave, zCave, thickness, yRot, xRot, step, dist, yScale, biome_grid):
     xMid = cx * 16.0 + 8.0
     zMid = cz * 16.0 + 8.0
@@ -315,7 +315,7 @@ def _canyon_add_tunnel(seed, cx, cz, blocks, xCave, yCave, zCave, thickness, yRo
                                         _, _, top_block, _ = get_biome_properties(b_id)
                                         blocks[xx, yy - 1, zz] = top_block
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _canyon_add_feature(random, x, z, cx, cz, blocks, biome_grid):
     if random.nextInt(50) != 0:
         return
@@ -331,7 +331,7 @@ def _canyon_add_feature(random, x, z, cx, cz, blocks, biome_grid):
     _canyon_add_tunnel(random.nextLong(), cx, cz, blocks, xCave, yCave, zCave,
                        thickness, yRot, xRot, 0, 0, 3.0, biome_grid)
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def carve_canyons(cx, cz, blocks, world_seed, biome_grid):
     radius = 8
     random = JavaRandom(world_seed)

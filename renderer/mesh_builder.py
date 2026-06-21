@@ -19,7 +19,7 @@ BIOME_COLORS[6] = [0.40, 0.45, 0.20] # SWAMP
 BIOME_COLORS[12] = [0.60, 0.80, 0.60] # ICE_PLAINS
 BIOME_COLORS[21] = [0.30, 0.70, 0.15] # JUNGLE
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z):
     if y < 0 or y >= CHUNK_HEIGHT:
         return 0
@@ -37,7 +37,7 @@ def _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z):
         return n_front[x, y, 0]
     return blocks[x, y, z]
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y, z):
     if y < 0 or y >= CHUNK_HEIGHT:
         return 0
@@ -55,7 +55,7 @@ def _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y, z):
         return d_front[x, y, 0]
     return data_in[x, y, z]
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z):
     if y < 0 or y >= CHUNK_HEIGHT:
         return 15
@@ -73,20 +73,20 @@ def _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z):
         return l_front[x, y, 0]
     return lights[x, y, z]
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _is_solid(blocks, n_left, n_right, n_front, n_back, x, y, z):
     b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z)
     if not _is_opaque(b):
         return 0
     return 1
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _calc_ao(s1, s2, c):
     if s1 == 1 and s2 == 1:
         return 0
     return 3 - (s1 + s2 + c)
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_ao_values(blocks, n_left, n_right, n_front, n_back, px, py, pz, u_dir, v_dir):
     def solid(du, dv):
         return _is_solid(blocks, n_left, n_right, n_front, n_back, 
@@ -109,7 +109,7 @@ def _get_ao_values(blocks, n_left, n_right, n_front, n_back, px, py, pz, u_dir, 
     ao01 = _calc_ao(s01, s12, s02)
     return ao00, ao10, ao11, ao01
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back):
     queue_x = np.empty(CHUNK_SIZE * CHUNK_HEIGHT * 4, dtype=np.int32)
     queue_y = np.empty(CHUNK_SIZE * CHUNK_HEIGHT * 4, dtype=np.int32)
@@ -172,7 +172,7 @@ def _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back
                         if tail < queue_x.shape[0]:
                             queue_x[tail] = nx; queue_y[tail] = ny; queue_z[tail] = nz; tail += 1
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_biome_jit(biomes, b_left, b_right, b_front, b_back, x, z):
     if x < 0:
         if z < 0: return biomes[0, 0]
@@ -192,7 +192,7 @@ def _get_biome_jit(biomes, b_left, b_right, b_front, b_back, x, z):
         return b_front[x, 0]
     return biomes[x, z]
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z):
     r_sum, g_sum, b_sum = 0.0, 0.0, 0.0
     count = 0
@@ -215,7 +215,7 @@ def _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z):
             
     return r_sum / count, g_sum / count, b_sum / count
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _emit_aabb_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, overlay_idx):
     min_x, min_y, min_z, max_x, max_y, max_z = aabb
     if max_x <= min_x or max_y <= min_y or max_z <= min_z:
@@ -329,13 +329,13 @@ def _emit_aabb_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_fron
             
     return v_idx
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _is_opaque(b):
     if b < 1024:
         return BLOCK_OPAQUE_ARRAY[b]
     return True
 
-@njit(nogil=True)
+@njit(nogil=True, cache=True)
 def _build_chunk_mesh_jit(blocks, data_in, lights_in, 
                           n_left, n_right, n_front, n_back, 
                           d_left, d_right, d_front, d_back,

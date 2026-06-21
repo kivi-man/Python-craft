@@ -69,10 +69,5 @@ void main() {
     // Final Color (Apply all multipliers)
     vec3 lit_color = base_color * light_factor * ao_multiplier * sky_light_factor;
     
-    // Apply fog based on depth
-    float depth = gl_FragCoord.z / gl_FragCoord.w;
-    float fog_factor = clamp(exp(-pow(depth * 0.015, 2.0)), 0.0, 1.0);
-    vec3 fog_color = vec3(0.47, 0.65, 1.0);
-    
-    FragColor = vec4(mix(fog_color, lit_color, fog_factor), 1.0);
+    FragColor = vec4(lit_color, 1.0);
 }

@@ -4,7 +4,7 @@ import math
 from world.mc_noise import JavaRandom
 from world.terrain import CHUNK_SIZE, CHUNK_HEIGHT, STONE, DIRT, GRAVEL, COAL_ORE, IRON_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, LAPIS_ORE
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _ore_feature(blocks, random, tile, count, x, y, z):
     dir_ = random.nextFloat() * math.pi
     
@@ -53,7 +53,7 @@ def _ore_feature(blocks, random, tile, count, x, y, z):
                                 if blocks[x2, y2, z2] == STONE:
                                     blocks[x2, y2, z2] = tile
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _generate_ore_type(blocks, random, tile, count, iterations, min_y, max_y):
     for i in range(iterations):
         x = random.nextInt(16)
@@ -61,7 +61,7 @@ def _generate_ore_type(blocks, random, tile, count, iterations, min_y, max_y):
         z = random.nextInt(16)
         _ore_feature(blocks, random, tile, count, x, y, z)
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def carve_ores(cx, cz, blocks, world_seed):
     random = JavaRandom(world_seed)
     xScale = random.nextLong()

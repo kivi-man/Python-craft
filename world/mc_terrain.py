@@ -15,12 +15,12 @@ CHUNK_SIZE = 16
 CHUNK_HEIGHT = 256  # Minecraft 1.7 standard height
 WATER_LEVEL = 63
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def get_biome_grid(cx, cz, tempNoise, downNoise):
     # base_seed = 12345 (could be passed from world_seed later)
     return get_biome_layer_data(cx * 4 - 2, cz * 4 - 2, 10, 10, 12345)
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def get_noise_buffer(cx, cz, lperlin1, lperlin2, perlin1, depthNoise, biome_grid):
     xSize = 5
     ySize = (CHUNK_HEIGHT // 8) + 1 # 17
@@ -109,7 +109,7 @@ def get_noise_buffer(cx, cz, lperlin1, lperlin2, perlin1, depthNoise, biome_grid
                 
     return buffer
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def prepare_heights(cx, cz, buffer):
     blocks = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
     
@@ -172,7 +172,7 @@ def prepare_heights(cx, cz, buffer):
                     
     return blocks
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def build_surfaces(cx, cz, blocks, random, biome_grid):
     for x in range(CHUNK_SIZE):
         for z in range(CHUNK_SIZE):
@@ -212,7 +212,7 @@ def build_surfaces(cx, cz, blocks, random, biome_grid):
                     blocks[x, y, z] = BEDROCK
 
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def generate_trees_for_chunk(cx, cz, blocks, random, biome_grid):
     out_of_bounds = np.zeros((2000, 4), dtype=np.int32)
     out_count = 0
@@ -329,7 +329,7 @@ def generate_trees_for_chunk(cx, cz, blocks, random, biome_grid):
 
     return out_of_bounds[:out_count]
 
-@njit(cache=True)
+@njit(cache=True, nogil=True)
 def _calc_light_jit(blocks, light_map):
     for x in range(CHUNK_SIZE):
         for z in range(CHUNK_SIZE):
