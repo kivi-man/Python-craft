@@ -117,7 +117,7 @@ def generate_spruce_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_
 
 @njit(cache=True)
 def can_cactus_survive(blocks, lx, wy, lz):
-    if wy < 0 or wy >= 128: return False
+    if wy < 0 or wy >= CHUNK_HEIGHT: return False
     # Check neighbors (must be AIR)
     if lx > 0 and blocks[lx - 1, wy, lz] != AIR: return False
     if lx < 15 and blocks[lx + 1, wy, lz] != AIR: return False
@@ -156,7 +156,7 @@ def generate_grass_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, ou
         nz = wz + random.nextInt(8) - random.nextInt(8)
         lx = nx - cx * 16
         lz = nz - cz * 16
-        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < 127: # assuming CHUNK_HEIGHT=128
+        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < CHUNK_HEIGHT - 1:
             if blocks[lx, ny, lz] == 0 and blocks[lx, ny - 1, lz] == 3: # 0=AIR, 3=GRASS
                 blocks[lx, ny, lz] = 31 # TALL_GRASS
     return out_count
@@ -169,7 +169,7 @@ def generate_flower_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, o
         nz = wz + random.nextInt(8) - random.nextInt(8)
         lx = nx - cx * 16
         lz = nz - cz * 16
-        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < 127:
+        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < CHUNK_HEIGHT - 1:
             if blocks[lx, ny, lz] == 0 and blocks[lx, ny - 1, lz] == 3:
                 blocks[lx, ny, lz] = flower_type
     return out_count
@@ -182,7 +182,7 @@ def generate_double_plant_cluster(cx, cz, wx, wy, wz, blocks, random, out_of_bou
         nz = wz + random.nextInt(8) - random.nextInt(8)
         lx = nx - cx * 16
         lz = nz - cz * 16
-        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < 126:
+        if 0 <= lx < 16 and 0 <= lz < 16 and 0 < ny < CHUNK_HEIGHT - 2:
             if blocks[lx, ny, lz] == 0 and blocks[lx, ny + 1, lz] == 0 and blocks[lx, ny - 1, lz] == 3:
                 blocks[lx, ny, lz] = btm_type
                 blocks[lx, ny + 1, lz] = top_type

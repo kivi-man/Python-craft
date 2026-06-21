@@ -48,6 +48,131 @@ BLOCK_REGISTRY = {
     "DOUBLE_ROSE_BTM": {"id": 177, "texture": "double_plant_rose_bottom.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
     "DOUBLE_ROSE_TOP": {"id": 178, "texture": "double_plant_rose_top.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
     "PORKCHOP_RAW": {"id": 1000, "texture": "porkchop_raw.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "COBBLESTONE": {"id": 43, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "PLANKS_OAK": {"id": 44, "texture": "planks_oak.png", "color": (0.6, 0.5, 0.3), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "PLANKS_SPRUCE": {"id": 45, "texture": "planks_spruce.png", "color": (0.4, 0.3, 0.2), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "PLANKS_BIRCH": {"id": 46, "texture": "planks_birch.png", "color": (0.8, 0.8, 0.6), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "PLANKS_JUNGLE": {"id": 47, "texture": "planks_jungle.png", "color": (0.7, 0.5, 0.4), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "PLANKS_ACACIA": {"id": 48, "texture": "planks_acacia.png", "color": (0.8, 0.4, 0.3), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "PLANKS_DARK_OAK": {"id": 49, "texture": "planks_big_oak.png", "color": (0.3, 0.2, 0.1), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "SPONGE": {"id": 50, "texture": "sponge.png", "color": (0.9, 0.9, 0.3), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "NONE"},
+    "LAPIS_BLOCK": {"id": 51, "texture": "lapis_block.png", "color": (0.1, 0.3, 0.8), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "GOLD_BLOCK": {"id": 52, "texture": "gold_block.png", "color": (0.9, 0.8, 0.2), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "IRON_BLOCK": {"id": 53, "texture": "iron_block.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
+    "BRICKS": {"id": 54, "texture": "bricks.png", "color": (0.7, 0.3, 0.2), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "TNT": {"id": 55, "texture": {"top": "tnt_top.png", "bottom": "tnt_bottom.png", "side": "tnt_side.png"}, "color": (0.8, 0.2, 0.2), "transparent": False, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "BOOKSHELF": {"id": 57, "texture": {"top": "planks_oak.png", "bottom": "planks_oak.png", "side": "bookshelf.png"}, "color": (0.6, 0.4, 0.2), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "AXE"},
+    "MOSSY_COBBLESTONE": {"id": 58, "texture": "cobblestone_mossy.png", "color": (0.4, 0.5, 0.4), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "OBSIDIAN": {"id": 59, "texture": "obsidian.png", "color": (0.1, 0.0, 0.2), "transparent": False, "light": 0, "hardness": 50.0, "tool_type": "PICKAXE"},
+    "DIAMOND_BLOCK": {"id": 60, "texture": "diamond_block.png", "color": (0.3, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
+    "CLAY_BLOCK": {"id": 61, "texture": "clay.png", "color": (0.6, 0.6, 0.7), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
+    "JUKEBOX": {"id": 62, "texture": {"top": "jukebox_top.png", "bottom": "jukebox_side.png", "side": "jukebox_side.png"}, "color": (0.5, 0.3, 0.2), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "NETHERRACK": {"id": 63, "texture": "netherrack.png", "color": (0.4, 0.1, 0.1), "transparent": False, "light": 0, "hardness": 0.4, "tool_type": "PICKAXE"},
+    "SOUL_SAND": {"id": 64, "texture": "soul_sand.png", "color": (0.3, 0.2, 0.1), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "GLOWSTONE": {"id": 65, "texture": "glowstone.png", "color": (0.8, 0.8, 0.4), "transparent": False, "light": 15, "hardness": 0.3, "tool_type": "NONE"},
+    "STONEBRICK": {"id": 66, "texture": "stonebrick.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "STONEBRICK_MOSSY": {"id": 67, "texture": "stonebrick_mossy.png", "color": (0.4, 0.5, 0.4), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "STONEBRICK_CRACKED": {"id": 68, "texture": "stonebrick_cracked.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "STONEBRICK_CARVED": {"id": 69, "texture": "stonebrick_carved.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "MELON_BLOCK": {"id": 70, "texture": {"top": "melon_top.png", "bottom": "melon_top.png", "side": "melon_side.png"}, "color": (0.3, 0.6, 0.2), "transparent": False, "light": 0, "hardness": 1.0, "tool_type": "AXE"},
+    "NETHER_BRICK": {"id": 71, "texture": "nether_brick.png", "color": (0.3, 0.1, 0.1), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "END_STONE": {"id": 72, "texture": "end_stone.png", "color": (0.8, 0.8, 0.6), "transparent": False, "light": 0, "hardness": 3.0, "tool_type": "PICKAXE"},
+    "EMERALD_BLOCK_SOLID": {"id": 74, "texture": "emerald_block.png", "color": (0.2, 0.8, 0.3), "transparent": False, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
+    "REDSTONE_BLOCK": {"id": 75, "texture": "redstone_block.png", "color": (0.8, 0.1, 0.1), "transparent": False, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
+    "QUARTZ_BLOCK": {"id": 76, "texture": {"top": "quartz_block_top.png", "bottom": "quartz_block_bottom.png", "side": "quartz_block_side.png"}, "color": (0.9, 0.9, 0.9), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "QUARTZ_CHISELED": {"id": 77, "texture": {"top": "quartz_block_chiseled_top.png", "bottom": "quartz_block_chiseled_top.png", "side": "quartz_block_chiseled.png"}, "color": (0.9, 0.9, 0.9), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "QUARTZ_PILLAR": {"id": 78, "texture": {"top": "quartz_block_lines_top.png", "bottom": "quartz_block_lines_top.png", "side": "quartz_block_lines.png"}, "color": (0.9, 0.9, 0.9), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "COAL_BLOCK_SOLID": {"id": 80, "texture": "coal_block.png", "color": (0.1, 0.1, 0.1), "transparent": False, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
+    "PACKED_ICE": {"id": 81, "texture": "ice_packed.png", "color": (0.6, 0.8, 1.0), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "PICKAXE"},
+    "RED_SAND": {"id": 82, "texture": "red_sand.png", "color": (0.8, 0.4, 0.1), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "PODZOL": {"id": 83, "texture": {"top": "dirt_podzol_top.png", "bottom": "dirt.png", "side": "dirt_podzol_side.png"}, "color": (0.4, 0.3, 0.2), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "COARSE_DIRT": {"id": 84, "texture": "coarse_dirt.png", "color": (0.4, 0.3, 0.2), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
+    "ANDESITE": {"id": 85, "texture": "stone_andesite.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "ANDESITE_POLISHED": {"id": 86, "texture": "stone_andesite_smooth.png", "color": (0.5, 0.5, 0.5), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "DIORITE": {"id": 87, "texture": "stone_diorite.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "DIORITE_POLISHED": {"id": 88, "texture": "stone_diorite_smooth.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "GRANITE": {"id": 89, "texture": "stone_granite.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "GRANITE_POLISHED": {"id": 90, "texture": "stone_granite_smooth.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "PRISMARINE": {"id": 91, "texture": "prismarine_rough.png", "color": (0.3, 0.6, 0.6), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "PRISMARINE_BRICKS": {"id": 92, "texture": "prismarine_bricks.png", "color": (0.3, 0.6, 0.6), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "PRISMARINE_DARK": {"id": 93, "texture": "prismarine_dark.png", "color": (0.2, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "SEA_LANTERN": {"id": 94, "texture": "sea_lantern.png", "color": (0.8, 0.9, 0.9), "transparent": False, "light": 15, "hardness": 0.3, "tool_type": "NONE"},
+    "SLIME_BLOCK": {"id": 95, "texture": "slime.png", "color": (0.4, 0.8, 0.4), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "HAY_BLOCK": {"id": 96, "texture": {"top": "hay_block_top.png", "bottom": "hay_block_top.png", "side": "hay_block_side.png"}, "color": (0.8, 0.8, 0.2), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "NONE"},
+    "WOOL_WHITE": {"id": 100, "texture": "wool_colored_white.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_WHITE": {"id": 120, "texture": "glass_white.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_WHITE": {"id": 140, "texture": "hardened_clay_stained_white.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_ORANGE": {"id": 101, "texture": "wool_colored_orange.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_ORANGE": {"id": 121, "texture": "glass_orange.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_ORANGE": {"id": 141, "texture": "hardened_clay_stained_orange.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_MAGENTA": {"id": 102, "texture": "wool_colored_magenta.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_MAGENTA": {"id": 122, "texture": "glass_magenta.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_MAGENTA": {"id": 142, "texture": "hardened_clay_stained_magenta.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_LIGHT_BLUE": {"id": 103, "texture": "wool_colored_light_blue.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_LIGHT_BLUE": {"id": 123, "texture": "glass_light_blue.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_LIGHT_BLUE": {"id": 143, "texture": "hardened_clay_stained_light_blue.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_YELLOW": {"id": 104, "texture": "wool_colored_yellow.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_YELLOW": {"id": 124, "texture": "glass_yellow.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_YELLOW": {"id": 144, "texture": "hardened_clay_stained_yellow.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_LIME": {"id": 105, "texture": "wool_colored_lime.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_LIME": {"id": 125, "texture": "glass_lime.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_LIME": {"id": 145, "texture": "hardened_clay_stained_lime.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_PINK": {"id": 106, "texture": "wool_colored_pink.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_PINK": {"id": 126, "texture": "glass_pink.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_PINK": {"id": 146, "texture": "hardened_clay_stained_pink.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_GRAY": {"id": 107, "texture": "wool_colored_gray.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_GRAY": {"id": 127, "texture": "glass_gray.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_GRAY": {"id": 147, "texture": "hardened_clay_stained_gray.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_SILVER": {"id": 108, "texture": "wool_colored_silver.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_SILVER": {"id": 128, "texture": "glass_silver.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_SILVER": {"id": 148, "texture": "hardened_clay_stained_silver.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_CYAN": {"id": 109, "texture": "wool_colored_cyan.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_CYAN": {"id": 129, "texture": "glass_cyan.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_CYAN": {"id": 149, "texture": "hardened_clay_stained_cyan.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_PURPLE": {"id": 110, "texture": "wool_colored_purple.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_PURPLE": {"id": 130, "texture": "glass_purple.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_PURPLE": {"id": 150, "texture": "hardened_clay_stained_purple.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_BLUE": {"id": 111, "texture": "wool_colored_blue.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_BLUE": {"id": 131, "texture": "glass_blue.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_BLUE": {"id": 151, "texture": "hardened_clay_stained_blue.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_BROWN": {"id": 112, "texture": "wool_colored_brown.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_BROWN": {"id": 132, "texture": "glass_brown.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_BROWN": {"id": 152, "texture": "hardened_clay_stained_brown.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_GREEN": {"id": 113, "texture": "wool_colored_green.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_GREEN": {"id": 133, "texture": "glass_green.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_GREEN": {"id": 153, "texture": "hardened_clay_stained_green.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_RED": {"id": 114, "texture": "wool_colored_red.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_RED": {"id": 134, "texture": "glass_red.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_RED": {"id": 154, "texture": "hardened_clay_stained_red.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOL_BLACK": {"id": 115, "texture": "wool_colored_black.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
+    "GLASS_BLACK": {"id": 135, "texture": "glass_black.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "STAINED_CLAY_BLACK": {"id": 155, "texture": "hardened_clay_stained_black.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "HARDENED_CLAY": {"id": 160, "texture": "hardened_clay.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "OAK_STAIRS": {"id": 200, "texture": "planks_oak.png", "color": (0.6, 0.5, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "COBBLESTONE_STAIRS": {"id": 201, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "WOODEN_SLAB": {"id": 202, "texture": "planks_oak.png", "color": (0.6, 0.5, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "STONE_SLAB": {"id": 203, "texture": "stone_slab_top.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "SPRUCE_STAIRS": {"id": 204, "texture": "planks_spruce.png", "color": (0.4, 0.3, 0.2), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "BIRCH_STAIRS": {"id": 205, "texture": "planks_birch.png", "color": (0.8, 0.8, 0.6), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "JUNGLE_STAIRS": {"id": 206, "texture": "planks_jungle.png", "color": (0.7, 0.5, 0.4), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "ACACIA_STAIRS": {"id": 207, "texture": "planks_acacia.png", "color": (0.8, 0.4, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "DARK_OAK_STAIRS": {"id": 208, "texture": "planks_big_oak.png", "color": (0.3, 0.2, 0.1), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "BRICK_STAIRS": {"id": 209, "texture": "bricks.png", "color": (0.7, 0.3, 0.2), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "STONE_BRICK_STAIRS": {"id": 210, "texture": "stonebrick.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "NETHER_BRICK_STAIRS": {"id": 211, "texture": "nether_brick.png", "color": (0.3, 0.1, 0.1), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "SANDSTONE_STAIRS": {"id": 212, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "QUARTZ_STAIRS": {"id": 213, "texture": "quartz_block_side.png", "color": (0.9, 0.9, 0.9), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "SPRUCE_SLAB": {"id": 214, "texture": "planks_spruce.png", "color": (0.4, 0.3, 0.2), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "BIRCH_SLAB": {"id": 215, "texture": "planks_birch.png", "color": (0.8, 0.8, 0.6), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "JUNGLE_SLAB": {"id": 216, "texture": "planks_jungle.png", "color": (0.7, 0.5, 0.4), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "ACACIA_SLAB": {"id": 217, "texture": "planks_acacia.png", "color": (0.8, 0.4, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "DARK_OAK_SLAB": {"id": 218, "texture": "planks_big_oak.png", "color": (0.3, 0.2, 0.1), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "BRICK_SLAB": {"id": 219, "texture": "bricks.png", "color": (0.7, 0.3, 0.2), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "STONE_BRICK_SLAB": {"id": 220, "texture": "stonebrick.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
+    "NETHER_BRICK_SLAB": {"id": 221, "texture": "nether_brick.png", "color": (0.3, 0.1, 0.1), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    "SANDSTONE_SLAB": {"id": 222, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "QUARTZ_SLAB": {"id": 223, "texture": "quartz_block_side.png", "color": (0.9, 0.9, 0.9), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
+    "COBBLESTONE_SLAB": {"id": 224, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
 }
 
 # Dinamik yerine statik tanımlama (Flake8 ve Numba için daha güvenli)
@@ -58,6 +183,131 @@ GRASS = 3
 WATER = 4
 SAND = 5
 SNOW = 6
+COBBLESTONE = 43
+PLANKS_OAK = 44
+PLANKS_SPRUCE = 45
+PLANKS_BIRCH = 46
+PLANKS_JUNGLE = 47
+PLANKS_ACACIA = 48
+PLANKS_DARK_OAK = 49
+SPONGE = 50
+LAPIS_BLOCK = 51
+GOLD_BLOCK = 52
+IRON_BLOCK = 53
+BRICKS = 54
+TNT = 55
+OAK_STAIRS = 200
+COBBLESTONE_STAIRS = 201
+WOODEN_SLAB = 202
+STONE_SLAB = 203
+SPRUCE_STAIRS = 204
+BIRCH_STAIRS = 205
+JUNGLE_STAIRS = 206
+ACACIA_STAIRS = 207
+DARK_OAK_STAIRS = 208
+BRICK_STAIRS = 209
+STONE_BRICK_STAIRS = 210
+NETHER_BRICK_STAIRS = 211
+SANDSTONE_STAIRS = 212
+QUARTZ_STAIRS = 213
+SPRUCE_SLAB = 214
+BIRCH_SLAB = 215
+JUNGLE_SLAB = 216
+ACACIA_SLAB = 217
+DARK_OAK_SLAB = 218
+BRICK_SLAB = 219
+STONE_BRICK_SLAB = 220
+NETHER_BRICK_SLAB = 221
+SANDSTONE_SLAB = 222
+QUARTZ_SLAB = 223
+COBBLESTONE_SLAB = 224
+BOOKSHELF = 57
+MOSSY_COBBLESTONE = 58
+OBSIDIAN = 59
+DIAMOND_BLOCK = 60
+CLAY_BLOCK = 61
+JUKEBOX = 62
+NETHERRACK = 63
+SOUL_SAND = 64
+GLOWSTONE = 65
+STONEBRICK = 66
+STONEBRICK_MOSSY = 67
+STONEBRICK_CRACKED = 68
+STONEBRICK_CARVED = 69
+MELON_BLOCK = 70
+NETHER_BRICK = 71
+END_STONE = 72
+EMERALD_BLOCK_SOLID = 74
+REDSTONE_BLOCK = 75
+QUARTZ_BLOCK = 76
+QUARTZ_CHISELED = 77
+QUARTZ_PILLAR = 78
+COAL_BLOCK_SOLID = 80
+PACKED_ICE = 81
+RED_SAND = 82
+PODZOL = 83
+COARSE_DIRT = 84
+ANDESITE = 85
+ANDESITE_POLISHED = 86
+DIORITE = 87
+DIORITE_POLISHED = 88
+GRANITE = 89
+GRANITE_POLISHED = 90
+PRISMARINE = 91
+PRISMARINE_BRICKS = 92
+PRISMARINE_DARK = 93
+SEA_LANTERN = 94
+SLIME_BLOCK = 95
+HAY_BLOCK = 96
+WOOL_WHITE = 100
+GLASS_WHITE = 120
+STAINED_CLAY_WHITE = 140
+WOOL_ORANGE = 101
+GLASS_ORANGE = 121
+STAINED_CLAY_ORANGE = 141
+WOOL_MAGENTA = 102
+GLASS_MAGENTA = 122
+STAINED_CLAY_MAGENTA = 142
+WOOL_LIGHT_BLUE = 103
+GLASS_LIGHT_BLUE = 123
+STAINED_CLAY_LIGHT_BLUE = 143
+WOOL_YELLOW = 104
+GLASS_YELLOW = 124
+STAINED_CLAY_YELLOW = 144
+WOOL_LIME = 105
+GLASS_LIME = 125
+STAINED_CLAY_LIME = 145
+WOOL_PINK = 106
+GLASS_PINK = 126
+STAINED_CLAY_PINK = 146
+WOOL_GRAY = 107
+GLASS_GRAY = 127
+STAINED_CLAY_GRAY = 147
+WOOL_SILVER = 108
+GLASS_SILVER = 128
+STAINED_CLAY_SILVER = 148
+WOOL_CYAN = 109
+GLASS_CYAN = 129
+STAINED_CLAY_CYAN = 149
+WOOL_PURPLE = 110
+GLASS_PURPLE = 130
+STAINED_CLAY_PURPLE = 150
+WOOL_BLUE = 111
+GLASS_BLUE = 131
+STAINED_CLAY_BLUE = 151
+WOOL_BROWN = 112
+GLASS_BROWN = 132
+STAINED_CLAY_BROWN = 152
+WOOL_GREEN = 113
+GLASS_GREEN = 133
+STAINED_CLAY_GREEN = 153
+WOOL_RED = 114
+GLASS_RED = 134
+STAINED_CLAY_RED = 154
+WOOL_BLACK = 115
+GLASS_BLACK = 135
+STAINED_CLAY_BLACK = 155
+HARDENED_CLAY = 160
 BEDROCK = 7
 ICE = 79
 GRAVEL = 8
@@ -112,7 +362,7 @@ for name, data in BLOCK_REGISTRY.items():
             BLOCK_COLORS_ARRAY[bid] = data["color"]
 
 CHUNK_SIZE = 16
-CHUNK_HEIGHT = 64
+CHUNK_HEIGHT = 256
 WATER_LEVEL = 20
 
 # ─────────────── Numba JIT Perlin Noise ───────────────
@@ -228,7 +478,7 @@ def _calc_light_jit(blocks, light_map):
             light = 15
             for y in range(CHUNK_HEIGHT - 1, -1, -1):
                 b = blocks[x, y, z]
-                if b != AIR and b != WATER:
+                if BLOCK_OPAQUE_ARRAY[b]:
                     light = 0
                 light_map[x, y, z] = light
 
@@ -268,8 +518,7 @@ def _calc_light_jit(blocks, light_map):
             nz = z + dzs[i]
             
             if 0 <= nx < CHUNK_SIZE and 0 <= ny < CHUNK_HEIGHT and 0 <= nz < CHUNK_SIZE:
-                b = blocks[nx, ny, nz]
-                if b == AIR or b == WATER:
+                if not BLOCK_OPAQUE_ARRAY[blocks[nx, ny, nz]]:
                     if light_map[nx, ny, nz] < new_light:
                         light_map[nx, ny, nz] = new_light
                         queue_x[tail] = nx
@@ -320,8 +569,10 @@ def generate_chunk(cx, cz):
 def load_or_generate_chunk(cx, cz):
     data = load_chunk(cx, cz)
     if data is not None:
-        return data
-    return generate_chunk(cx, cz)
+        # data is (blocks, lights)
+        return data[0], data[1], np.zeros((0, 4), dtype=np.int32), np.full((16, 16), 1, dtype=np.int32), False
+    blocks, lights, oob, chunk_biomes = generate_chunk(cx, cz)
+    return blocks, lights, oob, chunk_biomes, True
 
 def recalculate_chunk_light(blocks, light_map):
     _calc_light_jit(blocks, light_map)

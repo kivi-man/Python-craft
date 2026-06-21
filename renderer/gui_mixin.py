@@ -239,25 +239,22 @@ class GUIMixin:
             
             # Load Block Icons as 3D Isometric Cubes
             self.block_icon_sprites = {}
-            block_icons = {
-                1: ('stone.png', 'stone.png', 'stone.png'),
-                2: ('dirt.png', 'dirt.png', 'dirt.png'),
-                3: ('grass_top.png', 'grass_side.png', 'grass_side.png'),
-                4: ('water.png', 'water.png', 'water.png'),
-                5: ('planks_oak.png', 'planks_oak.png', 'planks_oak.png'),
-                12: ('leaves_oak.png', 'leaves_oak.png', 'leaves_oak.png'),
-                17: ('log_oak_top.png', 'log_oak.png', 'log_oak.png'),
-                18: ('sand.png', 'sand.png', 'sand.png'),
-                20: ('glass.png', 'glass.png', 'glass.png'),
-                CACTUS: ('cactus_top.png', 'cactus_side.png', 'cactus_side.png')
-            }
+            from world.terrain import BLOCK_REGISTRY
             
-            for b_id in range(1, 40):
-                if b_id in block_icons:
-                    faces = block_icons[b_id]
-                    sprite = self._create_3d_block_sprite(faces[0], faces[1], faces[2])
+            for name, data in BLOCK_REGISTRY.items():
+                b_id = data["id"]
+                if b_id == 0: continue
+                
+                tex = data.get("texture")
+                if not tex:
+                    sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
+                elif isinstance(tex, str):
+                    sprite = self._create_3d_block_sprite(tex, tex, tex)
+                elif isinstance(tex, dict):
+                    top = tex.get('top', 'stone.png')
+                    side = tex.get('side', top)
+                    sprite = self._create_3d_block_sprite(top, side, side)
                 else:
-                    # Generic fallback icon
                     sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
                     
                 if sprite:
@@ -268,7 +265,7 @@ class GUIMixin:
             if item_sprite:
                 self.block_icon_sprites[PORKCHOP_RAW] = item_sprite
             else:
-                self.block_icon_sprites[PORKCHOP_RAW] = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png') # fallback
+                self.block_icon_sprites[PORKCHOP_RAW] = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
             
             
             # Position user interface elements
@@ -329,16 +326,24 @@ class GUIMixin:
             num_verts = len(mesh) // 15
             return vao, vbo, num_verts
 
-        for b_id in range(1, 40):
-            if b_id > 0:
+        from world.terrain import BLOCK_REGISTRY
+        for name, data in BLOCK_REGISTRY.items():
+            b_id = data["id"]
+            if b_id > 0 and b_id != 1000: # Exclude raw porkchop, will handle item explicitly
                 mesh = get_hand_cube_vertices(b_id, self.block_layers)
-                vao, vbo, num_verts = create_hand_vao(mesh)
-                self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
+                if mesh is not None and len(mesh) > 0:
+                    vao, vbo, num_verts = create_hand_vao(mesh)
+                    self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
                 
         from world.terrain import PORKCHOP_RAW
-        layer_idx = self.block_layers[PORKCHOP_RAW, 0]
-        mask = self.texture_manager.alpha_masks[int(layer_idx)]
-        mesh = get_item_sprite_vertices(layer_idx, mask)
-        vao, vbo, num_verts = create_hand_vao(mesh)
-        self.hand_block_vaos[PORKCHOP_RAW] = (vao, vbo, num_verts)
+        layer_idx = 0
+        if PORKCHOP_RAW < len(self.block_layers):
+            layer_idx = self.block_layers[PORKCHOP_RAW, 0]
+            
+        mask = self.texture_manager.alpha_masks[int(layer_idx)] if hasattr(self.texture_manager, 'alpha_masks') and int(layer_idx) < len(self.texture_manager.alpha_masks) else None
+        
+        if mask is not None:
+            mesh = get_item_sprite_vertices(layer_idx, mask)
+            vao, vbo, num_verts = create_hand_vao(mesh)
+            self.hand_block_vaos[PORKCHOP_RAW] = (vao, vbo, num_verts)
 

@@ -78,7 +78,7 @@ class InputMixin:
             return
             
         elif button == mouse.RIGHT and px is not None:
-            if self.selected_block_id == 0 or self.hotbar_counts[self.selected_slot] <= 0:
+            if self.selected_block_id == 0 or self.inventory_counts[self.selected_slot] <= 0:
                 return
                 
             # Collision prevention: Prevent player from placing a solid block inside their own body
@@ -110,11 +110,52 @@ class InputMixin:
                  
         if target_x is not None:
             if button == mouse.RIGHT and 0 < new_block_id < 256:
-                self.hotbar_counts[self.selected_slot] -= 1
-                if self.hotbar_counts[self.selected_slot] <= 0:
+                self.inventory_counts[self.selected_slot] -= 1
+                if self.inventory_counts[self.selected_slot] <= 0:
                     self.inventory_blocks[self.selected_slot] = 0
                     self.selected_block_id = 0
-                self.set_block(target_x, target_y, target_z, new_block_id)
+                    
+                data = 0
+                from core.special_blocks import is_stairs, is_slab, SLAB_TO_FULL
+                if is_stairs(new_block_id) or is_slab(new_block_id):
+                    hx, hy, hz = self.targeted_block if hasattr(self, 'targeted_block') and self.targeted_block else (target_x, target_y - 1, target_z) # Fallback
+                    
+                    if is_slab(new_block_id):
+                        t_id, t_data = self.get_block_info(hx, hy, hz)
+                        if t_id == new_block_id:
+                            if (t_data == 0 and target_y == hy + 1) or (t_data == 4 and target_y == hy - 1):
+                                self.set_block(hx, hy, hz, SLAB_TO_FULL.get(new_block_id, 1), 0)
+                                return
+
+                    # Determine hit fraction
+                    hit_y_frac = 0.0
+                    if target_y == hy + 1:
+                        hit_y_frac = 0.0 # hit top face -> place normal
+                    elif target_y == hy - 1:
+                        hit_y_frac = 1.0 # hit bottom face -> place upside down
+                    else:
+                        # hit side face
+                        dx, dy, dz = direction
+                        if target_x == hx - 1: t = (hx - eye_pos[0]) / (dx + 1e-8)
+                        elif target_x == hx + 1: t = (hx + 1 - eye_pos[0]) / (dx + 1e-8)
+                        elif target_z == hz - 1: t = (hz - eye_pos[2]) / (dz + 1e-8)
+                        elif target_z == hz + 1: t = (hz + 1 - eye_pos[2]) / (dz + 1e-8)
+                        else: t = 0
+                        hit_y_frac = (eye_pos[1] + t * dy) - hy
+                        
+                    upside_down = 4 if hit_y_frac > 0.5 else 0
+                    
+                    if is_stairs(new_block_id):
+                        look_dx, look_dz = direction[0], direction[2]
+                        if abs(look_dx) > abs(look_dz):
+                            d = 0 if look_dx > 0 else 1
+                        else:
+                            d = 2 if look_dz > 0 else 3
+                        data = d | upside_down
+                    elif is_slab(new_block_id):
+                        data = upside_down
+                
+                self.set_block(target_x, target_y, target_z, new_block_id, data)
             
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -168,10 +209,10 @@ class InputMixin:
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
-            pyglet.app.exit()
+            self.close()
         elif symbol == key.Q:
-            if self.selected_block_id > 0 and self.hotbar_counts[self.selected_slot] > 0:
-                self.hotbar_counts[self.selected_slot] -= 1
+            if self.selected_block_id > 0 and self.inventory_counts[self.selected_slot] > 0:
+                self.inventory_counts[self.selected_slot] -= 1
                 
                 # Calculate throw velocity based on camera
                 dir_x, dir_y, dir_z = self.camera.get_front()
@@ -189,9 +230,42 @@ class InputMixin:
                     zd=dir_z * 0.3
                 )
                 
-                if self.hotbar_counts[self.selected_slot] <= 0:
+                if self.inventory_counts[self.selected_slot] <= 0:
                     self.inventory_blocks[self.selected_slot] = 0
                     self.selected_block_id = 0
+                    
+        elif symbol == key.O:
+            # Gamemode 1 (Creative Mode) with Pagination
+            self.player.is_flying = True
+            from world.terrain import BLOCK_REGISTRY
+            
+            # Initialize creative page counter
+            self.creative_page = getattr(self, 'creative_page', 0)
+            
+            # Extract valid block IDs
+            valid_blocks = [data["id"] for name, data in BLOCK_REGISTRY.items() if data["id"] > 0]
+            
+            # Calculate start index
+            start_idx = self.creative_page * len(self.inventory_blocks)
+            if start_idx >= len(valid_blocks):
+                self.creative_page = 0
+                start_idx = 0
+                
+            page_blocks = valid_blocks[start_idx:start_idx + len(self.inventory_blocks)]
+            
+            # Fill inventory
+            for i in range(len(self.inventory_blocks)):
+                if i < len(page_blocks):
+                    self.inventory_blocks[i] = page_blocks[i]
+                    self.inventory_counts[i] = 64
+                else:
+                    self.inventory_blocks[i] = 0
+                    self.inventory_counts[i] = 0
+            
+            self.creative_page += 1
+            self.selected_block_id = self.inventory_blocks[self.selected_slot]
+            if self.debug_mode:
+                print(f"[PLAYER] Gamemode 1 Activated. Inventory filled (Page {self.creative_page}).")
                     
         elif symbol == key.TAB:
             self.player.is_flying = not self.player.is_flying
@@ -200,43 +274,43 @@ class InputMixin:
                 print(f"[PLAYER] Flight Mode: {mode}")
         elif symbol == key._1:
             self.selected_slot = 0
-            self.selected_block_id = self.hotbar_blocks[0]
+            self.selected_block_id = self.inventory_blocks[0]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: STONE")
         elif symbol == key._2:
             self.selected_slot = 1
-            self.selected_block_id = self.hotbar_blocks[1]
+            self.selected_block_id = self.inventory_blocks[1]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: GRASS")
         elif symbol == key._3:
             self.selected_slot = 2
-            self.selected_block_id = self.hotbar_blocks[2]
+            self.selected_block_id = self.inventory_blocks[2]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: GLASS")
         elif symbol == key._4:
             self.selected_slot = 3
-            self.selected_block_id = self.hotbar_blocks[3]
+            self.selected_block_id = self.inventory_blocks[3]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: LEAVES")
         elif symbol == key._5:
             self.selected_slot = 4
-            self.selected_block_id = self.hotbar_blocks[4]
+            self.selected_block_id = self.inventory_blocks[4]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: WATER")
         elif symbol == key._6:
             self.selected_slot = 5
-            self.selected_block_id = self.hotbar_blocks[5]
+            self.selected_block_id = self.inventory_blocks[5]
             if self.debug_mode:
                 print("[PLAYER] Selected Block: CACTUS")
         elif symbol == key._7:
             self.selected_slot = 6
-            self.selected_block_id = self.hotbar_blocks[6]
+            self.selected_block_id = self.inventory_blocks[6]
         elif symbol == key._8:
             self.selected_slot = 7
-            self.selected_block_id = self.hotbar_blocks[7]
+            self.selected_block_id = self.inventory_blocks[7]
         elif symbol == key._9:
             self.selected_slot = 8
-            self.selected_block_id = self.hotbar_blocks[8]
+            self.selected_block_id = self.inventory_blocks[8]
             
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):

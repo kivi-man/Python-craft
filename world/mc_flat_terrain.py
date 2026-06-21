@@ -33,14 +33,16 @@ def _get_or_create_flat_cache():
 
 def generate_flat_chunk(cx, cz):
     blocks, light_map, chunk_biomes = _get_or_create_flat_cache()
+    data = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
     
     # Return copies so modifications to one chunk don't affect others
     out_of_bounds = np.zeros((0, 4), dtype=np.int32)
-    return blocks.copy(), light_map.copy(), out_of_bounds, chunk_biomes.copy()
+    return blocks.copy(), data, light_map.copy(), out_of_bounds, chunk_biomes.copy()
 
-def load_or_generate_flat_chunk(cx, cz):
-    data = load_chunk(cx, cz)
-    if data is not None:
-        chunk_biomes = np.full((CHUNK_SIZE, CHUNK_SIZE), PLAINS, dtype=np.int32)
-        return data[0], data[1], np.zeros((0, 4), dtype=np.int32), chunk_biomes
-    return generate_flat_chunk(cx, cz)
+def load_or_generate_chunk(cx, cz):
+    chunk_data = load_chunk(cx, cz)
+    if chunk_data is not None:
+        # chunk_data is (blocks, data, lights)
+        return chunk_data[0], chunk_data[1], chunk_data[2], np.zeros((0, 4), dtype=np.int32), np.full((16, 16), 1, dtype=np.int32), False
+    blocks, data, lights, oob, chunk_biomes = generate_flat_chunk(cx, cz)
+    return blocks, data, lights, oob, chunk_biomes, True

@@ -92,10 +92,13 @@ class ChunkMixin:
             if (cx, cz) in self.modified_chunks:
                 # Save to database in the background
                 b_copy = self.world_chunks[(cx, cz)].copy()
+                d_copy = self.world_data_maps[(cx, cz)].copy()
                 l_copy = self.world_light_maps[(cx, cz)].copy()
-                self.executor.submit(save_chunk, cx, cz, b_copy, l_copy)
+                self.executor.submit(save_chunk, cx, cz, b_copy, d_copy, l_copy)
                 self.modified_chunks.remove((cx, cz))
             del self.world_chunks[(cx, cz)]
+        if (cx, cz) in self.world_data_maps:
+            del self.world_data_maps[(cx, cz)]
         if (cx, cz) in self.world_light_maps:
             del self.world_light_maps[(cx, cz)]
         if (cx, cz) in self.world_biomes:
@@ -194,7 +197,15 @@ class ChunkMixin:
         done_gen = [f for f in self.future_to_chunk if f.done()]
         for f in done_gen[:1]: # Process at most 1 chunk generation task per frame
             cx, cz = self.future_to_chunk.pop(f)
-            blocks, light_map, out_of_bounds, biomes = f.result()
+            res = f.result()
+            if len(res) == 6:
+                blocks, data, light_map, out_of_bounds, biomes, generated = res
+            else:
+                blocks, data, light_map, out_of_bounds, biomes = res
+                generated = False
+                
+            if generated:
+                self.modified_chunks.add((cx, cz))
             
             # If player moved too far during load, discard the chunk immediately
             if abs(cx - self.last_player_cx) > self.RENDER_DISTANCE + 2 or abs(cz - self.last_player_cz) > self.RENDER_DISTANCE + 2:
@@ -239,6 +250,7 @@ class ChunkMixin:
                 del self.pending_decorations[(cx, cz)]
                 
             self.world_chunks[(cx, cz)] = blocks
+            self.world_data_maps[(cx, cz)] = data
             self.world_light_maps[(cx, cz)] = light_map
             self.world_biomes[(cx, cz)] = biomes
             
@@ -292,11 +304,10 @@ class ChunkMixin:
             cx, cz = self.chunk_load_queue.pop(0)
             self.chunk_load_queue_set.discard((cx, cz)) # Remove from set as well
             if hasattr(self, 'flat_mode') and self.flat_mode:
-                from world.mc_flat_terrain import load_or_generate_flat_chunk
-                func = load_or_generate_flat_chunk
+                from world.mc_flat_terrain import load_or_generate_chunk
             else:
-                func = load_or_generate_chunk
-            future = self.executor.submit(func, cx, cz)
+                from world.mc_terrain import load_or_generate_chunk
+            future = self.executor.submit(load_or_generate_chunk, cx, cz)
             self.future_to_chunk[future] = (cx, cz)
             submitted_gen += 1
         t_submit_gen_end = time.perf_counter()
@@ -323,9 +334,11 @@ class ChunkMixin:
             future = self.executor.submit(
                 build_chunk_mesh, 
                 blocks, 
+                self.world_data_maps[(cx, cz)],
                 self.world_light_maps[(cx, cz)], 
                 cx, cz, 
                 self.world_chunks, 
+                self.world_data_maps,
                 self.world_light_maps,
                 self.world_biomes,
                 self.block_layers,
@@ -420,6 +433,17 @@ class ChunkMixin:
             self.log(f"    [_apply_chunk_mesh] ({cx}, {cz}) took {dur:.2f}ms")
     
 
+    def get_block_info(self, x, y, z):
+        if y < 0 or y >= CHUNK_HEIGHT: return 0, 0
+        cx = int(math.floor(x / CHUNK_SIZE))
+        cz = int(math.floor(z / CHUNK_SIZE))
+        chunk = self.world_chunks.get((cx, cz))
+        if chunk is None: return -1, 0
+        data_chunk = self.world_data_maps.get((cx, cz))
+        lx, ly, lz = int(math.floor(x)) % CHUNK_SIZE, int(math.floor(y)), int(math.floor(z)) % CHUNK_SIZE
+        d = data_chunk[lx, ly, lz] if data_chunk is not None else 0
+        return chunk[lx, ly, lz], d
+        
     def get_block(self, x, y, z):
         if y < 0 or y >= CHUNK_HEIGHT: return 0
         cx = int(math.floor(x / CHUNK_SIZE))
@@ -429,7 +453,7 @@ class ChunkMixin:
         return chunk[int(math.floor(x)) % CHUNK_SIZE, int(math.floor(y)), int(math.floor(z)) % CHUNK_SIZE]
     
 
-    def set_block(self, wx, wy, wz, block_id):
+    def set_block(self, wx, wy, wz, block_id, data=0):
         wx = int(math.floor(wx))
         wy = int(math.floor(wy))
         wz = int(math.floor(wz))
@@ -442,9 +466,16 @@ class ChunkMixin:
         
         lx, lz = wx % CHUNK_SIZE, wz % CHUNK_SIZE
         
-        if chunk[lx, wy, lz] == block_id: return
+        if chunk[lx, wy, lz] == block_id: 
+            # Check data
+            d_chunk = self.world_data_maps.get((cx, cz))
+            if d_chunk is not None and d_chunk[lx, wy, lz] == data:
+                return
         
         chunk[lx, wy, lz] = block_id
+        d_chunk = self.world_data_maps.get((cx, cz))
+        if d_chunk is not None:
+            d_chunk[lx, wy, lz] = data
         self.modified_chunks.add((cx, cz))
         
         light_map = self.world_light_maps.get((cx, cz))

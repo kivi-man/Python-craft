@@ -12,7 +12,7 @@ from world.mc_ores import carve_ores
 from world.terrain import *
 
 CHUNK_SIZE = 16
-CHUNK_HEIGHT = 128  # Bedrock classic height
+CHUNK_HEIGHT = 256  # Minecraft 1.7 standard height
 WATER_LEVEL = 63
 
 @njit(cache=True)
@@ -83,10 +83,11 @@ def get_noise_buffer(cx, cz, lperlin1, lperlin2, perlin1, depthNoise, biome_grid
                 s_factor = sss
                 
                 d += rdepth * 0.2
-                d = d * ySize / 16.0
-                yCenter = (ySize / 2.0) + (d * 4.0)
+                base_ySize = 17.0
+                d = d * base_ySize / 16.0
+                yCenter = (base_ySize / 2.0) + (d * 4.0)
                 
-                yOffs = (yy - yCenter) * 12.0 * 128.0 / CHUNK_HEIGHT / s_factor
+                yOffs = (yy - yCenter) * 12.0 / s_factor
                 if yOffs < 0: yOffs *= 4.0
                 
                 bb = lperlin1.getValue(wx * s, wy * hs, wz * s) / 512.0
@@ -429,19 +430,23 @@ def generate_chunk(cx, cz):
         for lz in range(CHUNK_SIZE):
             chunk_biomes[lx, lz] = biome_grid[(lx//4)+2, (lz//4)+2]
             
-    return blocks, light_map, out_of_bounds, chunk_biomes
+    # Data metadata array
+    data = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
+            
+    return blocks, data, light_map, out_of_bounds, chunk_biomes
 
 def load_or_generate_chunk(cx, cz):
-    data = load_chunk(cx, cz)
-    if data is not None:
+    chunk_data = load_chunk(cx, cz)
+    if chunk_data is not None:
         biome_grid = get_biome_grid(cx, cz, _TEMP, _DOWN)
         chunk_biomes = np.zeros((CHUNK_SIZE, CHUNK_SIZE), dtype=np.int32)
         for lx in range(CHUNK_SIZE):
             for lz in range(CHUNK_SIZE):
                 chunk_biomes[lx, lz] = biome_grid[(lx//4)+2, (lz//4)+2]
-        # data is (blocks, lights)
-        return data[0], data[1], np.zeros((0, 4), dtype=np.int32), chunk_biomes
-    return generate_chunk(cx, cz)
+        # chunk_data is (blocks, data, lights)
+        return chunk_data[0], chunk_data[1], chunk_data[2], np.zeros((0, 4), dtype=np.int32), chunk_biomes, False
+    blocks, data, lights, oob, chunk_biomes = generate_chunk(cx, cz)
+    return blocks, data, lights, oob, chunk_biomes, True
 
 def recalculate_chunk_light(blocks, light_map):
     _calc_light_jit(blocks, light_map)

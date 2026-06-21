@@ -196,8 +196,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.mouse_action_cooldown = 0.0
         self.breaking_pos = None
         self.breaking_progress = 0.0
-        
         self.world_chunks = {}
+        self.world_data_maps = {}
         self.world_light_maps = {}
         self.world_biomes = {}
         self.pending_decorations = {}
@@ -219,6 +219,18 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         print("   ENGINE READY. ENTERING MAIN GAME LOOP.    ")
         print("   WASD: Movement | Mouse: Look | ESC: Exit ")
         print("=============================================")
+
+    def on_close(self):
+        print("[MAIN] Saving all chunks before exit. Please wait...")
+        # Save all chunks
+        for cx, cz in list(getattr(self, 'world_chunks', {}).keys()):
+            if hasattr(self, '_unload_chunk'):
+                self._unload_chunk(cx, cz)
+        
+        if hasattr(self, 'executor'):
+            self.executor.shutdown(wait=True)
+            
+        super().on_close()
 
     def update(self, dt):
         import time
@@ -368,7 +380,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         t_player_start = time.perf_counter()
         if (pcx, pcz) in self.world_chunks:
-            self.player.update(dt, dx, dz, jump, crouch, sprint, self.get_block)
+            self.player.update(dt, dx, dz, jump, crouch, sprint, self.get_block_info)
         else:
             self.player.vy = 0.0 # Reset gravity accumulation
         t_player_end = time.perf_counter()

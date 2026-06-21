@@ -53,7 +53,7 @@ class Player:
                 self.health = 0
             self.damage_cooldown = 0.5 # half a second invulnerability
 
-    def _check_block_intersection(self, get_block, aabb, target_block_id):
+    def _check_block_intersection(self, get_block_info, aabb, target_block_id):
         min_x, min_y, min_z, max_x, max_y, max_z = aabb
         ix0, ix1 = int(math.floor(min_x)), int(math.floor(max_x))
         iy0, iy1 = int(math.floor(min_y)), int(math.floor(max_y))
@@ -62,7 +62,8 @@ class Player:
         for x in range(ix0, ix1 + 1):
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
-                    if get_block(x, y, z) == target_block_id:
+                    bid, _ = get_block_info(x, y, z)
+                    if bid == target_block_id:
                         return True
         return False
         
@@ -74,7 +75,12 @@ class Player:
             x + self.radius, y + h, z + self.radius
         )
 
-    def _check_collision(self, get_block, aabb):
+    def _aabb_intersect(self, a, b):
+        return (a[0] < b[3] and a[3] > b[0] and
+                a[1] < b[4] and a[4] > b[1] and
+                a[2] < b[5] and a[5] > b[2])
+
+    def _check_collision(self, get_block_info, aabb):
         """Verilen AABB'nin dünyadaki herhangi bir katı blokla çarpışıp çarpışmadığını kontrol eder."""
         min_x, min_y, min_z, max_x, max_y, max_z = aabb
         
@@ -84,15 +90,31 @@ class Player:
         iy0, iy1 = int(math.floor(min_y)), int(math.floor(max_y))
         iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
         
+        from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+        
         for x in range(ix0, ix1 + 1):
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
-                    block_id = get_block(x, y, z)
+                    block_id, data = get_block_info(x, y, z)
                     if block_id == -1 or (block_id > 0 and block_id != 4):  # 0: Air, 4: Water
-                        return True
+                        if is_stairs(block_id):
+                            f_id, f_data = get_block_info(x - 1, y, z)
+                            b_id, b_data = get_block_info(x + 1, y, z)
+                            l_id, l_data = get_block_info(x, y, z - 1)
+                            r_id, r_data = get_block_info(x, y, z + 1)
+                            aabbs = get_stair_aabbs(x, y, z, data, f_id, f_data, b_id, b_data, l_id, l_data, r_id, r_data)
+                            for i in range(3):
+                                ba = aabbs[i]
+                                if ba[3] > ba[0]: # Not empty
+                                    if self._aabb_intersect(aabb, ba): return True
+                        elif is_slab(block_id):
+                            ba = get_slab_aabbs(x, y, z, data)[0]
+                            if self._aabb_intersect(aabb, ba): return True
+                        else:
+                            return True
         return False
 
-    def _check_in_water(self, get_block, aabb):
+    def _check_in_water(self, get_block_info, aabb):
         """AABB içinde su (4) bloğu olup olmadığını kontrol eder."""
         min_x, min_y, min_z, max_x, max_y, max_z = aabb
         
@@ -103,10 +125,11 @@ class Player:
         for x in range(ix0, ix1 + 1):
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
-                    block_id = get_block(x, y, z)
+                    block_id, _ = get_block_info(x, y, z)
                     if block_id == 4:
                         return True
-    def _push_out_of_blocks(self, get_block):
+        return False
+    def _push_out_of_blocks(self, get_block_info):
         """Eğer oyuncu bir bloğun içine sıkışmışsa, onu en yakın boşluğa doğru iter."""
         # Oyuncunun AABB'sini al
         aabb = self._get_player_aabb(self.x, self.y, self.z)
@@ -117,13 +140,19 @@ class Player:
         iy0, iy1 = int(math.floor(min_y + 0.01)), int(math.floor(max_y))
         iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
         
+        from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+        
         stuck_blocks = []
         for bx in range(ix0, ix1 + 1):
             for by in range(iy0, iy1 + 1):
                 for bz in range(iz0, iz1 + 1):
-                    block_id = get_block(bx, by, bz)
+                    block_id, data = get_block_info(bx, by, bz)
                     if block_id == -1 or (block_id > 0 and block_id != 4):
-                        stuck_blocks.append((bx, by, bz))
+                        # Special check
+                        if is_stairs(block_id) or is_slab(block_id):
+                            pass # Push out doesn't easily handle complex AABBs correctly, we just push out from full blocks for simplicity
+                        else:
+                            stuck_blocks.append((bx, by, bz))
         
         if not stuck_blocks:
             return
@@ -144,34 +173,34 @@ class Player:
             
             push_speed = 0.1
             if min_dist == dist_up:
-                if get_block(bx, by + 1, bz) in (0, 4):
+                if get_block_info(bx, by + 1, bz)[0] in (0, 4):
                     self.y += push_speed
             elif min_dist == dist_left:
-                if get_block(bx - 1, by, bz) in (0, 4):
+                if get_block_info(bx - 1, by, bz)[0] in (0, 4):
                     self.x -= push_speed
                 else:
                     self.y += push_speed
             elif min_dist == dist_right:
-                if get_block(bx + 1, by, bz) in (0, 4):
+                if get_block_info(bx + 1, by, bz)[0] in (0, 4):
                     self.x += push_speed
                 else:
                     self.y += push_speed
             elif min_dist == dist_back:
-                if get_block(bx, by, bz - 1) in (0, 4):
+                if get_block_info(bx, by, bz - 1)[0] in (0, 4):
                     self.z -= push_speed
                 else:
                     self.y += push_speed
             else:
-                if get_block(bx, by, bz + 1) in (0, 4):
+                if get_block_info(bx, by, bz + 1)[0] in (0, 4):
                     self.z += push_speed
                 else:
                     self.y += push_speed
 
-    def update(self, dt, dx, dz, jump, crouch, sprint, get_block):
+    def update(self, dt, dx, dz, jump, crouch, sprint, get_block_info):
         """
         Her karede oyuncunun fiziğini günceller.
         dx, dz: Klavyeden gelen yön vektörü (Normalize edilmiş)
-        get_block: Dünyadan blok okuma fonksiyonu callback'i
+        get_block_info: Dünyadan blok okuma fonksiyonu callback'i (block_id, data)
         """
         if self.damage_cooldown > 0:
             self.damage_cooldown -= dt
@@ -200,7 +229,7 @@ class Player:
 
         # Head in water / Drowning logic
         head_y = self.y + 1.62
-        head_block = get_block(int(math.floor(self.x)), int(math.floor(head_y)), int(math.floor(self.z)))
+        head_block, _ = get_block_info(int(math.floor(self.x)), int(math.floor(head_y)), int(math.floor(self.z)))
         self.is_head_in_water = (head_block == 4)
         
         if self.is_head_in_water:
@@ -214,7 +243,7 @@ class Player:
                 self.air_supply = 300.0
 
         # Sıkışma kurtarma mekanizmasını çalıştır
-        self._push_out_of_blocks(get_block)
+        self._push_out_of_blocks(get_block_info)
         
         self.is_crouching = crouch
         self.is_sprinting = sprint
@@ -225,7 +254,7 @@ class Player:
         water_aabb = self._get_player_aabb(self.x, self.y, self.z)
         shrunk_aabb = (water_aabb[0], water_aabb[1], water_aabb[2],
                        water_aabb[3], water_aabb[4] - 0.4, water_aabb[5])
-        self.in_water = self._check_in_water(get_block, shrunk_aabb)
+        self.in_water = self._check_in_water(get_block_info, shrunk_aabb)
         
         if self.in_water:
             speed = 2.0
@@ -293,7 +322,7 @@ class Player:
                     self.x + dx - self.radius, self.y - 0.5, self.z - self.radius,
                     self.x + dx + self.radius, self.y - 0.01, self.z + self.radius
                 )
-                if self._check_collision(get_block, support_aabb):
+                if self._check_collision(get_block_info, support_aabb):
                     break
                 if abs(dx) <= 0.002:
                     dx = 0.0
@@ -305,8 +334,10 @@ class Player:
                 self.vx = 0.0
                 
         new_x = self.x + dx
-        if not self._check_collision(get_block, self._get_player_aabb(new_x, self.y, self.z)):
+        check_x = False
+        if not self._check_collision(get_block_info, self._get_player_aabb(new_x, self.y, self.z)):
             self.x = new_x
+            check_x = True
         else:
             self.vx = 0.0
             
@@ -319,7 +350,7 @@ class Player:
                     self.x - self.radius, self.y - 0.5, self.z + dz - self.radius,
                     self.x + self.radius, self.y - 0.01, self.z + dz + self.radius
                 )
-                if self._check_collision(get_block, support_aabb):
+                if self._check_collision(get_block_info, support_aabb):
                     break
                 if abs(dz) <= 0.002:
                     dz = 0.0
@@ -331,24 +362,57 @@ class Player:
                 self.vz = 0.0
                 
         new_z = self.z + dz
-        if not self._check_collision(get_block, self._get_player_aabb(self.x, self.y, new_z)):
+        check_z = False
+        if not self._check_collision(get_block_info, self._get_player_aabb(self.x, self.y, new_z)):
             self.z = new_z
+            check_z = True
         else:
             self.vz = 0.0
             
+        # Check for stepping up half blocks (Stairs/Slabs)
+        step_height = 0.6
+        if (not check_x and dx != 0) or (not check_z and dz != 0):
+            # We hit something horizontally. Let's see if we can step up.
+            if self.on_ground and not self.is_flying:
+                # Try stepping up by moving Y up by step_height, then X/Z, then check collision
+                step_aabb_y = self._get_player_aabb(self.x, self.y + step_height, self.z)
+                if not self._check_collision(get_block_info, step_aabb_y):
+                    # We can move up. Now try moving X/Z.
+                    can_step_x = False
+                    can_step_z = False
+                    if not check_x and dx != 0:
+                        step_aabb_x = self._get_player_aabb(self.x + dx, self.y + step_height, self.z)
+                        if not self._check_collision(get_block_info, step_aabb_x):
+                            can_step_x = True
+                    if not check_z and dz != 0:
+                        step_aabb_z = self._get_player_aabb(self.x, self.y + step_height, self.z + dz)
+                        if not self._check_collision(get_block_info, step_aabb_z):
+                            can_step_z = True
+                            
+                    if can_step_x or can_step_z:
+                        if can_step_x:
+                            self.x += dx
+                        if can_step_z:
+                            self.z += dz
+                        self.y += step_height
+                        # Adjust velocity so we don't lose momentum
+                        if can_step_x: self.vx = dx / dt
+                        if can_step_z: self.vz = dz / dt
+            
         # Y Ekseninde Hareket (Düşme / Zıplama / Uçma)
         new_y = self.y + self.vy * dt
-        if not self._check_collision(get_block, self._get_player_aabb(self.x, new_y, self.z)) or self.is_flying:
+        if not self._check_collision(get_block_info, self._get_player_aabb(self.x, new_y, self.z)) or self.is_flying:
             self.y = new_y
             if not self.is_flying:
-                if not self._check_collision(get_block, self._get_player_aabb(self.x, self.y - 0.01, self.z)):
+                if not self._check_collision(get_block_info, self._get_player_aabb(self.x, self.y - 0.01, self.z)):
                     self.on_ground = False
         else:
             # Yere değdik veya kafayı tavana vurduk
             if self.vy < 0:
                 self.on_ground = True
-                # Yere tam oturt
-                self.y = float(math.floor(self.y))
+                # Yere tam oturt (or leave at current collision boundary)
+                # Not resetting to floor() because stairs can have Y not at exact integers.
+                
                 # Calculate fall damage
                 fall_dist = self.highest_y - self.y
                 if fall_dist > 3.0:
@@ -365,7 +429,7 @@ class Player:
                 self.highest_y = self.y
 
         # Check cactus collision
-        if self._check_block_intersection(get_block, self._get_player_aabb(self.x, self.y, self.z), 13): # 13 is CACTUS
+        if self._check_block_intersection(get_block_info, self._get_player_aabb(self.x, self.y, self.z), 13): # 13 is CACTUS
             self.take_damage(1.0)
             
     def get_eye_position(self):

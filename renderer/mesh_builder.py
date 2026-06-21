@@ -7,6 +7,8 @@ from numba import njit
 import math
 from world.mc_terrain import CHUNK_SIZE, CHUNK_HEIGHT
 from world.terrain import BLOCK_COLORS_ARRAY, BLOCK_OPAQUE_ARRAY, WATER, GLASS, AIR
+from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+
 BIOME_COLORS = np.zeros((30, 3), dtype=np.float32)
 BIOME_COLORS[1] = [0.55, 0.78, 0.35] # PLAINS
 BIOME_COLORS[2] = [0.80, 0.80, 0.30] # DESERT
@@ -34,6 +36,24 @@ def _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z):
         if n_front.shape[0] == 0: return 0
         return n_front[x, y, 0]
     return blocks[x, y, z]
+
+@njit(nogil=True)
+def _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y, z):
+    if y < 0 or y >= CHUNK_HEIGHT:
+        return 0
+    if x < 0:
+        if d_left.shape[0] == 0: return 0
+        return d_left[CHUNK_SIZE - 1, y, z]
+    if x >= CHUNK_SIZE:
+        if d_right.shape[0] == 0: return 0
+        return d_right[0, y, z]
+    if z < 0:
+        if d_back.shape[0] == 0: return 0
+        return d_back[x, y, CHUNK_SIZE - 1]
+    if z >= CHUNK_SIZE:
+        if d_front.shape[0] == 0: return 0
+        return d_front[x, y, 0]
+    return data_in[x, y, z]
 
 @njit(nogil=True)
 def _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z):
@@ -196,13 +216,132 @@ def _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z):
     return r_sum / count, g_sum / count, b_sum / count
 
 @njit(nogil=True)
+def _emit_aabb_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, overlay_idx):
+    min_x, min_y, min_z, max_x, max_y, max_z = aabb
+    if max_x <= min_x or max_y <= min_y or max_z <= min_z:
+        return v_idx
+        
+    faces = [
+        (1,  1, 0, 2,  0.0,  1.0,  0.0, min_y, max_y, min_x, max_x, min_z, max_z), # top
+        (1, -1, 0, 2,  0.0, -1.0,  0.0, min_y, max_y, min_x, max_x, min_z, max_z), # bottom
+        (0,  1, 2, 1,  1.0,  0.0,  0.0, min_x, max_x, min_z, max_z, min_y, max_y), # right
+        (0, -1, 2, 1, -1.0,  0.0,  0.0, min_x, max_x, min_z, max_z, min_y, max_y), # left
+        (2,  1, 0, 1,  0.0,  0.0,  1.0, min_z, max_z, min_x, max_x, min_y, max_y), # front
+        (2, -1, 0, 1,  0.0,  0.0, -1.0, min_z, max_z, min_x, max_x, min_y, max_y)  # back
+    ]
+    
+    for f in range(6):
+        axis, direction, u_axis, v_axis, nx, ny, nz, d_min, d_max, u_min, u_max, v_min, v_max = faces[f]
+        
+        # Local boundaries
+        loc_min_x = min_x - vx
+        loc_max_x = max_x - vx
+        loc_min_y = min_y - vy
+        loc_max_y = max_y - vy
+        loc_min_z = min_z - vz
+        loc_max_z = max_z - vz
+
+        # Calculate face light and culling
+        cull = False
+        if ny > 0.5 and loc_max_y >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y + 1, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y + 1, z)
+        elif ny < -0.5 and loc_min_y <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y - 1, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y - 1, z)
+        elif nx > 0.5 and loc_max_x >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x + 1, y, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x + 1, y, z)
+        elif nx < -0.5 and loc_min_x <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x - 1, y, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x - 1, y, z)
+        elif nz > 0.5 and loc_max_z >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z + 1)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z + 1)
+        elif nz < -0.5 and loc_min_z <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z - 1)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z - 1)
+        else:
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z)
+            if face_light == 0:
+                adj_x, adj_y, adj_z = x, y, z
+                if ny > 0.5: adj_y += 1
+                elif ny < -0.5: adj_y -= 1
+                elif nx > 0.5: adj_x += 1
+                elif nx < -0.5: adj_x -= 1
+                elif nz > 0.5: adj_z += 1
+                elif nz < -0.5: adj_z -= 1
+                face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, adj_x, adj_y, adj_z)
+            
+        if cull: continue
+            
+        d_val = d_max if direction > 0 else d_min
+        
+        c0 = [0.0, 0.0, 0.0]; c0[axis] = d_val; c0[u_axis] = u_min; c0[v_axis] = v_min
+        c1 = [0.0, 0.0, 0.0]; c1[axis] = d_val; c1[u_axis] = u_max; c1[v_axis] = v_min
+        c2 = [0.0, 0.0, 0.0]; c2[axis] = d_val; c2[u_axis] = u_max; c2[v_axis] = v_max
+        c3 = [0.0, 0.0, 0.0]; c3[axis] = d_val; c3[u_axis] = u_min; c3[v_axis] = v_max
+        
+        e1x = c1[0] - c0[0]; e1y = c1[1] - c0[1]; e1z = c1[2] - c0[2]
+        e2x = c3[0] - c0[0]; e2y = c3[1] - c0[1]; e2z = c3[2] - c0[2]
+        cross_x = e1y*e2z - e1z*e2y
+        cross_y = e1z*e2x - e1x*e2z
+        cross_z = e1x*e2y - e1y*e2x
+        dot_prod = cross_x*nx + cross_y*ny + cross_z*nz
+        
+        if dot_prod > 0: tri_order = [0, 1, 2, 0, 2, 3]
+        else: tri_order = [0, 2, 1, 0, 3, 2]
+            
+        corners = [c0, c1, c2, c3]
+        uvs = [
+            [u_min, v_min],
+            [u_max, v_min],
+            [u_max, v_max],
+            [u_min, v_max]
+        ]
+        
+        for idx in tri_order:
+            if v_idx + 15 > verts.shape[0]: return v_idx
+            c = corners[idx]
+            u_val, v_val = uvs[idx]
+            verts[v_idx]   = c[0]
+            verts[v_idx+1] = c[1]
+            verts[v_idx+2] = c[2]
+            verts[v_idx+3] = nx
+            verts[v_idx+4] = ny
+            verts[v_idx+5] = nz
+            verts[v_idx+6] = r
+            verts[v_idx+7] = g
+            verts[v_idx+8] = b
+            verts[v_idx+9] = u_val
+            verts[v_idx+10]= v_val
+            verts[v_idx+11]= layer_idx
+            verts[v_idx+12]= 3.0 # Fake AO
+            verts[v_idx+13]= float(face_light)
+            verts[v_idx+14]= overlay_idx
+            v_idx += 15
+            
+    return v_idx
+
+@njit(nogil=True)
 def _is_opaque(b):
     if b < 1024:
         return BLOCK_OPAQUE_ARRAY[b]
     return True
 
 @njit(nogil=True)
-def _build_chunk_mesh_jit(blocks, lights_in, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, wx, wz, biomes, block_layers, block_overlays):
+def _build_chunk_mesh_jit(blocks, data_in, lights_in, 
+                          n_left, n_right, n_front, n_back, 
+                          d_left, d_right, d_front, d_back,
+                          l_left, l_right, l_front, l_back, 
+                          b_left, b_right, b_front, b_back, 
+                          wx, wz, biomes, block_layers, block_overlays):
     lights = lights_in.copy()
     _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back)
     
@@ -245,6 +384,8 @@ def _build_chunk_mesh_jit(blocks, lights_in, n_left, n_right, n_front, n_back, l
                     
                     block_id = blocks[x, y, z]
                     if block_id == AIR or block_id in (31, 37, 38, 175, 176, 177, 178): continue
+                    
+                    if is_stairs(block_id) or is_slab(block_id): continue
                         
                     npos = [x, y, z]
                     npos[axis] += direction
@@ -455,19 +596,66 @@ def _build_chunk_mesh_jit(blocks, lights_in, n_left, n_right, n_front, n_back, l
                             trans_verts[t_idx+14]= 0.0
                             t_idx += 15
 
+    for x in range(CHUNK_SIZE):
+        for y in range(CHUNK_HEIGHT):
+            for z in range(CHUNK_SIZE):
+                block_id = blocks[x, y, z]
+                if is_stairs(block_id) or is_slab(block_id):
+                    if o_idx + 15 * 6 * 3 > opaque_verts.shape[0]: continue
+                    
+                    vx = float(x) + wx
+                    vy = float(y)
+                    vz = float(z) + wz
+                    
+                    data = data_in[x, y, z] if data_in is not None else 0
+                    layer_idx = float(block_layers[block_id, 0])
+                    overlay_idx = float(block_overlays[block_id, 0])
+                    
+                    if layer_idx > 0.0:
+                        r, g, b = 1.0, 1.0, 1.0
+                    else:
+                        c = BLOCK_COLORS_ARRAY[block_id]
+                        r, g, b = c[0], c[1], c[2]
+                        
+                    if is_stairs(block_id):
+                        f_id = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x - 1, y, z)
+                        f_data = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x - 1, y, z)
+                        b_id = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x + 1, y, z)
+                        b_data = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x + 1, y, z)
+                        l_id = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z - 1)
+                        l_data = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y, z - 1)
+                        r_id = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z + 1)
+                        r_data = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y, z + 1)
+                        
+                        aabbs = get_stair_aabbs(vx, vy, vz, data, f_id, f_data, b_id, b_data, l_id, l_data, r_id, r_data)
+                        for i in range(3):
+                            aabb = aabbs[i]
+                            if aabb[3] > aabb[0]:
+                                o_idx = _emit_aabb_faces(opaque_verts, o_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, overlay_idx)
+                                
+                    elif is_slab(block_id):
+                        aabbs = get_slab_aabbs(vx, vy, vz, data)
+                        aabb = aabbs[0]
+                        o_idx = _emit_aabb_faces(opaque_verts, o_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, overlay_idx)
+
     return opaque_verts[:o_idx], trans_verts[:t_idx]
 
-def build_chunk_mesh_bg(blocks, lights, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, cx, cz, biomes, block_layers, block_overlays):
+def build_chunk_mesh_bg(blocks, data, lights, n_left, n_right, n_front, n_back, d_left, d_right, d_front, d_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, cx, cz, biomes, block_layers, block_overlays):
     wx = float(cx * CHUNK_SIZE)
     wz = float(cz * CHUNK_SIZE)
-    return _build_chunk_mesh_jit(blocks, lights, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, wx, wz, biomes, block_layers, block_overlays)
+    return _build_chunk_mesh_jit(blocks, data, lights, n_left, n_right, n_front, n_back, d_left, d_right, d_front, d_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, wx, wz, biomes, block_layers, block_overlays)
 
-def build_chunk_mesh(blocks, lights, cx, cz, world_chunks, world_light_maps, world_biomes, block_layers, block_overlays):
+def build_chunk_mesh(blocks, data, lights, cx, cz, world_chunks, world_data, world_light_maps, world_biomes, block_layers, block_overlays):
     empty = np.zeros((0,0,0), dtype=np.uint8)
     n_left = world_chunks.get((cx - 1, cz), empty)
     n_right = world_chunks.get((cx + 1, cz), empty)
     n_front = world_chunks.get((cx, cz + 1), empty)
     n_back = world_chunks.get((cx, cz - 1), empty)
+    
+    d_left = world_data.get((cx - 1, cz), empty)
+    d_right = world_data.get((cx + 1, cz), empty)
+    d_front = world_data.get((cx, cz + 1), empty)
+    d_back = world_data.get((cx, cz - 1), empty)
     
     l_left = world_light_maps.get((cx - 1, cz), empty)
     l_right = world_light_maps.get((cx + 1, cz), empty)
@@ -486,4 +674,4 @@ def build_chunk_mesh(blocks, lights, cx, cz, world_chunks, world_light_maps, wor
     empty_b = np.zeros((16, 16), dtype=np.int32)
     biomes = world_biomes.get((cx, cz), empty_b)
     
-    return _build_chunk_mesh_jit(blocks, lights, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, wx, wz, biomes, block_layers, block_overlays)
+    return _build_chunk_mesh_jit(blocks, data, lights, n_left, n_right, n_front, n_back, d_left, d_right, d_front, d_back, l_left, l_right, l_front, l_back, b_left, b_right, b_front, b_back, wx, wz, biomes, block_layers, block_overlays)
