@@ -45,6 +45,13 @@ class Player:
         self.heal_timer = 0.0
         self.air_supply = 300.0
         self.is_head_in_water = False
+        self.tick_count = 0
+        
+        # Animation attributes for rendering
+        self.walk_anim_pos = 0.0
+        self.walk_anim_pos_o = 0.0
+        self.walk_anim_speed = 0.0
+        self.walk_anim_speed_o = 0.0
         
     def take_damage(self, amount):
         if self.damage_cooldown <= 0.0:
@@ -207,6 +214,11 @@ class Player:
             
         # Hunger system
         self.hunger_timer += dt
+        
+        self.tick_count += 1
+        
+        start_x = self.x
+        start_z = self.z
         if self.hunger_timer >= 15.0:  # Lose 1 hunger every 15 seconds
             self.hunger_timer = 0.0
             if self.hunger > 0:
@@ -284,7 +296,7 @@ class Player:
             if self.in_water:
                 # Su fiziği
                 if active_jump:
-                    vy_tick += 0.08        # Artırıldı: Sudan daha rahat çıkabilmek için
+                    vy_tick += 0.04        # PlayerMovementCodes: yd += 0.04f
                 vy_tick *= 0.8             # C++ travel(): yd *= 0.8
                 vy_tick -= 0.02            # C++ travel(): yd -= 0.02
             else:
@@ -299,11 +311,21 @@ class Player:
                 else:
                     # Hava fiziği
                     if active_jump and self.on_ground:
-                        vy_tick = 0.50     # Artırıldı: 1 bloğun üzerine çıkabilmek için
+                        # 0.51 değeri, PythonCraft'ta yerçekimi hareketi uygulanmadan önce 
+                        # hesaplandığı için C++'taki ilk kare 0.42 zıplama hızına denktir. 
+                        # ((0.51 - 0.08) * 0.98 = ~0.42)
+                        vy_tick = 0.51
                         self.on_ground = False
+                        
+                        # PlayerMovementCodes: isSprinting() boost
+                        if self.is_sprinting:
+                            # 0.2 blocks per tick = 4.0 blocks per second
+                            self.vx += dx * 4.0
+                            self.vz += dz * 4.0
                     
                     vy_tick -= 0.08        # C++ travel() yerçekimi
                     vy_tick *= 0.98        # C++ travel() drag
+
             
             self.vy = vy_tick * 20.0       # b/tick → b/s
             
@@ -458,6 +480,25 @@ class Player:
         # Check cactus collision
         if self._check_block_intersection(get_block_info, self._get_player_aabb(self.x, self.y, self.z), 13): # 13 is CACTUS
             self.take_damage(1.0)
+            
+        # Update walk animation speeds
+        self.walk_anim_pos_o = self.walk_anim_pos
+        self.walk_anim_speed_o = self.walk_anim_speed
+        
+        actual_dx = self.x - start_x
+        actual_dz = self.z - start_z
+        
+        dist_moved = math.sqrt(actual_dx * actual_dx + actual_dz * actual_dz)
+        # target_speed determines how far the legs swing
+        # Make sprint animation much wider (amplitude)
+        speed_mult = 1.8 if getattr(self, 'is_sprinting', False) else 1.0
+        target_speed = min(dist_moved * 4.0 * speed_mult, 1.0)
+        self.walk_anim_speed += (target_speed - self.walk_anim_speed) * 0.4
+        
+        # position accumulates based on actual distance moved, so legs don't spin wildly
+        # Make sprint animation cycle slightly faster 
+        pos_mult = 3.5 if getattr(self, 'is_sprinting', False) else 2.5
+        self.walk_anim_pos += dist_moved * pos_mult
             
     def get_eye_position(self):
         """Kameranın olması gereken yer (göz hizası)."""

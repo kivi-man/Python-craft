@@ -235,6 +235,12 @@ class InputMixin:
         if symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
             self.close()
+        elif symbol == key.F5:
+            if hasattr(self, 'camera'):
+                self.camera.third_person_mode = (self.camera.third_person_mode + 1) % 3
+                modes = ["First Person", "Third Person Back", "Third Person Front"]
+                if self.debug_mode:
+                    print(f"[CAMERA] Switched to {modes[self.camera.third_person_mode]}")
         elif symbol == key.Q:
             if self.selected_block_id > 0 and self.inventory_counts[self.selected_slot] > 0:
                 self.inventory_counts[self.selected_slot] -= 1

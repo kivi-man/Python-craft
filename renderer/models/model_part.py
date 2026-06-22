@@ -32,9 +32,8 @@ class ModelPart:
         })
         return self
         
-    def compile(self, scale=0.0, swap_top_bottom=False):
+    def compile(self, scale=0.0, swap_top_bottom=False, tex_w=64.0, tex_h=32.0):
         verts = []
-        tex_w, tex_h = 64.0, 32.0
         
         for box in self.boxes:
             x0 = (box['off'][0] - box['scale']) * scale
@@ -169,6 +168,7 @@ class ModelPart:
         
         local_matrix = self.get_matrix(scale)
         final_matrix = parent_matrix @ local_matrix
+        self.last_final_matrix = final_matrix
         
         flat_matrix = final_matrix.T.flatten()
         view_arr = (GLfloat * 16)(*flat_matrix)

@@ -67,6 +67,122 @@ class EntityMixin:
             
         self.particle_renderer.render_particles(self.block_particles, self, partial_tick)
         
+        # Render Player in Third Person
+        if hasattr(self, 'camera') and self.camera.third_person_mode > 0:
+            if not hasattr(self, 'player_renderer'):
+                from renderer.player_renderer import PlayerRenderer
+                self.player_renderer = PlayerRenderer()
+            # Calculate walk_speed based on player velocity, or simplified
+            speed = (abs(self.player.vx) + abs(self.player.vz)) * 0.5
+            walk_pos = getattr(self, 'distance_walked', 0.0) * 1.5
+            swinging = getattr(self, 'swing_time', 0.0)
+            
+            # Set required rotation attributes for entity renderer
+            # If model looks inverted left/right, flip the yaw calculation. 
+            yaw = self.camera.yaw - 90
+            
+            if not hasattr(self.player, 'yHeadRot'):
+                self.player.yHeadRot = yaw
+                self.player.yHeadRotO = yaw
+                self.player.yBodyRot = yaw
+                self.player.yBodyRotO = yaw
+                
+            self.player.yHeadRotO = self.player.yHeadRot
+            self.player.yHeadRot = yaw
+            
+            self.player.yBodyRotO = self.player.yBodyRot
+            
+            moving = abs(self.player.vx) > 0.1 or abs(self.player.vz) > 0.1
+            
+            # Slowly turn body towards head
+            diff = self.player.yHeadRot - self.player.yBodyRot
+            while diff < -180.0: diff += 360.0
+            while diff >= 180.0: diff -= 360.0
+            
+            if moving:
+                # When moving, the body mostly faces where you look
+                self.player.yBodyRot += diff * 0.3
+            else:
+                # When standing still, body only turns if head turns too far
+                if diff > 45.0: self.player.yBodyRot += (diff - 45.0) * 0.2
+                if diff < -45.0: self.player.yBodyRot += (diff + 45.0) * 0.2
+                
+            # Give player entity required attributes for renderer
+            self.player.swing_progress = swinging
+            
+            # Invert pitch to fix looking up/down
+            self.player_renderer.render(self.player, self.player.x, self.player.y, self.player.z, yaw, -self.camera.pitch, partial_tick, camera_view, u_view_loc, u_tint_color_loc)
+            
+            # Render held block in 3rd person
+            if hasattr(self, 'hand_block_vaos') and self.selected_block_id in self.hand_block_vaos:
+                if hasattr(self.player_renderer.model.arm0, 'last_final_matrix'):
+                    import numpy as np
+                    import math
+                    from pyglet.gl import glUniformMatrix4fv, GL_FALSE, GLfloat, glBindVertexArray, glDrawArrays, GL_TRIANGLES, glBindTexture, GL_TEXTURE_2D_ARRAY
+                    
+                    arm_mat = self.player_renderer.model.arm0.last_final_matrix
+                    scale_factor = 0.0625
+                    
+                    # Minecraft translates the held item slightly off-center of the hand
+                    # Center of hand X=-1, Y=8, local Z forward is negative
+                    t_hand = np.array([
+                        [1, 0, 0, -1.0 * scale_factor],
+                        [0, 1, 0, 9.0 * scale_factor],
+                        [0, 0, 1, -2.0 * scale_factor],
+                        [0, 0, 0, 1]
+                    ], dtype=np.float32)
+                    
+                    # Block VAO goes from 0 to 1. Center it around (0.5, 0.5, 0.5)
+                    t_center = np.array([
+                        [1, 0, 0, -0.5],
+                        [0, 1, 0, -0.5],
+                        [0, 0, 1, -0.5],
+                        [0, 0, 0, 1]
+                    ], dtype=np.float32)
+                    
+                    # Block scale
+                    # CRITICAL: EntityRenderer applies -1 scale to X and Y. We must invert them back 
+                    # so the block texture is not rendered upside down/mirrored!
+                    s = 0.35
+                    s_mat = np.array([
+                        [-s, 0, 0, 0],
+                        [0, -s, 0, 0],
+                        [0, 0, s, 0],
+                        [0, 0, 0, 1]
+                    ], dtype=np.float32)
+                    
+                    # Rotate block so it looks nice in hand
+                    ry_rad = math.radians(45)
+                    cy, sy = math.cos(ry_rad), math.sin(ry_rad)
+                    ry_mat = np.array([
+                        [cy, 0, sy, 0],
+                        [0, 1, 0, 0],
+                        [-sy, 0, cy, 0],
+                        [0, 0, 0, 1]
+                    ], dtype=np.float32)
+                    
+                    rx_rad = math.radians(10)
+                    cx_val, sx_val = math.cos(rx_rad), math.sin(rx_rad)
+                    rx_mat = np.array([
+                        [1, 0, 0, 0],
+                        [0, cx_val, -sx_val, 0],
+                        [0, sx_val, cx_val, 0],
+                        [0, 0, 0, 1]
+                    ], dtype=np.float32)
+                    
+                    block_mat = arm_mat @ t_hand @ ry_mat @ rx_mat @ s_mat @ t_center
+                    flat_mat = block_mat.T.flatten()
+                    
+                    # CRITICAL: Re-bind world texture atlas, because player texture is currently bound!
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
+                    
+                    glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, (GLfloat * 16)(*flat_mat))
+                    
+                    vao_info = self.hand_block_vaos[self.selected_block_id]
+                    glBindVertexArray(vao_info[0])
+                    glDrawArrays(GL_TRIANGLES, 0, vao_info[2])
+                    glBindVertexArray(0)
+
         for entity in self.entities:
             renderer = self.renderers.get(type(entity))
             if renderer:

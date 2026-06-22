@@ -461,7 +461,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self._update_entities(dt)
             
         eye_pos = self.player.get_eye_position()
-        self.camera.x, self.camera.y, self.camera.z = eye_pos[0], eye_pos[1], eye_pos[2]
         
         # 3D Audio Listener Update
         import pyglet
@@ -708,6 +707,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         aspect = self.width / max(self.height, 1)
         proj = perspective_matrix(70.0, aspect, 0.1, 1000.0)
+        
+        # Update camera position right before rendering to sync with mouse motion
+        eye_pos = self.player.get_eye_position()
+        self.camera.update_third_person(eye_pos[0], eye_pos[1], eye_pos[2], self.get_block_info)
         view = self.camera.get_view_matrix()
         
         glUniformMatrix4fv(self.u_projection, 1, GL_FALSE, proj)
@@ -860,7 +863,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             glUseProgram(0)
 
         # 3D Held Block Viewmodel Rendering
-        if hasattr(self, 'hand_block_vaos') and self.selected_block_id in self.hand_block_vaos:
+        if hasattr(self, 'hand_block_vaos') and self.selected_block_id in self.hand_block_vaos and getattr(self.camera, 'third_person_mode', 0) == 0:
             glClear(GL_DEPTH_BUFFER_BIT)
             glEnable(GL_DEPTH_TEST)
             glEnable(GL_CULL_FACE)
