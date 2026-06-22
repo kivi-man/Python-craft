@@ -160,12 +160,10 @@ Instead, Pythoncraft connects to an asynchronous SQLite database (`world_db.py`)
 
 ## 📸 Media Gallery
 
-*(**Note to Contributor/Player:** Insert your Biome screenshots and your newly recorded Crafting/Pig GIFs here!)*
-
 | **Crafting Engine Architecture** | **AI Mobs (Pigs)** |
-| :---: | :---: |
-| *[Drop your Crafting Table GIF here]* | *[Drop your Pig wandering GIF here]* |
-| **Biome Diversity: Hot Climates** | **Biome Diversity: Cold/Lush Climates** |
+|:---:|:---:|
+| ![Crafting](./crafting.gif) | ![Pig Wandering](./pig.gif) |
+| **Massive Underground Cave Networks** | **Endless Voxel Biomes** |
 | *[Drop a screenshot of a Biome here]* | *[Drop another Biome screenshot here]* |
 
 ---
