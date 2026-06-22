@@ -20,6 +20,24 @@ class Pig(Animal):
         data = super().to_dict()
         data['type'] = 'Pig'
         return data
+        
+    def ai_step(self):
+        super().ai_step()
+        
+        # Step sound
+        if not self.dead and (abs(self.dx) > 0.01 or abs(self.dz) > 0.01) and getattr(self, 'on_ground', True):
+            if not hasattr(self, 'distance_walked'): self.distance_walked = 0.0
+            import math
+            # self.dx/self.dz are blocks per tick. Accumulate total blocks moved.
+            self.distance_walked += math.sqrt(self.dx**2 + self.dz**2)
+            if self.distance_walked > 1.2:
+                self.distance_walked = 0.0
+                if hasattr(self, 'level') and self.level is not None and hasattr(self.level, 'sound_system'):
+                    self.level.sound_system.play("eSoundType_MOB_PIG_STEP", x=self.x, y=self.y, z=self.z, volume=0.2)
+
+    def play_ambient_sound(self):
+        if hasattr(self, 'level') and self.level is not None and hasattr(self.level, 'sound_system'):
+            self.level.sound_system.play("eSoundType_MOB_PIG_AMBIENT", x=self.x, y=self.y, z=self.z, volume=0.5)
 
     def hurt(self, damage):
         was_dead = self.dead

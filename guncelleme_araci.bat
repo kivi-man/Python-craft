@@ -23,8 +23,20 @@ echo [2] Degisiklikler kaydediliyor...
 echo [3] Github'a yukleniyor...
 "C:\Program Files\Git\cmd\git.exe" push origin main
 
-echo.
-echo ===================================================
-echo Islem tamamlandi! Degisiklikler Github'da yayinda.
-echo ===================================================
+if %ERRORLEVEL% neq 0 (
+    color 0C
+    echo.
+    echo ===================================================
+    echo HATA: Github'a yukleme basarisiz oldu!
+    echo Olası nedenler:
+    echo 1. İnternet baglantiniz kopmus olabilir.
+    echo 2. Github remote uzerinde yeni degisiklikler var.
+    echo    (Once 'git pull' yapmaniz gerekir)
+    echo ===================================================
+) else (
+    echo.
+    echo ===================================================
+    echo Islem tamamlandi! Degisiklikler Github'da yayinda.
+    echo ===================================================
+)
 pause

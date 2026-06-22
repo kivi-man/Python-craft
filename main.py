@@ -42,6 +42,7 @@ from renderer.camera import Camera
 from core.frustum import get_visible_chunk_indices
 from world.mc_terrain import load_or_generate_chunk
 from core.world_db import save_chunk
+from core.sound_system import SoundSystem
 
 
 from renderer.gui_mixin import GUIMixin
@@ -183,6 +184,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
+        self.sound_system = SoundSystem(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'SFX', 'Pythoncraft'))
         self.inventory_blocks = [0] * 45
         self.inventory_counts = [0] * 45
         self.selected_slot = 0
@@ -233,6 +235,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         super().on_close()
 
     def update(self, dt):
+        # Update Sound System (Music and ambiance)
+        if hasattr(self, 'sound_system'):
+            self.sound_system.update_music(dt, dimension="OVERWORLD")
+
         import time
         t_start = time.perf_counter()
         dt = min(dt, 0.05)
@@ -287,6 +293,15 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     if not hasattr(self, 'eating_progress'):
                         self.eating_progress = 0.0
                     self.eating_progress += dt
+                    
+                    # Play random eating sound every 0.3 seconds
+                    if not hasattr(self, 'last_eat_sound'):
+                        self.last_eat_sound = 0.0
+                    if self.eating_progress - self.last_eat_sound > 0.3:
+                        self.last_eat_sound = self.eating_progress
+                        import random
+                        self.sound_system.play("eSoundType_EATING", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.5, pitch=random.uniform(0.9, 1.1))
+                        
                     # Bob hand slightly while eating
                     self.swing_time += dt * 3.0
                     
@@ -328,12 +343,24 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                                 import random
                                 if random.random() < 0.25:
                                     self.spawn_crack_particles(hx, hy, hz, broken_id, 1)
+                                    # Play continuous digging sound
+                                    if not hasattr(self, 'last_dig_sound_time'): self.last_dig_sound_time = 0.0
+                                    import time
+                                    if time.perf_counter() - self.last_dig_sound_time > 0.2:
+                                        self.last_dig_sound_time = time.perf_counter()
+                                        sound_enum = self.sound_system.get_dig_sound(broken_id)
+                                        self.sound_system.play(sound_enum, x=hx+0.5, y=hy+0.5, z=hz+0.5, volume=0.3, pitch=random.uniform(0.9, 1.1))
                                     
                                 required_time = hardness * 5.0
                                 if self.breaking_progress >= required_time:
                                     self.spawn_destruction_particles(hx, hy, hz, broken_id)
                                     self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
                                     self.set_block(hx, hy, hz, 0)
+                                    
+                                    # Play break sound
+                                    sound_enum = self.sound_system.get_dig_sound(broken_id)
+                                    self.sound_system.play(sound_enum, x=hx+0.5, y=hy+0.5, z=hz+0.5, volume=0.5)
+                                    
                                     self.breaking_pos = None
                                     self.breaking_progress = 0.0
                                     self.mouse_action_cooldown = 0.20
@@ -372,7 +399,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
         jump = self.keys[key.SPACE]
         crouch = self.keys[key.LSHIFT]
-        sprint = self.keys[key.LCTRL]
+        sprint = self.keys[key.LCTRL] or getattr(self, 'is_sprinting_w', False)
         
         # Prevent player from falling if inside an unloaded chunk
         pcx = int(math.floor(self.player.x / CHUNK_SIZE))
@@ -380,7 +407,53 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         t_player_start = time.perf_counter()
         if (pcx, pcz) in self.world_chunks:
+            old_x, old_z = self.player.x, self.player.z
+            old_vy = self.player.vy
+            was_on_ground = getattr(self.player, 'on_ground', False)
+            was_in_water = getattr(self.player, 'in_water', False)
+            
             self.player.update(dt, dx, dz, jump, crouch, sprint, self.get_block_info)
+            
+            is_on_ground = getattr(self.player, 'on_ground', False)
+            is_in_water = getattr(self.player, 'in_water', False)
+            
+            # Fall Damage Sound
+            if is_on_ground and not was_on_ground and not is_in_water:
+                if old_vy < -25.0:
+                    self.sound_system.play("eSoundType_DAMAGE_FALL_BIG", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.8)
+                    self.sound_system.play("eSoundType_DAMAGE_HURT", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.8)
+                elif old_vy < -15.0:
+                    self.sound_system.play("eSoundType_DAMAGE_FALL_SMALL", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.5)
+                    self.sound_system.play("eSoundType_DAMAGE_HURT", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.5)
+            
+            # Splash Sound
+            if is_in_water and not was_in_water and old_vy < -10.0:
+                self.sound_system.play("eSoundType_RANDOM_SPLASH", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.6)
+                
+            # Accumulate walking distance regardless of being on ground (for bunny hopping)
+            dx_moved = self.player.x - old_x
+            dz_moved = self.player.z - old_z
+            dist = math.sqrt(dx_moved*dx_moved + dz_moved*dz_moved)
+            if not hasattr(self, 'distance_walked'): self.distance_walked = 0.0
+            self.distance_walked += dist
+            
+            if is_on_ground or is_in_water:
+                step_threshold = 1.0 if sprint else 1.5
+                
+                # Force a landing step sound if landing from a small jump
+                if is_on_ground and not was_on_ground and not is_in_water:
+                    if old_vy >= -15.0:
+                        self.distance_walked = step_threshold + 0.1
+                        
+                if self.distance_walked > step_threshold:
+                    self.distance_walked = 0.0
+                    if is_in_water:
+                        self.sound_system.play("eSoundType_LIQUID_SWIM", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.3)
+                    else:
+                        block_below = self.get_block(self.player.x, self.player.y - 0.1, self.player.z)
+                        if block_below > 0:
+                            sound_enum = self.sound_system.get_step_sound(block_below)
+                            self.sound_system.play(sound_enum, x=self.player.x, y=self.player.y, z=self.player.z, volume=0.3)
         else:
             self.player.vy = 0.0 # Reset gravity accumulation
         t_player_end = time.perf_counter()
@@ -389,6 +462,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
         eye_pos = self.player.get_eye_position()
         self.camera.x, self.camera.y, self.camera.z = eye_pos[0], eye_pos[1], eye_pos[2]
+        
+        # 3D Audio Listener Update
+        import pyglet
+        try:
+            listener = pyglet.media.get_audio_driver().get_listener()
+            listener.position = (self.camera.x, self.camera.y, self.camera.z)
+            fx, fy, fz = self.camera.get_front()
+            listener.forward_orientation = (fx, fy, fz)
+            listener.up_orientation = (0, 1, 0)
+        except Exception as e:
+            pass # Failsafe if audio driver is missing
         
         dur = (time.perf_counter() - t_start) * 1000.0
         if dur > 2.0:
@@ -550,6 +634,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 
         slot_id = self.inventory_blocks[clicked_slot]
         slot_count = self.inventory_counts[clicked_slot]
+        
+        # Play UI click sound
+        if hasattr(self, 'sound_system'):
+            self.sound_system.play("eSoundType_RANDOM_CLICK", volume=0.5)
         
         cursor_id = getattr(self, 'cursor_item_id', 0)
         cursor_count = getattr(self, 'cursor_item_count', 0)
@@ -971,7 +1059,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         # 2D GUI Elements
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
-        
+        # UI/Inventory tick
         if getattr(self, 'inventory_open', False):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             
@@ -1200,6 +1288,13 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self.inventory_blocks[i] = 0
 
     def on_key_press(self, symbol, modifiers):
+        if symbol == key.W:
+            import time
+            current_time = time.time()
+            if current_time - getattr(self, 'last_w_press_time', 0) < 0.3:
+                self.is_sprinting_w = True
+            self.last_w_press_time = current_time
+
         if symbol == key.ESCAPE:
             if getattr(self, 'inventory_open', False):
                 self.inventory_open = False
@@ -1218,6 +1313,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         elif symbol == key.P:
             self.spawn_pig(self.player.x, self.player.y + 2.5, self.player.z)
     
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.W:
+            self.is_sprinting_w = False
+        # super().on_key_release(symbol, modifiers)
+        if hasattr(InputMixin, 'on_key_release'):
+            InputMixin.on_key_release(self, symbol, modifiers)
+            
     def _update_title(self, dt):
         fps = self._frame_count / max(dt, 0.001)
         self._frame_count = 0

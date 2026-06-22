@@ -25,3 +25,10 @@ Thumbs.db
 # Logs
 log.txt
 *.log
+
+# Build and distribution files
+_internal/
+main.exe
+main.spec
+dist/
+build/

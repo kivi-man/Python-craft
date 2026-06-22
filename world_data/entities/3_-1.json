@@ -1,1 +1,1 @@
-[]
+[{"x": 58.45, "y": 75.0, "z": -3.55, "dx": 0.0, "dy": 0, "dz": 0.0, "health": 10, "yRot": -235.16414468070982, "xRot": 0.0, "yBodyRot": -478.3502761034035, "yHeadRot": -547.0037343069613, "dead": false, "death_time": 0, "hurt_time": 0, "type": "Pig"}, {"x": 61.45, "y": 74.0, "z": -0.55, "dx": 0.0, "dy": 0, "dz": 0.0, "health": 10, "yRot": -212.7962969612581, "xRot": 0.0, "yBodyRot": -259.356412573285, "yHeadRot": -312.54934736901083, "dead": false, "death_time": 0, "hurt_time": 0, "type": "Pig"}]

@@ -248,6 +248,9 @@ class Player:
         self.is_crouching = crouch
         self.is_sprinting = sprint
         
+        # Buffer jump input to prevent missed short keypresses between physics ticks
+        self.jump_buffer = getattr(self, 'jump_buffer', False) or jump
+        
         # Su durumu kontrolü
         # C++: bb->grow(0, -0.4f, 0) — AABB'yi Y'de 0.4 küçültür
         # Bu sayede oyuncu yüzeye çıkınca isInWater=false olur → impulse kesilir → geri batar → bobbing/çırpınma!
@@ -274,16 +277,20 @@ class Player:
             self._y_tick_accum -= 0.05
             vy_tick = self.vy * 0.05  # b/s → b/tick
             
+            # Consume buffered jump for this physics tick
+            active_jump = self.jump_buffer
+            self.jump_buffer = jump # Keep it true if key is still held, otherwise clear it
+            
             if self.in_water:
                 # Su fiziği
-                if jump:
+                if active_jump:
                     vy_tick += 0.08        # Artırıldı: Sudan daha rahat çıkabilmek için
                 vy_tick *= 0.8             # C++ travel(): yd *= 0.8
                 vy_tick -= 0.02            # C++ travel(): yd -= 0.02
             else:
                 if self.is_flying:
                     # Uçma fiziği
-                    if jump:
+                    if active_jump:
                         vy_tick = speed * 0.05
                     elif crouch:
                         vy_tick = -speed * 0.05
@@ -291,7 +298,7 @@ class Player:
                         vy_tick = 0.0
                 else:
                     # Hava fiziği
-                    if jump and self.on_ground:
+                    if active_jump and self.on_ground:
                         vy_tick = 0.50     # Artırıldı: 1 bloğun üzerine çıkabilmek için
                         self.on_ground = False
                     
@@ -409,9 +416,17 @@ class Player:
         else:
             # Yere değdik veya kafayı tavana vurduk
             if self.vy < 0:
+                # Binary search exactly where the ground is to prevent floating/sliding bugs
+                low = new_y
+                high = self.y
+                for _ in range(12):
+                    mid = (low + high) / 2.0
+                    if self._check_collision(get_block_info, self._get_player_aabb(self.x, mid, self.z)):
+                        low = mid
+                    else:
+                        high = mid
+                self.y = high
                 self.on_ground = True
-                # Yere tam oturt (or leave at current collision boundary)
-                # Not resetting to floor() because stairs can have Y not at exact integers.
                 
                 # Calculate fall damage
                 fall_dist = self.highest_y - self.y
@@ -419,6 +434,18 @@ class Player:
                     damage = math.floor(fall_dist - 3.0)
                     if damage > 0:
                         self.take_damage(damage)
+            else:
+                # Kafayı tavana vurduk, binary search ile tavana daya
+                low = self.y
+                high = new_y
+                for _ in range(12):
+                    mid = (low + high) / 2.0
+                    if self._check_collision(get_block_info, self._get_player_aabb(self.x, mid, self.z)):
+                        high = mid
+                    else:
+                        low = mid
+                self.y = low
+                
             self.vy = 0.0
             
         # Update highest_y for fall damage tracking

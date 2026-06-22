@@ -17,6 +17,8 @@ class LivingEntity(Entity):
         self.dead = False
         self.air_supply = 300 # 15 seconds of air (20 ticks/sec)
         
+        self.ambient_sound_time = 0
+        
         # Animation states
         self.yBodyRot = 0.0
         self.yBodyRotO = 0.0
@@ -106,6 +108,20 @@ class LivingEntity(Entity):
         super().tick(get_block_func)
         
         self.update_animations()
+        
+        if not self.dead:
+            import random
+            if random.randint(0, 999) < self.ambient_sound_time:
+                self.ambient_sound_time = -self.get_ambient_sound_interval()
+                self.play_ambient_sound()
+            else:
+                self.ambient_sound_time += 1
+
+    def get_ambient_sound_interval(self):
+        return 80
+
+    def play_ambient_sound(self):
+        pass
 
     def ai_step(self):
         # Override in subclasses
