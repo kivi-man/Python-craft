@@ -68,12 +68,14 @@ class HumanoidModel(Model):
             self.arm1.xRot += 0.4
             self.leg0.z = 4.0
             self.leg1.z = 4.0
-            self.leg0.y = 9.0
-            self.leg1.y = 9.0
-            self.head.y = 1.0
-            self.body.y = 0.0
-            self.arm0.y = 2.0
-            self.arm1.y = 2.0
+            self.leg0.y = 12.0
+            self.leg1.y = 12.0
+            # Lower the entire upper body by 3.2 units to simulate crouching
+            # without detaching the head from the body.
+            self.head.y = 3.2
+            self.body.y = 3.2
+            self.arm0.y = 5.2
+            self.arm1.y = 5.2
             self.arm0.x = -5.0
             self.arm1.x = 5.0
             self.arm0.z = 0.0
