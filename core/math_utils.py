@@ -37,76 +37,87 @@ def dot_vec(a, b):
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
 
 import numpy as np
-def get_hand_cube_vertices(block_id, block_layers):
-    vertices = []
-    faces = [
-        ([0, 1, 0], [
-            [-0.5, 0.5, -0.5, 0, 0],
-            [-0.5, 0.5,  0.5, 0, 1],
-            [ 0.5, 0.5,  0.5, 1, 1],
-            [-0.5, 0.5, -0.5, 0, 0],
-            [ 0.5, 0.5,  0.5, 1, 1],
-            [ 0.5, 0.5, -0.5, 1, 0]
-        ], 0),
-        ([0, -1, 0], [
-            [-0.5, -0.5, -0.5, 0, 0],
-            [ 0.5, -0.5, -0.5, 1, 0],
-            [ 0.5, -0.5,  0.5, 1, 1],
-            [-0.5, -0.5, -0.5, 0, 0],
-            [ 0.5, -0.5,  0.5, 1, 1],
-            [-0.5, -0.5,  0.5, 0, 1]
-        ], 1),
-        ([1, 0, 0], [
-            [0.5, -0.5, -0.5, 0, 0],
-            [0.5,  0.5, -0.5, 0, 1],
-            [0.5,  0.5,  0.5, 1, 1],
-            [0.5, -0.5, -0.5, 0, 0],
-            [0.5,  0.5,  0.5, 1, 1],
-            [0.5, -0.5,  0.5, 1, 0]
-        ], 2),
-        ([-1, 0, 0], [
-            [-0.5, -0.5, -0.5, 0, 0],
-            [-0.5, -0.5,  0.5, 1, 0],
-            [-0.5,  0.5,  0.5, 1, 1],
-            [-0.5, -0.5, -0.5, 0, 0],
-            [-0.5,  0.5,  0.5, 1, 1],
-            [-0.5,  0.5, -0.5, 0, 1]
-        ], 3),
-        ([0, 0, 1], [
-            [-0.5, -0.5, 0.5, 0, 0],
-            [ 0.5, -0.5, 0.5, 1, 0],
-            [ 0.5,  0.5, 0.5, 1, 1],
-            [-0.5, -0.5, 0.5, 0, 0],
-            [ 0.5,  0.5, 0.5, 1, 1],
-            [-0.5,  0.5, 0.5, 0, 1]
-        ], 4),
-        ([0, 0, -1], [
-            [-0.5, -0.5, -0.5, 0, 0],
-            [-0.5,  0.5, -0.5, 0, 1],
-            [ 0.5,  0.5, -0.5, 1, 1],
-            [-0.5, -0.5, -0.5, 0, 0],
-            [ 0.5,  0.5, -0.5, 1, 1],
-            [ 0.5, -0.5, -0.5, 1, 0]
-        ], 5)
-    ]
-    
-    for normal, quad_verts, face_idx in faces:
-        layer_idx = block_layers[block_id, face_idx]
-        shade = 1.0
-        if face_idx == 1: shade = 0.5
-        elif face_idx in (2, 3): shade = 0.8
-        elif face_idx in (4, 5): shade = 0.7
+def get_hand_cube_vertices(block_id, block_layers, aabbs=None):
+    if aabbs is None:
+        aabbs = [[-0.5, -0.5, -0.5, 0.5, 0.5, 0.5]]
         
-        for v in quad_verts:
-            px, py, pz, u, w = v
-            vertices.extend([
-                px, py, pz,
-                normal[0], normal[1], normal[2],
-                shade, shade, shade,
-                u, w, float(layer_idx),
-                3.0, 15.0, 0.0
-            ])
+    vertices = []
+    
+    for aabb in aabbs:
+        min_x, min_y, min_z, max_x, max_y, max_z = aabb
+        
+        # We need to map UVs correctly so they don't stretch
+        # For full block it's 0 to 1. For partial, we map relative to the full block (-0.5 to +0.5).
+        # u = coord1 + 0.5, w = coord2 + 0.5
+        
+        faces = [
+            ([0, 1, 0], [
+                [min_x, max_y, min_z, min_x + 0.5, min_z + 0.5],
+                [min_x, max_y, max_z, min_x + 0.5, max_z + 0.5],
+                [max_x, max_y, max_z, max_x + 0.5, max_z + 0.5],
+                [min_x, max_y, min_z, min_x + 0.5, min_z + 0.5],
+                [max_x, max_y, max_z, max_x + 0.5, max_z + 0.5],
+                [max_x, max_y, min_z, max_x + 0.5, min_z + 0.5]
+            ], 0),
+            ([0, -1, 0], [
+                [min_x, min_y, min_z, min_x + 0.5, min_z + 0.5],
+                [max_x, min_y, min_z, max_x + 0.5, min_z + 0.5],
+                [max_x, min_y, max_z, max_x + 0.5, max_z + 0.5],
+                [min_x, min_y, min_z, min_x + 0.5, min_z + 0.5],
+                [max_x, min_y, max_z, max_x + 0.5, max_z + 0.5],
+                [min_x, min_y, max_z, min_x + 0.5, max_z + 0.5]
+            ], 1),
+            ([1, 0, 0], [
+                [max_x, min_y, min_z, min_z + 0.5, min_y + 0.5],
+                [max_x, max_y, min_z, min_z + 0.5, max_y + 0.5],
+                [max_x, max_y, max_z, max_z + 0.5, max_y + 0.5],
+                [max_x, min_y, min_z, min_z + 0.5, min_y + 0.5],
+                [max_x, max_y, max_z, max_z + 0.5, max_y + 0.5],
+                [max_x, min_y, max_z, max_z + 0.5, min_y + 0.5]
+            ], 2),
+            ([-1, 0, 0], [
+                [min_x, min_y, min_z, min_z + 0.5, min_y + 0.5],
+                [min_x, min_y, max_z, max_z + 0.5, min_y + 0.5],
+                [min_x, max_y, max_z, max_z + 0.5, max_y + 0.5],
+                [min_x, min_y, min_z, min_z + 0.5, min_y + 0.5],
+                [min_x, max_y, max_z, max_z + 0.5, max_y + 0.5],
+                [min_x, max_y, min_z, min_z + 0.5, max_y + 0.5]
+            ], 3),
+            ([0, 0, 1], [
+                [min_x, min_y, max_z, min_x + 0.5, min_y + 0.5],
+                [max_x, min_y, max_z, max_x + 0.5, min_y + 0.5],
+                [max_x, max_y, max_z, max_x + 0.5, max_y + 0.5],
+                [min_x, min_y, max_z, min_x + 0.5, min_y + 0.5],
+                [max_x, max_y, max_z, max_x + 0.5, max_y + 0.5],
+                [min_x, max_y, max_z, min_x + 0.5, max_y + 0.5]
+            ], 4),
+            ([0, 0, -1], [
+                [min_x, min_y, min_z, min_x + 0.5, min_y + 0.5],
+                [min_x, max_y, min_z, min_x + 0.5, max_y + 0.5],
+                [max_x, max_y, min_z, max_x + 0.5, max_y + 0.5],
+                [min_x, min_y, min_z, min_x + 0.5, min_y + 0.5],
+                [max_x, max_y, min_z, max_x + 0.5, max_y + 0.5],
+                [max_x, min_y, min_z, max_x + 0.5, min_y + 0.5]
+            ], 5)
+        ]
+        
+        for normal, quad_verts, face_idx in faces:
+            layer_idx = block_layers[block_id, face_idx]
+            shade = 1.0
+            if face_idx == 1: shade = 0.5
+            elif face_idx in (2, 3): shade = 0.8
+            elif face_idx in (4, 5): shade = 0.7
             
+            for v in quad_verts:
+                px, py, pz, u, w = v
+                vertices.extend([
+                    px, py, pz,
+                    normal[0], normal[1], normal[2],
+                    shade, shade, shade,
+                    u, w, float(layer_idx),
+                    3.0, 15.0, 0.0
+                ])
+                
     return np.array(vertices, dtype=np.float32)
 
 def get_item_sprite_vertices(layer_idx, mask):

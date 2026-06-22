@@ -100,10 +100,15 @@ class GUIMixin:
         import pyglet.image
         import pyglet.sprite
         
-        items_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'items')
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        items_dir = os.path.join(base_dir, 'assets', 'textures', 'items')
+        blocks_dir = os.path.join(base_dir, 'assets', 'textures', 'blocks')
+        
         p = os.path.join(items_dir, texture_name)
         if not os.path.exists(p):
-            return None
+            p = os.path.join(blocks_dir, texture_name)
+            if not os.path.exists(p):
+                return None
             
         img = Image.open(p).convert("RGBA")
         img = img.transpose(Image.FLIP_TOP_BOTTOM)
@@ -236,36 +241,50 @@ class GUIMixin:
             else:
                 self.inventory_bg_sprite = None
 
+            # Load Crafting Table Background
+            craft_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'gui', 'container', 'crafting_table.png')
+            if os.path.exists(craft_path):
+                craft_img = pyglet.image.load(craft_path)
+                craft_region = craft_img.get_region(0, craft_img.height - 166, 176, 166)
+                craft_tex = craft_region.get_texture()
+                glBindTexture(craft_tex.target, craft_tex.id)
+                glTexParameteri(craft_tex.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                glTexParameteri(craft_tex.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                self.crafting_bg_sprite = pyglet.sprite.Sprite(img=craft_tex)
+            else:
+                self.crafting_bg_sprite = None
+
             
             # Load Block Icons as 3D Isometric Cubes
             self.block_icon_sprites = {}
             from world.terrain import BLOCK_REGISTRY
+            sprite_blocks = {31, 37, 38, 175, 176, 177, 178}
             
             for name, data in BLOCK_REGISTRY.items():
                 b_id = data["id"]
                 if b_id == 0: continue
                 
                 tex = data.get("texture")
-                if not tex:
-                    sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
-                elif isinstance(tex, str):
-                    sprite = self._create_3d_block_sprite(tex, tex, tex)
-                elif isinstance(tex, dict):
-                    top = tex.get('top', 'stone.png')
-                    side = tex.get('side', top)
-                    sprite = self._create_3d_block_sprite(top, side, side)
-                else:
-                    sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
-                    
+                sprite = None
+                
+                if b_id >= 1000 or b_id in sprite_blocks:
+                    if isinstance(tex, str):
+                        sprite = self._create_2d_item_sprite(tex)
+                
+                if sprite is None:
+                    if not tex:
+                        sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
+                    elif isinstance(tex, str):
+                        sprite = self._create_3d_block_sprite(tex, tex, tex)
+                    elif isinstance(tex, dict):
+                        top = tex.get('top', 'stone.png')
+                        side = tex.get('side', top)
+                        sprite = self._create_3d_block_sprite(top, side, side)
+                    else:
+                        sprite = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
+                        
                 if sprite:
                     self.block_icon_sprites[b_id] = sprite
-                    
-            from world.terrain import PORKCHOP_RAW
-            item_sprite = self._create_2d_item_sprite('porkchop_raw.png')
-            if item_sprite:
-                self.block_icon_sprites[PORKCHOP_RAW] = item_sprite
-            else:
-                self.block_icon_sprites[PORKCHOP_RAW] = self._create_3d_block_sprite('stone.png', 'stone.png', 'stone.png')
             
             
             # Position user interface elements
@@ -291,6 +310,10 @@ class GUIMixin:
         if hasattr(self, 'inventory_bg_sprite') and self.inventory_bg_sprite is not None:
             self.inventory_bg_sprite.x = int((width - self.inventory_bg_sprite.width) // 2)
             self.inventory_bg_sprite.y = int((height - self.inventory_bg_sprite.height) // 2)
+
+        if hasattr(self, 'crafting_bg_sprite') and self.crafting_bg_sprite is not None:
+            self.crafting_bg_sprite.x = int((width - self.crafting_bg_sprite.width) // 2)
+            self.crafting_bg_sprite.y = int((height - self.crafting_bg_sprite.height) // 2)
 
 
     def _init_hand_blocks(self):
@@ -327,23 +350,47 @@ class GUIMixin:
             return vao, vbo, num_verts
 
         from world.terrain import BLOCK_REGISTRY
+        from core.special_blocks import is_slab, is_stairs
+        
+        # Define block IDs that should be rendered as flat 2D item sprites in hand
+        # 31: Tallgrass, 37: Dandelion, 38: Rose, 175-178: Double plants, 1000: Raw Porkchop
+        # 1001-1033: Tools and items
+        SPRITE_BLOCKS = {31, 37, 38, 175, 176, 177, 178} | set(range(1000, 1034))
+        
         for name, data in BLOCK_REGISTRY.items():
             b_id = data["id"]
-            if b_id > 0 and b_id != 1000: # Exclude raw porkchop, will handle item explicitly
-                mesh = get_hand_cube_vertices(b_id, self.block_layers)
-                if mesh is not None and len(mesh) > 0:
-                    vao, vbo, num_verts = create_hand_vao(mesh)
-                    self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
-                
-        from world.terrain import PORKCHOP_RAW
-        layer_idx = 0
-        if PORKCHOP_RAW < len(self.block_layers):
-            layer_idx = self.block_layers[PORKCHOP_RAW, 0]
-            
-        mask = self.texture_manager.alpha_masks[int(layer_idx)] if hasattr(self.texture_manager, 'alpha_masks') and int(layer_idx) < len(self.texture_manager.alpha_masks) else None
-        
-        if mask is not None:
-            mesh = get_item_sprite_vertices(layer_idx, mask)
-            vao, vbo, num_verts = create_hand_vao(mesh)
-            self.hand_block_vaos[PORKCHOP_RAW] = (vao, vbo, num_verts)
+            if b_id > 0:
+                if b_id in SPRITE_BLOCKS:
+                    layer_idx = 0
+                    if b_id < len(self.block_layers):
+                        layer_idx = self.block_layers[b_id, 0]
+                    # Also handle if it's an item like PORKCHOP_RAW which might exceed block_layers size initially?
+                    # Wait, if b_id >= len(block_layers), we should handle it. 
+                    # Let's assume self.block_layers has it if it's registered properly.
+                    if b_id >= len(self.block_layers) and hasattr(self.texture_manager, 'item_layers') and b_id in self.texture_manager.item_layers:
+                         pass
+                    
+                    mask = self.texture_manager.alpha_masks[int(layer_idx)] if hasattr(self.texture_manager, 'alpha_masks') and int(layer_idx) < len(self.texture_manager.alpha_masks) else None
+                    if mask is not None:
+                        mesh = get_item_sprite_vertices(layer_idx, mask)
+                        if mesh is not None and len(mesh) > 0:
+                            vao, vbo, num_verts = create_hand_vao(mesh)
+                            self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
+                else:
+                    aabbs = None
+                    if is_slab(b_id):
+                        aabbs = [[-0.5, -0.5, -0.5, 0.5, 0.0, 0.5]]
+                    elif is_stairs(b_id):
+                        # Base + step
+                        aabbs = [
+                            [-0.5, -0.5, -0.5, 0.5, 0.0, 0.5],
+                            [0.0, 0.0, -0.5, 0.5, 0.5, 0.5]
+                        ]
+                    elif b_id == 13: # Cactus
+                        aabbs = [[-0.4375, -0.5, -0.4375, 0.4375, 0.5, 0.4375]]
+                        
+                    mesh = get_hand_cube_vertices(b_id, self.block_layers, aabbs=aabbs)
+                    if mesh is not None and len(mesh) > 0:
+                        vao, vbo, num_verts = create_hand_vao(mesh)
+                        self.hand_block_vaos[b_id] = (vao, vbo, num_verts)
 

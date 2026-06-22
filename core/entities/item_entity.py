@@ -53,7 +53,8 @@ class ItemEntity(Entity):
     def merge_with(self, other):
         if other == self or other.removed or self.removed: return False
         if self.block_id != other.block_id: return False
-        if self.count + other.count > 64: return False
+        from world.terrain import BLOCK_MAX_STACK_ARRAY
+        if self.count + other.count > BLOCK_MAX_STACK_ARRAY[self.block_id]: return False
         
         self.count += other.count
         self.age = min(self.age, other.age)

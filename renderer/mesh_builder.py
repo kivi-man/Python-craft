@@ -331,7 +331,7 @@ def _emit_aabb_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_fron
 
 @njit(nogil=True, cache=True)
 def _is_opaque(b):
-    if b < 1024:
+    if b < 2048:
         return BLOCK_OPAQUE_ARRAY[b]
     return True
 

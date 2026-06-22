@@ -147,6 +147,7 @@ BLOCK_REGISTRY = {
     "WOOL_BLACK": {"id": 115, "texture": "wool_colored_black.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
     "GLASS_BLACK": {"id": 135, "texture": "glass_black.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
     "STAINED_CLAY_BLACK": {"id": 155, "texture": "hardened_clay_stained_black.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "CRAFTING_TABLE": {"id": 116, "texture": {"top": "crafting_table_top.png", "bottom": "planks_oak.png", "side": "crafting_table_side.png"}, "color": (0.6, 0.5, 0.3), "transparent": False, "light": 0, "hardness": 2.5, "tool_type": "AXE"},
     "HARDENED_CLAY": {"id": 160, "texture": "hardened_clay.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
     "OAK_STAIRS": {"id": 200, "texture": "planks_oak.png", "color": (0.6, 0.5, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
     "COBBLESTONE_STAIRS": {"id": 201, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
@@ -173,6 +174,46 @@ BLOCK_REGISTRY = {
     "SANDSTONE_SLAB": {"id": 222, "texture": "sandstone.png", "color": (0.80, 0.75, 0.50), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
     "QUARTZ_SLAB": {"id": 223, "texture": "quartz_block_side.png", "color": (0.9, 0.9, 0.9), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
     "COBBLESTONE_SLAB": {"id": 224, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
+    
+    # Items
+    "STICK": {"id": 1001, "texture": "stick.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DIAMOND": {"id": 1002, "texture": "diamond.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "IRON_INGOT": {"id": 1003, "texture": "iron_ingot.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "GOLD_INGOT": {"id": 1004, "texture": "gold_ingot.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "COAL": {"id": 1005, "texture": "coal.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "CHARCOAL": {"id": 1006, "texture": "charcoal.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "BOWL": {"id": 1007, "texture": "bowl.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "MUSHROOM_STEW": {"id": 1008, "texture": "mushroom_stew.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    
+    "WOODEN_SWORD": {"id": 1009, "texture": "wood_sword.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "WOODEN_SHOVEL": {"id": 1010, "texture": "wood_shovel.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "WOODEN_PICKAXE": {"id": 1011, "texture": "wood_pickaxe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "WOODEN_AXE": {"id": 1012, "texture": "wood_axe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "WOODEN_HOE": {"id": 1013, "texture": "wood_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+
+    "STONE_SWORD": {"id": 1014, "texture": "stone_sword.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "STONE_SHOVEL": {"id": 1015, "texture": "stone_shovel.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "STONE_PICKAXE": {"id": 1016, "texture": "stone_pickaxe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "STONE_AXE": {"id": 1017, "texture": "stone_axe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "STONE_HOE": {"id": 1018, "texture": "stone_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+
+    "IRON_SWORD": {"id": 1019, "texture": "iron_sword.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "IRON_SHOVEL": {"id": 1020, "texture": "iron_shovel.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "IRON_PICKAXE": {"id": 1021, "texture": "iron_pickaxe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "IRON_AXE": {"id": 1022, "texture": "iron_axe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "IRON_HOE": {"id": 1023, "texture": "iron_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+
+    "DIAMOND_SWORD": {"id": 1024, "texture": "diamond_sword.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DIAMOND_SHOVEL": {"id": 1025, "texture": "diamond_shovel.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DIAMOND_PICKAXE": {"id": 1026, "texture": "diamond_pickaxe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DIAMOND_AXE": {"id": 1027, "texture": "diamond_axe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "DIAMOND_HOE": {"id": 1028, "texture": "diamond_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+
+    "GOLD_SWORD": {"id": 1029, "texture": "gold_sword.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "GOLD_SHOVEL": {"id": 1030, "texture": "gold_shovel.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "GOLD_PICKAXE": {"id": 1031, "texture": "gold_pickaxe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "GOLD_AXE": {"id": 1032, "texture": "gold_axe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "GOLD_HOE": {"id": 1033, "texture": "gold_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
 }
 
 # Dinamik yerine statik tanımlama (Flake8 ve Numba için daha güvenli)
@@ -258,6 +299,42 @@ PRISMARINE_BRICKS = 92
 PRISMARINE_DARK = 93
 SEA_LANTERN = 94
 SLIME_BLOCK = 95
+PORKCHOP_RAW = 1000
+
+# Items
+STICK = 1001
+DIAMOND = 1002
+IRON_INGOT = 1003
+GOLD_INGOT = 1004
+COAL = 1005
+CHARCOAL = 1006
+BOWL = 1007
+MUSHROOM_STEW = 1008
+WOODEN_SWORD = 1009
+WOODEN_SHOVEL = 1010
+WOODEN_PICKAXE = 1011
+WOODEN_AXE = 1012
+WOODEN_HOE = 1013
+STONE_SWORD = 1014
+STONE_SHOVEL = 1015
+STONE_PICKAXE = 1016
+STONE_AXE = 1017
+STONE_HOE = 1018
+IRON_SWORD = 1019
+IRON_SHOVEL = 1020
+IRON_PICKAXE = 1021
+IRON_AXE = 1022
+IRON_HOE = 1023
+DIAMOND_SWORD = 1024
+DIAMOND_SHOVEL = 1025
+DIAMOND_PICKAXE = 1026
+DIAMOND_AXE = 1027
+DIAMOND_HOE = 1028
+GOLD_SWORD = 1029
+GOLD_SHOVEL = 1030
+GOLD_PICKAXE = 1031
+GOLD_AXE = 1032
+GOLD_HOE = 1033
 HAY_BLOCK = 96
 WOOL_WHITE = 100
 GLASS_WHITE = 120
@@ -307,6 +384,7 @@ STAINED_CLAY_RED = 154
 WOOL_BLACK = 115
 GLASS_BLACK = 135
 STAINED_CLAY_BLACK = 155
+CRAFTING_TABLE = 116
 HARDENED_CLAY = 160
 BEDROCK = 7
 ICE = 79
@@ -340,26 +418,31 @@ DOUBLE_ROSE_BTM = 177
 DOUBLE_ROSE_TOP = 178
 PORKCHOP_RAW = 1000
 
-# Numba için hızlı erişim dizileri (0-1024 ID'ler için)
-BLOCK_OPAQUE_ARRAY = np.ones(1024, dtype=np.bool_)
-BLOCK_LIGHT_EMISSION_ARRAY = np.zeros(1024, dtype=np.uint8)
-BLOCK_COLORS_ARRAY = np.ones((1024, 3), dtype=np.float32)
-BLOCK_HARDNESS_ARRAY = np.zeros(1024, dtype=np.float32)
+# Numba için hızlı erişim dizileri (0-2048 ID'ler için)
+BLOCK_OPAQUE_ARRAY = np.ones(2048, dtype=np.bool_)
+BLOCK_LIGHT_EMISSION_ARRAY = np.zeros(2048, dtype=np.uint8)
+BLOCK_COLORS_ARRAY = np.ones((2048, 3), dtype=np.float32)
+BLOCK_HARDNESS_ARRAY = np.zeros(2048, dtype=np.float32)
 
 # Tool Types mapping to integer for Numba:
 # 0: NONE, 1: PICKAXE, 2: AXE, 3: SHOVEL
 TOOL_TYPE_MAP = {"NONE": 0, "PICKAXE": 1, "AXE": 2, "SHOVEL": 3}
-BLOCK_TOOL_ARRAY = np.zeros(1024, dtype=np.uint8)
+BLOCK_TOOL_ARRAY = np.zeros(2048, dtype=np.uint8)
+BLOCK_MAX_STACK_ARRAY = np.full(2048, 64, dtype=np.uint8)
 
 for name, data in BLOCK_REGISTRY.items():
     bid = data["id"]
-    if bid < 1024:
+    if bid < 2048:
         BLOCK_OPAQUE_ARRAY[bid] = not data["transparent"]
         BLOCK_LIGHT_EMISSION_ARRAY[bid] = data["light"]
-        BLOCK_HARDNESS_ARRAY[bid] = data.get("hardness", 1.0)
+        BLOCK_COLORS_ARRAY[bid] = data["color"]
+        BLOCK_HARDNESS_ARRAY[bid] = data["hardness"]
         BLOCK_TOOL_ARRAY[bid] = TOOL_TYPE_MAP.get(data.get("tool_type", "NONE"), 0)
-        if "color" in data:
-            BLOCK_COLORS_ARRAY[bid] = data["color"]
+        
+        if bid >= 1009 and bid <= 1033: # Tools
+            BLOCK_MAX_STACK_ARRAY[bid] = 1
+        else:
+            BLOCK_MAX_STACK_ARRAY[bid] = data.get("max_stack", 64)
 
 CHUNK_SIZE = 16
 CHUNK_HEIGHT = 256
@@ -576,3 +659,45 @@ def load_or_generate_chunk(cx, cz):
 
 def recalculate_chunk_light(blocks, light_map):
     _calc_light_jit(blocks, light_map)
+
+def get_break_time(block_id, held_id):
+    hardness = BLOCK_HARDNESS_ARRAY[block_id]
+    if hardness < 0:
+        return 999999.0
+        
+    base_time = hardness * 5.0
+    
+    if held_id == 0 or held_id < 1000:
+        return base_time
+        
+    block_tool_type = BLOCK_TOOL_ARRAY[block_id]
+    if block_tool_type == 0:
+        return base_time
+        
+    # Determine held tool type and multiplier
+    held_tool_type = 0
+    multiplier = 1.0
+    
+    # 1: PICKAXE, 2: AXE, 3: SHOVEL
+    if held_id in (1011, 1016, 1021, 1026, 1031):
+        held_tool_type = 1
+    elif held_id in (1012, 1017, 1022, 1027, 1032):
+        held_tool_type = 2
+    elif held_id in (1010, 1015, 1020, 1025, 1030):
+        held_tool_type = 3
+        
+    if held_tool_type > 0 and held_tool_type == block_tool_type:
+        if held_id in (1009, 1010, 1011, 1012, 1013): # Wood
+            multiplier = 2.0
+        elif held_id in (1014, 1015, 1016, 1017, 1018): # Stone
+            multiplier = 4.0
+        elif held_id in (1019, 1020, 1021, 1022, 1023): # Iron
+            multiplier = 6.0
+        elif held_id in (1024, 1025, 1026, 1027, 1028): # Diamond
+            multiplier = 8.0
+        elif held_id in (1029, 1030, 1031, 1032, 1033): # Gold
+            multiplier = 12.0
+            
+        return base_time / multiplier
+        
+    return base_time

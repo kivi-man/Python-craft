@@ -338,7 +338,7 @@ def _calc_light_jit(blocks, light_map):
                 b = blocks[x, y, z]
                 if b == 22: # LAVA emits light
                     light = 15
-                elif b < 1024 and BLOCK_OPAQUE_ARRAY[b]:
+                elif b < 2048 and BLOCK_OPAQUE_ARRAY[b]:
                     light = 0
                 light_map[x, y, z] = light
 
@@ -378,7 +378,7 @@ def _calc_light_jit(blocks, light_map):
             
             if 0 <= nx < CHUNK_SIZE and 0 <= ny < CHUNK_HEIGHT and 0 <= nz < CHUNK_SIZE:
                 b = blocks[nx, ny, nz]
-                if b < 1024 and not BLOCK_OPAQUE_ARRAY[b]:
+                if b < 2048 and not BLOCK_OPAQUE_ARRAY[b]:
                     if light_map[nx, ny, nz] < new_light:
                         light_map[nx, ny, nz] = new_light
                         queue_x[tail] = nx

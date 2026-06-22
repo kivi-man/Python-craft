@@ -3,15 +3,17 @@ import math
 from pyglet.window import key, mouse
 from pyglet.gl import glViewport
 from core.raycast import raycast
-from world.terrain import CACTUS, SAND
+from world.terrain import CACTUS, SAND, BLOCK_MAX_STACK_ARRAY
 
 class InputMixin:
 
     def add_to_inventory(self, block_id):
         if block_id <= 0: return False
         
+        max_stack = BLOCK_MAX_STACK_ARRAY[block_id]
+        
         for i in range(36):
-            if self.inventory_blocks[i] == block_id and self.inventory_counts[i] < 64:
+            if self.inventory_blocks[i] == block_id and self.inventory_counts[i] < max_stack:
                 self.inventory_counts[i] += 1
                 if self.selected_slot == i:
                     self.selected_block_id = block_id
@@ -98,6 +100,14 @@ class InputMixin:
             return
             
         elif button == mouse.RIGHT and px is not None:
+            hit_id, _ = self.get_block_info(hx, hy, hz)
+            from world.terrain import CRAFTING_TABLE
+            if hit_id == CRAFTING_TABLE:
+                self.crafting_open = True
+                self.set_exclusive_mouse(False)
+                if hasattr(self, '_evaluate_crafting'): self._evaluate_crafting()
+                return
+                
             if self.selected_block_id == 0 or self.inventory_counts[self.selected_slot] <= 0:
                 return
                 
@@ -184,7 +194,7 @@ class InputMixin:
             
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if getattr(self, 'inventory_open', False):
+        if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False):
             if hasattr(self, '_handle_inventory_click'):
                 self._handle_inventory_click(x, y, button)
             return
@@ -215,7 +225,7 @@ class InputMixin:
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.mouse_pos = (x, y)
-        if getattr(self, 'inventory_open', False): return
+        if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
 
         self.camera.yaw += dx * self.camera.sensitivity
         self.camera.pitch += dy * self.camera.sensitivity
@@ -224,7 +234,7 @@ class InputMixin:
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.mouse_pos = (x, y)
-        if getattr(self, 'inventory_open', False): return
+        if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
 
         self.camera.yaw += dx * self.camera.sensitivity
         self.camera.pitch += dy * self.camera.sensitivity

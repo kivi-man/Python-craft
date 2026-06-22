@@ -81,8 +81,8 @@ class TextureManager:
             
     def get_uvs_for_blocks(self):
         # returns [b, f] -> layer_idx
-        # shape (1024, 6)
-        layers = np.zeros((1024, 6), dtype=np.float32)
+        # shape (2048, 6)
+        layers = np.zeros((2048, 6), dtype=np.float32)
         
         for block_id, faces in self.block_defs.items():
             for face_idx in range(6):
@@ -101,7 +101,7 @@ class TextureManager:
         return layers
 
     def get_overlays_for_blocks(self):
-        layers = np.zeros((1024, 6), dtype=np.float32)
+        layers = np.zeros((2048, 6), dtype=np.float32)
         for block_id, faces in self.block_overlays.items():
             for face_idx in range(6):
                 tex_name = None

@@ -24,7 +24,7 @@ import time
 import os
 
 from world.mc_terrain import generate_chunk, recalculate_chunk_light, CHUNK_SIZE, CHUNK_HEIGHT, AIR, WATER
-from world.terrain import CACTUS, SAND
+from world.terrain import CACTUS, SAND, BLOCK_MAX_STACK_ARRAY
 from renderer.mesh_builder import build_chunk_mesh
 from core.player import Player
 from core.raycast import raycast
@@ -185,10 +185,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.camera = Camera()
         self.player = Player(32.0, 100.0, 32.0)
         self.sound_system = SoundSystem(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'SFX', 'Pythoncraft'))
-        self.inventory_blocks = [0] * 45
-        self.inventory_counts = [0] * 45
+        self.inventory_blocks = [0] * 55
+        self.inventory_counts = [0] * 55
         self.selected_slot = 0
         self.selected_block_id = self.inventory_blocks[self.selected_slot]
+        
+        from core.recipes import RecipeManager
+        self.recipe_manager = RecipeManager(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'recipes.json'))
+        
         self.inventory_open = False
         self.cursor_item_id = 0
         self.cursor_item_count = 0
@@ -351,7 +355,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                                         sound_enum = self.sound_system.get_dig_sound(broken_id)
                                         self.sound_system.play(sound_enum, x=hx+0.5, y=hy+0.5, z=hz+0.5, volume=0.3, pitch=random.uniform(0.9, 1.1))
                                     
-                                required_time = hardness * 5.0
+                                from world.terrain import get_break_time
+                                required_time = get_break_time(broken_id, self.selected_block_id)
                                 if self.breaking_progress >= required_time:
                                     self.spawn_destruction_particles(hx, hy, hz, broken_id)
                                     self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
@@ -479,12 +484,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
     
 
     def _get_slot_rect(self, slot_idx):
-        if not hasattr(self, 'inventory_bg_sprite') or self.inventory_bg_sprite is None:
-            return 0, 0, 0, 0
-            
-        bg_x = self.inventory_bg_sprite.x
-        bg_y = self.inventory_bg_sprite.y
-        scale = self.inventory_bg_sprite.scale
+        if getattr(self, 'crafting_open', False) and hasattr(self, 'crafting_bg_sprite'):
+            bg_x = self.crafting_bg_sprite.x
+            bg_y = self.crafting_bg_sprite.y
+            scale = self.crafting_bg_sprite.scale
+        else:
+            if not hasattr(self, 'inventory_bg_sprite') or self.inventory_bg_sprite is None:
+                return 0, 0, 0, 0
+                
+            bg_x = self.inventory_bg_sprite.x
+            bg_y = self.inventory_bg_sprite.y
+            scale = self.inventory_bg_sprite.scale
         
         if 0 <= slot_idx <= 8:
             px = 8 + slot_idx * 18
@@ -507,6 +517,15 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         elif slot_idx == 44:
             px = 144
             py = 114
+        elif 45 <= slot_idx <= 53:
+            rel = slot_idx - 45
+            col = rel % 3
+            row = rel // 3
+            px = 30 + col * 18
+            py = 133 - row * 18
+        elif slot_idx == 54:
+            px = 124
+            py = 115
         else:
             return 0, 0, 0, 0
             
@@ -528,9 +547,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     target_font = 'Minecraftia'
                 except Exception:
                     target_font = 'Arial'
-                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(45)]
+                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55)]
                 self.crafting_label = pyglet.text.Label("Crafting", font_name=target_font, font_size=8, color=(64, 64, 64, 255), anchor_x="left", anchor_y="bottom")
                 
+            elif len(self.count_labels) < 55:
+                import pyglet.text
+                target_font = self.count_labels[0].font_name
+                self.count_labels.extend([pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55 - len(self.count_labels))])
+
             # Update and draw crafting label
             if hasattr(self, 'crafting_label'):
                 self.crafting_label.font_size = max(8, int(8 * bg_scale))
@@ -543,7 +567,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             hovered_slot = -1
             
             # Draw items and labels
-            for slot_idx, b_id in enumerate(self.inventory_blocks):
+            for slot_idx, b_id in enumerate(self.inventory_blocks[:45]):
                 x, y, w, h = self._get_slot_rect(slot_idx)
                 
                 # Check hover
@@ -604,14 +628,109 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     lbl.y = int(sprite.y)
                     lbl.draw()
 
+    def _draw_crafting_gui(self):
+        if hasattr(self, 'crafting_bg_sprite') and self.crafting_bg_sprite is not None:
+            self.crafting_bg_sprite.draw()
+            bg_scale = self.crafting_bg_sprite.scale
+            
+            if not hasattr(self, 'count_labels'):
+                import pyglet.text
+                import pyglet.font
+                import os
+                font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
+                try:
+                    pyglet.font.add_file(font_path)
+                    target_font = 'Minecraftia'
+                except Exception:
+                    target_font = 'Arial'
+                self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55)]
+                self.crafting_label = pyglet.text.Label("Crafting", font_name=target_font, font_size=8, color=(64, 64, 64, 255), anchor_x="left", anchor_y="bottom")
+            elif len(self.count_labels) < 55:
+                import pyglet.text
+                target_font = self.count_labels[0].font_name
+                self.count_labels.extend([pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55 - len(self.count_labels))])
+
+            if hasattr(self, 'crafting_label'):
+                self.crafting_label.font_size = max(8, int(8 * bg_scale))
+                self.crafting_label.x = int(self.crafting_bg_sprite.x + 30 * bg_scale)
+                self.crafting_label.y = int(self.crafting_bg_sprite.y + 144 * bg_scale)
+                self.crafting_label.draw()
+                
+            mouse_x, mouse_y = getattr(self, 'mouse_pos', (0, 0))
+            hovered_slot = -1
+            
+            # Draw player inventory (0-35) + Crafting grid & output (45-54)
+            slots_to_draw = list(range(36)) + list(range(45, 55))
+            
+            for slot_idx in slots_to_draw:
+                b_id = self.inventory_blocks[slot_idx]
+                x, y, w, h = self._get_slot_rect(slot_idx)
+                
+                if x <= mouse_x <= x + w and y <= mouse_y <= y + h:
+                    hovered_slot = slot_idx
+                    
+                if b_id > 0 and b_id in getattr(self, 'block_icon_sprites', {}):
+                    sprite = self.block_icon_sprites[b_id]
+                    sprite_size = getattr(sprite, 'original_width', 64.0)
+                    sprite.scale = (16.0 * bg_scale) / sprite_size
+                    sprite.x = int(x)
+                    sprite.y = int(y)
+                    sprite.draw()
+                    
+                    count = self.inventory_counts[slot_idx]
+                    if count > 0:
+                        lbl = self.count_labels[slot_idx]
+                        target_size = max(8, int(8 * bg_scale))
+                        if lbl.font_size != target_size:
+                            lbl.font_size = target_size
+                        if lbl.text != str(count):
+                            lbl.text = str(count)
+                        lbl.x = int(x + 16 * bg_scale)
+                        lbl.y = int(y)
+                        lbl.draw()
+                        
+            if hovered_slot != -1:
+                hx, hy, hw, hh = self._get_slot_rect(hovered_slot)
+                import pyglet.shapes
+                hover_rect = pyglet.shapes.Rectangle(hx, hy, hw, hh, color=(255, 255, 255, 100))
+                hover_rect.draw()
+                
+            cursor_id = getattr(self, 'cursor_item_id', 0)
+            if cursor_id > 0 and cursor_id in getattr(self, 'block_icon_sprites', {}):
+                sprite = self.block_icon_sprites[cursor_id]
+                sprite_size = getattr(sprite, 'original_width', 64.0)
+                sprite.scale = (16.0 * bg_scale) / sprite_size
+                sprite.x = int(mouse_x - 8 * bg_scale)
+                sprite.y = int(mouse_y - 8 * bg_scale)
+                sprite.draw()
+                
+                count = getattr(self, 'cursor_item_count', 0)
+                if count > 0:
+                    lbl = getattr(self, 'cursor_label', None)
+                    if not lbl:
+                        import pyglet.text
+                        self.cursor_label = pyglet.text.Label("", font_name='Arial', font_size=8, anchor_x="right", anchor_y="bottom")
+                        lbl = self.cursor_label
+                    target_size = max(8, int(8 * bg_scale))
+                    if lbl.font_size != target_size:
+                        lbl.font_size = target_size
+                    if lbl.text != str(count):
+                        lbl.text = str(count)
+                    lbl.x = int(sprite.x + 16 * bg_scale)
+                    lbl.y = int(sprite.y)
+                    lbl.draw()
 
     def _handle_inventory_click(self, x, y, button):
         from pyglet.window import mouse
         
         clicked_slot = -1
-        for i in range(45):
+        for i in range(55):
             sx, sy, sw, sh = self._get_slot_rect(i)
             if sx <= x <= sx + sw and sy <= y <= sy + sh:
+                if getattr(self, 'crafting_open', False) and 40 <= i <= 44:
+                    continue
+                if getattr(self, 'inventory_open', False) and 45 <= i <= 54:
+                    continue
                 clicked_slot = i
                 break
                 
@@ -627,9 +746,34 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if getattr(self, 'cursor_item_id', 0) > 0:
                 return
                 
-        if clicked_slot == 44:
-            if getattr(self, 'cursor_item_id', 0) > 0:
-                return
+        if clicked_slot in (44, 54):
+            slot_id = self.inventory_blocks[clicked_slot]
+            if slot_id == 0: return
+            
+            cursor_id = getattr(self, 'cursor_item_id', 0)
+            cursor_count = getattr(self, 'cursor_item_count', 0)
+            slot_count = self.inventory_counts[clicked_slot]
+            
+            max_stack = BLOCK_MAX_STACK_ARRAY[slot_id] if slot_id > 0 else 64
+            
+            if cursor_id == 0 or (cursor_id == slot_id and cursor_count + slot_count <= max_stack):
+                self.cursor_item_id = slot_id
+                self.cursor_item_count = cursor_count + slot_count
+                self.inventory_blocks[clicked_slot] = 0
+                self.inventory_counts[clicked_slot] = 0
+                
+                # Consume grid
+                grid_slots = range(45, 54) if clicked_slot == 54 else range(40, 44)
+                for i in grid_slots:
+                    if self.inventory_counts[i] > 0:
+                        self.inventory_counts[i] -= 1
+                        if self.inventory_counts[i] == 0:
+                            self.inventory_blocks[i] = 0
+                self._evaluate_crafting()
+                
+                if hasattr(self, 'sound_system'):
+                    self.sound_system.play("eSoundType_RANDOM_CLICK", volume=0.5)
+            return
                 
         slot_id = self.inventory_blocks[clicked_slot]
         slot_count = self.inventory_counts[clicked_slot]
@@ -650,13 +794,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     self.inventory_counts[clicked_slot] = 0
             else:
                 if slot_id == cursor_id:
-                    space = 64 - slot_count
+                    max_stack = BLOCK_MAX_STACK_ARRAY[slot_id]
+                    space = max_stack - slot_count
                     if space >= cursor_count:
                         self.inventory_counts[clicked_slot] += cursor_count
                         self.cursor_item_id = 0
                         self.cursor_item_count = 0
                     else:
-                        self.inventory_counts[clicked_slot] = 64
+                        self.inventory_counts[clicked_slot] = max_stack
                         self.cursor_item_count -= space
                 else:
                     self.inventory_blocks[clicked_slot] = cursor_id
@@ -685,7 +830,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     if self.cursor_item_count <= 0:
                         self.cursor_item_id = 0
                 elif slot_id == cursor_id:
-                    if slot_count < 64:
+                    max_stack = BLOCK_MAX_STACK_ARRAY[slot_id]
+                    if slot_count < max_stack:
                         self.inventory_counts[clicked_slot] += 1
                         self.cursor_item_count -= 1
                         if self.cursor_item_count <= 0:
@@ -698,6 +844,35 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     
         # Synchronize selected block if hotbar is changed
         self.selected_block_id = self.inventory_blocks[self.selected_slot]
+        self._evaluate_crafting()
+
+    def _evaluate_crafting(self):
+        if getattr(self, 'crafting_open', False):
+            grid_width, grid_height = 3, 3
+            start_slot = 45
+            out_slot = 54
+        elif getattr(self, 'inventory_open', False):
+            grid_width, grid_height = 2, 2
+            start_slot = 40
+            out_slot = 44
+        else:
+            return
+            
+        grid = []
+        for y in range(grid_height):
+            row = []
+            for x in range(grid_width):
+                idx = start_slot + y * grid_width + x
+                row.append(self.inventory_blocks[idx])
+            grid.append(row)
+            
+        res_id, res_count = self.recipe_manager.match(grid, grid_width, grid_height)
+        if res_id > 0:
+            self.inventory_blocks[out_slot] = res_id
+            self.inventory_counts[out_slot] = res_count
+        else:
+            self.inventory_blocks[out_slot] = 0
+            self.inventory_counts[out_slot] = 0
 
     def on_draw(self):
         import time
@@ -807,7 +982,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     from world.terrain import BLOCK_HARDNESS_ARRAY
                     hardness = BLOCK_HARDNESS_ARRAY[block_id]
                     if hardness > 0:
-                        req_time = hardness * 5.0
+                        from world.terrain import get_break_time
+                        req_time = get_break_time(block_id, self.selected_block_id)
                         stage = int((self.breaking_progress / req_time) * 10)
                         if stage > 9: stage = 9
                         layer_idx = self.destroy_stages[stage]
@@ -1063,15 +1239,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         # UI/Inventory tick
-        if getattr(self, 'inventory_open', False):
+        if getattr(self, 'crafting_open', False):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            
-            # Draw dark overlay
-
             import pyglet.shapes
             overlay_rect = pyglet.shapes.Rectangle(0, 0, self.width, self.height, color=(0, 0, 0, 153))
             overlay_rect.draw()
-            
+            self._draw_crafting_gui()
+        elif getattr(self, 'inventory_open', False):
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            import pyglet.shapes
+            overlay_rect = pyglet.shapes.Rectangle(0, 0, self.width, self.height, color=(0, 0, 0, 153))
+            overlay_rect.draw()
             self._draw_inventory_gui()
         else:
             # 1. Crosshair (using color inversion blending)
@@ -1256,6 +1434,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             self.hotbar_bg_sprite.scale = scale
         if hasattr(self, 'inventory_bg_sprite') and self.inventory_bg_sprite is not None:
             self.inventory_bg_sprite.scale = scale
+        if hasattr(self, 'crafting_bg_sprite') and self.crafting_bg_sprite is not None:
+            self.crafting_bg_sprite.scale = scale
         if hasattr(self, 'crosshair_sprite') and self.crosshair_sprite is not None:
             self.crosshair_sprite.scale = scale
         if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
@@ -1290,6 +1470,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self.inventory_counts[i] = 0
                 self.inventory_blocks[i] = 0
 
+        # Drop large crafting grid items (slots 45-53)
+        for i in range(45, 54):
+            if self.inventory_counts[i] > 0 and self.inventory_blocks[i] > 0:
+                for _ in range(self.inventory_counts[i]):
+                    self.spawn_item_entity(self.inventory_blocks[i], self.player.x, self.player.y + 1.5, self.player.z)
+                self.inventory_counts[i] = 0
+                self.inventory_blocks[i] = 0
+
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
             import time
@@ -1304,15 +1492,27 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self.set_exclusive_mouse(True)
                 self._drop_inventory_excess()
                 return pyglet.event.EVENT_HANDLED
+            elif getattr(self, 'crafting_open', False):
+                self.crafting_open = False
+                self.set_exclusive_mouse(True)
+                self._drop_inventory_excess()
+                return pyglet.event.EVENT_HANDLED
         
         super().on_key_press(symbol, modifiers)
         InputMixin.on_key_press(self, symbol, modifiers)
         
         if symbol == key.E:
-            self.inventory_open = not getattr(self, 'inventory_open', False)
-            self.set_exclusive_mouse(not self.inventory_open)
-            if not self.inventory_open:
+            if getattr(self, 'crafting_open', False):
+                self.crafting_open = False
+                self.set_exclusive_mouse(True)
                 self._drop_inventory_excess()
+                self._evaluate_crafting()
+            else:
+                self.inventory_open = not getattr(self, 'inventory_open', False)
+                self.set_exclusive_mouse(not self.inventory_open)
+                if not self.inventory_open:
+                    self._drop_inventory_excess()
+                self._evaluate_crafting()
         elif symbol == key.P:
             self.spawn_pig(self.player.x, self.player.y + 2.5, self.player.z)
     
