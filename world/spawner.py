@@ -74,8 +74,16 @@ class NaturalSpawner:
         # Check mob caps
         counts = self.count_mobs()
         
-        # Only process loaded chunks
-        loaded_chunks = list(self.level.world_chunks.keys())
+        # Only process loaded chunks within simulation distance
+        px, pz = self.level.player.x, self.level.player.z
+        pcx, pcz = int(math.floor(px / CHUNK_SIZE)), int(math.floor(pz / CHUNK_SIZE))
+        sim_dist = getattr(self.level, 'simulation_distance', 4)
+        
+        loaded_chunks = []
+        for (cx, cz) in self.level.world_chunks.keys():
+            if abs(cx - pcx) <= sim_dist and abs(cz - pcz) <= sim_dist:
+                loaded_chunks.append((cx, cz))
+                
         if not loaded_chunks:
             return
             

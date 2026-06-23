@@ -32,6 +32,27 @@ from core.math_utils import perspective_matrix, look_at_matrix, normalize_vec, s
 from renderer.shader import create_shader_program
 from renderer.camera import Camera
 
+# --- MOVED IMPORTS ---
+from core.raycast import raycast
+from core.recipes import RecipeManager
+from core.texture_manager import TextureManager
+from pyglet.gl import glTexImage3D
+from pyglet.window import mouse
+from world.terrain import BLOCK_HARDNESS_ARRAY
+from world.terrain import BLOCK_OPAQUE_ARRAY
+from world.terrain import PORKCHOP_RAW
+from world.terrain import get_break_time
+import os
+import pyglet
+import pyglet.font
+import pyglet.shapes
+import pyglet.text
+import random
+import sys
+import time
+# ---------------------
+
+
 
 
 
@@ -51,9 +72,11 @@ from core.input_mixin import InputMixin
 from core.entity_mixin import EntityMixin
 
 class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, EntityMixin):
-    def __init__(self, render_distance=4, fast_leaves=False, debug_mode=False, flat_mode=False):
+    def __init__(self, render_distance=4, simulation_distance=4, fast_leaves=False, debug_mode=False, flat_mode=False):
         super().__init__(width=1280, height=720, caption="PythonCraft Engine",
                          resizable=True, vsync=False)
+        self.render_distance = render_distance
+        self.simulation_distance = simulation_distance
         self.debug_mode = debug_mode
         self.flat_mode = flat_mode
         
@@ -151,7 +174,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glUniform1i(self.u_texture, 0)
         glUseProgram(0)
         
-        from core.texture_manager import TextureManager
         texture_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'textures')
         self.texture_manager = TextureManager(texture_dir, fast_leaves=fast_leaves)
         self.texture_manager.load_textures()
@@ -177,7 +199,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
         
-        from pyglet.gl import glTexImage3D
         tex_buffer = (ctypes.c_ubyte * len(tex_data)).from_buffer_copy(tex_data)
         glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 16, 16, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_buffer)
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
@@ -190,7 +211,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.selected_slot = 0
         self.selected_block_id = self.inventory_blocks[self.selected_slot]
         
-        from core.recipes import RecipeManager
         self.recipe_manager = RecipeManager(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'recipes.json'))
         
         self.inventory_open = False
@@ -216,6 +236,16 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.swing_time = 0.0
         self._init_hand_blocks()
         self._init_entities()
+        
+        # Pre-initialized update() state (avoids hasattr checks in hot loop)
+        self.eating_progress = 0.0
+        self.last_eat_sound = 0.0
+        self.distance_walked = 0.0
+        self.last_dig_sound_time = 0.0
+        self.last_raycast_eye_pos = None
+        self.last_raycast_dir = None
+        self._camera_matrix_dirty = True
+        self._cached_inv_pv = None
         
         self._frame_count = 0
         pyglet.clock.schedule_interval(self._update_title, 0.5)
@@ -243,7 +273,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         if hasattr(self, 'sound_system'):
             self.sound_system.update_music(dt, dimension="OVERWORLD")
 
-        import time
         t_start = time.perf_counter()
         dt = min(dt, 0.05)
         
@@ -282,7 +311,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     self._handle_mouse_action(mouse.LEFT)
                     self.mouse_action_cooldown = 0.20
                 elif self.mouse_held[mouse.RIGHT]:
-                    from world.terrain import PORKCHOP_RAW
                     if self.selected_block_id == PORKCHOP_RAW:
                         pass # Handled below for continuous eating
                     else:
@@ -292,18 +320,12 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     
             # Continuous Eating Progress
             if self.mouse_held[mouse.RIGHT]:
-                from world.terrain import PORKCHOP_RAW
                 if self.selected_block_id == PORKCHOP_RAW and self.player.hunger < 20.0:
-                    if not hasattr(self, 'eating_progress'):
-                        self.eating_progress = 0.0
                     self.eating_progress += dt
                     
                     # Play random eating sound every 0.3 seconds
-                    if not hasattr(self, 'last_eat_sound'):
-                        self.last_eat_sound = 0.0
                     if self.eating_progress - self.last_eat_sound > 0.3:
                         self.last_eat_sound = self.eating_progress
-                        import random
                         self.sound_system.play("eSoundType_EATING", x=self.player.x, y=self.player.y, z=self.player.z, volume=0.5, pitch=random.uniform(0.9, 1.1))
                         
                     # Bob hand slightly while eating
@@ -319,18 +341,20 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 else:
                     self.eating_progress = 0.0
             else:
-                if hasattr(self, 'eating_progress'):
-                    self.eating_progress = 0.0
+                self.eating_progress = 0.0
                     
             # Always update targeted block for highlighting
             eye_pos = self.player.get_eye_position()
             direction = self.camera.get_front()
-            from core.raycast import raycast
-            hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
-            if hx is not None:
-                self.targeted_block = (hx, hy, hz)
-            else:
-                self.targeted_block = None
+            if eye_pos != self.last_raycast_eye_pos or direction != self.last_raycast_dir:
+                self.last_raycast_eye_pos = eye_pos
+                self.last_raycast_dir = direction
+                self._camera_matrix_dirty = True
+                hx, hy, hz, px, py, pz = raycast(eye_pos, direction, self.get_block)
+                if hx is not None:
+                    self.targeted_block = (hx, hy, hz)
+                else:
+                    self.targeted_block = None
 
             # Continuous Block Breaking Progress
             if self.mouse_held[mouse.LEFT]:
@@ -340,22 +364,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     if getattr(self, 'breaking_pos', None) == current_target:
                         broken_id = self.get_block(hx, hy, hz)
                         if broken_id > 0:
-                            from world.terrain import BLOCK_HARDNESS_ARRAY
                             hardness = BLOCK_HARDNESS_ARRAY[broken_id]
                             if hardness >= 0:
                                 self.breaking_progress += dt
-                                import random
                                 if random.random() < 0.25:
                                     self.spawn_crack_particles(hx, hy, hz, broken_id, 1)
                                     # Play continuous digging sound
-                                    if not hasattr(self, 'last_dig_sound_time'): self.last_dig_sound_time = 0.0
-                                    import time
                                     if time.perf_counter() - self.last_dig_sound_time > 0.2:
                                         self.last_dig_sound_time = time.perf_counter()
                                         sound_enum = self.sound_system.get_dig_sound(broken_id)
                                         self.sound_system.play(sound_enum, x=hx+0.5, y=hy+0.5, z=hz+0.5, volume=0.3, pitch=random.uniform(0.9, 1.1))
                                     
-                                from world.terrain import get_break_time
                                 required_time = get_break_time(broken_id, self.selected_block_id)
                                 if self.breaking_progress >= required_time:
                                     self.spawn_destruction_particles(hx, hy, hz, broken_id)
@@ -439,7 +458,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             dx_moved = self.player.x - old_x
             dz_moved = self.player.z - old_z
             dist = math.sqrt(dx_moved*dx_moved + dz_moved*dz_moved)
-            if not hasattr(self, 'distance_walked'): self.distance_walked = 0.0
             self.distance_walked += dist
             
             if is_on_ground or is_in_water:
@@ -468,7 +486,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         eye_pos = self.player.get_eye_position()
         
         # 3D Audio Listener Update
-        import pyglet
         try:
             listener = pyglet.media.get_audio_driver().get_listener()
             listener.position = (self.camera.x, self.camera.y, self.camera.z)
@@ -538,9 +555,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
             # Init labels if not present
             if not hasattr(self, 'count_labels'):
-                import pyglet.text
-                import pyglet.font
-                import os
                 font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
                 try:
                     pyglet.font.add_file(font_path)
@@ -551,7 +565,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self.crafting_label = pyglet.text.Label("Crafting", font_name=target_font, font_size=8, color=(64, 64, 64, 255), anchor_x="left", anchor_y="bottom")
                 
             elif len(self.count_labels) < 55:
-                import pyglet.text
                 target_font = self.count_labels[0].font_name
                 self.count_labels.extend([pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55 - len(self.count_labels))])
 
@@ -598,7 +611,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if hovered_slot != -1:
                 hx, hy, hw, hh = self._get_slot_rect(hovered_slot)
 
-                import pyglet.shapes
                 hover_rect = pyglet.shapes.Rectangle(hx, hy, hw, hh, color=(255, 255, 255, 100))
                 hover_rect.draw()
                 
@@ -616,7 +628,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 if count > 0:
                     lbl = getattr(self, 'cursor_label', None)
                     if not lbl:
-                        import pyglet.text
                         self.cursor_label = pyglet.text.Label("", font_name='Arial', font_size=8, anchor_x="right", anchor_y="bottom")
                         lbl = self.cursor_label
                     target_size = max(8, int(8 * bg_scale))
@@ -634,9 +645,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             bg_scale = self.crafting_bg_sprite.scale
             
             if not hasattr(self, 'count_labels'):
-                import pyglet.text
-                import pyglet.font
-                import os
                 font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
                 try:
                     pyglet.font.add_file(font_path)
@@ -646,7 +654,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55)]
                 self.crafting_label = pyglet.text.Label("Crafting", font_name=target_font, font_size=8, color=(64, 64, 64, 255), anchor_x="left", anchor_y="bottom")
             elif len(self.count_labels) < 55:
-                import pyglet.text
                 target_font = self.count_labels[0].font_name
                 self.count_labels.extend([pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(55 - len(self.count_labels))])
 
@@ -691,7 +698,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                         
             if hovered_slot != -1:
                 hx, hy, hw, hh = self._get_slot_rect(hovered_slot)
-                import pyglet.shapes
                 hover_rect = pyglet.shapes.Rectangle(hx, hy, hw, hh, color=(255, 255, 255, 100))
                 hover_rect.draw()
                 
@@ -708,7 +714,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 if count > 0:
                     lbl = getattr(self, 'cursor_label', None)
                     if not lbl:
-                        import pyglet.text
                         self.cursor_label = pyglet.text.Label("", font_name='Arial', font_size=8, anchor_x="right", anchor_y="bottom")
                         lbl = self.cursor_label
                     target_size = max(8, int(8 * bg_scale))
@@ -721,7 +726,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     lbl.draw()
 
     def _handle_inventory_click(self, x, y, button):
-        from pyglet.window import mouse
         
         clicked_slot = -1
         for i in range(55):
@@ -875,7 +879,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             self.inventory_counts[out_slot] = 0
 
     def on_draw(self):
-        import time
         t_start = time.perf_counter()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(self.program)
@@ -892,12 +895,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glUniformMatrix4fv(self.u_view, 1, GL_FALSE, view)
         
         t_cull_start = time.perf_counter()
-        # Proj * View matrix multiplication (Manual)
-        clip = [0.0] * 16
-        for i in range(4):
-            for j in range(4):
-                clip[i*4+j] = proj[0*4+j]*view[i*4+0] + proj[1*4+j]*view[i*4+1] + proj[2*4+j]*view[i*4+2] + proj[3*4+j]*view[i*4+3]
-        proj_view = np.array(clip, dtype=np.float32)
+        # Proj * View matrix multiplication (NumPy optimized)
+        p = np.array(proj, dtype=np.float32).reshape(4, 4)
+        v = np.array(view, dtype=np.float32).reshape(4, 4)
+        proj_view = (v @ p).flatten()
         
         # Light-speed Frustum Culling using Numba
         visible_count = get_visible_chunk_indices(proj_view, self.chunk_bounds, self.chunk_active, self.visible_indices)
@@ -919,6 +920,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         t_opaque_end = time.perf_counter()
         
         # ENTITY PASS
+        t_entity_start = time.perf_counter()
         glEnable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE) # Disable culling for entities
         glEnable(GL_BLEND)
@@ -933,6 +935,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         # Re-bind main chunk texture atlas
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_id)
+        t_entity_end = time.perf_counter()
 
         t_trans_start = time.perf_counter()
         # TRANSPARENT PASS
@@ -979,10 +982,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if getattr(self, 'breaking_pos', None) == (bx, by, bz) and getattr(self, 'breaking_progress', 0.0) > 0.0:
                 block_id = self.get_block(bx, by, bz)
                 if block_id > 0:
-                    from world.terrain import BLOCK_HARDNESS_ARRAY
                     hardness = BLOCK_HARDNESS_ARRAY[block_id]
                     if hardness > 0:
-                        from world.terrain import get_break_time
                         req_time = get_break_time(block_id, self.selected_block_id)
                         stage = int((self.breaking_progress / req_time) * 10)
                         if stage > 9: stage = 9
@@ -1026,7 +1027,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             glDisable(GL_DEPTH_TEST) # Overlay covers screen
             
             # Inverse proj*view for world reconstruction
-            inv_pv = np.linalg.inv(proj_view.reshape(4,4)).flatten().astype(np.float32)
+            if self._camera_matrix_dirty:
+                self._cached_inv_pv = np.linalg.inv(proj_view.reshape(4,4)).flatten().astype(np.float32)
+                self._camera_matrix_dirty = False
+            inv_pv = self._cached_inv_pv
             glUniformMatrix4fv(self.u_inv_proj_view_overlay, 1, GL_FALSE, (ctypes.c_float * 16)(*inv_pv))
             glUniform1f(self.u_water_surface_y_overlay, u_water_surface_y)
             
@@ -1100,7 +1104,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
             scale = 0.36
             
-            from world.terrain import PORKCHOP_RAW
             if self.selected_block_id == PORKCHOP_RAW:
                 # Use Player gui ItemInHandRenderer transform
                 # glTranslatef(0.7f * d, -0.65f * d - (1 - h) * 0.6f, -0.9f * d);
@@ -1241,13 +1244,11 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         # UI/Inventory tick
         if getattr(self, 'crafting_open', False):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            import pyglet.shapes
             overlay_rect = pyglet.shapes.Rectangle(0, 0, self.width, self.height, color=(0, 0, 0, 153))
             overlay_rect.draw()
             self._draw_crafting_gui()
         elif getattr(self, 'inventory_open', False):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            import pyglet.shapes
             overlay_rect = pyglet.shapes.Rectangle(0, 0, self.width, self.height, color=(0, 0, 0, 153))
             overlay_rect.draw()
             self._draw_inventory_gui()
@@ -1265,16 +1266,15 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
                 # Render block icons (scaled from 64x64 to 13*scale and centered in slots)
                 bg_scale = self.hotbar_bg_sprite.scale
-                if not hasattr(self, 'count_labels'):
-                    import pyglet.text
-                    import pyglet.font
+                if not hasattr(self, 'count_labels_main'):
                     font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'fonts', 'Minecraftia-Regular.ttf')
                     try:
                         pyglet.font.add_file(font_path)
                         target_font = 'Minecraftia'
                     except Exception:
                         target_font = 'Arial'
-                    self.count_labels = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom") for _ in range(45)]
+                    self.count_labels_shadow = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom", batch=self.ui_batch, color=(63, 63, 63, 255)) for _ in range(9)]
+                    self.count_labels_main = [pyglet.text.Label("", font_name=target_font, font_size=8, anchor_x="right", anchor_y="bottom", batch=self.ui_batch, color=(255, 255, 255, 255)) for _ in range(9)]
                 
                 # Render active slot selection frame FIRST (behind items and text)
                 if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
@@ -1282,6 +1282,11 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     self.hotbar_sel_sprite.x = int(self.hotbar_bg_sprite.x - 1 * scale + self.selected_slot * 20 * scale)
                     self.hotbar_sel_sprite.y = int(self.hotbar_bg_sprite.y - 1 * scale)
                     self.hotbar_sel_sprite.draw()
+
+                # Reset labels visibility
+                for i in range(9):
+                    self.count_labels_shadow[i].text = ""
+                    self.count_labels_main[i].text = ""
 
                 for slot_idx, b_id in enumerate(self.inventory_blocks[:9]):
                     if b_id > 0 and b_id in self.block_icon_sprites:
@@ -1294,31 +1299,27 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     
                         count = self.inventory_counts[slot_idx]
                         if count > 0:
-                            lbl = self.count_labels[slot_idx]
-                        
                             target_size = max(8, int(8 * bg_scale))
-                            if lbl.font_size != target_size:
-                                lbl.font_size = target_size
-                            
-                            if lbl.text != str(count):
-                                lbl.text = str(count)
-                        
-                            # Position slightly outside the item bounds (x+20, y+2 relative to item top-left)
                             base_x = self.hotbar_bg_sprite.x + (20 + slot_idx * 20) * bg_scale
                             base_y = self.hotbar_bg_sprite.y + 2 * bg_scale
                             offset = max(1, int(1 * bg_scale))
+                            
+                            lbl_shadow = self.count_labels_shadow[slot_idx]
+                            lbl_main = self.count_labels_main[slot_idx]
+                            
+                            if lbl_shadow.font_size != target_size:
+                                lbl_shadow.font_size = target_size
+                                lbl_main.font_size = target_size
+                            
+                            s_count = str(count)
+                            if lbl_shadow.text != s_count:
+                                lbl_shadow.text = s_count
+                                lbl_main.text = s_count
                         
-                            # Draw Shadow
-                            lbl.x = base_x + offset
-                            lbl.y = base_y - offset
-                            lbl.color = (63, 63, 63, 255)
-                            lbl.draw()
-                        
-                            # Draw Main Text
-                            lbl.x = base_x
-                            lbl.y = base_y
-                            lbl.color = (255, 255, 255, 255)
-                            lbl.draw()
+                            lbl_shadow.x = base_x + offset
+                            lbl_shadow.y = base_y - offset
+                            lbl_main.x = base_x
+                            lbl_main.y = base_y
 
                 # Render XP Bar (just for visual for now, 30% full)
                 if hasattr(self, 'spr_xp_empty') and hasattr(self, 'spr_xp_full'):
@@ -1333,8 +1334,12 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     # XP bar is completely empty for now
                     # self.spr_xp_full.draw()
 
+                # Reset batched sprites visibility
+                for spr in self.heart_bg_sprites + self.heart_fg_sprites + self.hunger_bg_sprites + self.hunger_fg_sprites + self.bubble_sprites:
+                    spr.visible = False
+
                 # Render Health and Hunger Bars
-                if hasattr(self, 'spr_heart') and hasattr(self, 'spr_hunger'):
+                if hasattr(self, 'heart_bg_sprites'):
                     # Draw Health (10 hearts)
                     heart_start_x = self.hotbar_bg_sprite.x
                     bar_y = int(self.hotbar_bg_sprite.y + 32 * self.hotbar_bg_sprite.scale)
@@ -1347,7 +1352,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                     if player_health < 20.0 and player_hunger >= 18.0:
                         heart_offset_index = tick_count % 25
                     
-                    import random
                     for i in range(10):
                         yo = bar_y
                         if player_health <= 4.0:
@@ -1355,47 +1359,47 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                         if i == heart_offset_index:
                             yo += 2 * int(self.hotbar_bg_sprite.scale)
                         
-                        self.spr_heart.x = heart_start_x + i * 8 * self.spr_heart.scale
-                        self.spr_heart.y = yo
+                        hx = heart_start_x + i * 8 * self.heart_bg_sprites[i].scale
+                        
+                        bg_spr = self.heart_bg_sprites[i]
+                        bg_spr.x = hx
+                        bg_spr.y = yo
+                        bg_spr.visible = True
                     
-                        # Always draw the empty heart (black frame) first
-                        self.spr_heart.image = self.tex_heart_empty
-                        self.spr_heart.draw()
-                    
-                        # Draw the red inner heart (full or half) on top if needed
+                        # Inner heart
                         h_val = player_health - (i * 2)
-                        if h_val >= 2:
-                            self.spr_heart.image = self.tex_heart_full
-                            self.spr_heart.draw()
-                        elif h_val >= 1:
-                            self.spr_heart.image = self.tex_heart_half
-                            self.spr_heart.draw()
+                        if h_val >= 1:
+                            fg_spr = self.heart_fg_sprites[i]
+                            fg_spr.x = hx
+                            fg_spr.y = yo
+                            fg_spr.image = self.tex_heart_full if h_val >= 2 else self.tex_heart_half
+                            fg_spr.visible = True
                     
                     # Draw Hunger (10 icons, right-aligned)
-                    hunger_start_x = self.hotbar_bg_sprite.x + self.hotbar_bg_sprite.width - 9 * self.spr_hunger.scale
+                    hunger_start_x = self.hotbar_bg_sprite.x + self.hotbar_bg_sprite.width - 9 * self.hunger_bg_sprites[0].scale
                     for i in range(10):
                         yo = bar_y
-                        if player_hunger <= 0.0 and tick_count % 20 < 10: # shake slightly when starving
+                        if player_hunger <= 0.0 and tick_count % 20 < 10:
                              yo += random.randint(0, 1) * int(self.hotbar_bg_sprite.scale)
                          
-                        self.spr_hunger.x = hunger_start_x - i * 8 * self.spr_hunger.scale
-                        self.spr_hunger.y = yo
+                        hx = hunger_start_x - i * 8 * self.hunger_bg_sprites[i].scale
+                        
+                        bg_spr = self.hunger_bg_sprites[i]
+                        bg_spr.x = hx
+                        bg_spr.y = yo
+                        bg_spr.visible = True
                     
-                        # Always draw the empty hunger background first
-                        self.spr_hunger.image = self.tex_hunger_empty
-                        self.spr_hunger.draw()
-                    
-                        # Draw the inner food (full or half) on top if needed
+                        # Inner food
                         f_val = player_hunger - (i * 2)
-                        if f_val >= 2:
-                            self.spr_hunger.image = self.tex_hunger_full
-                            self.spr_hunger.draw()
-                        elif f_val >= 1:
-                            self.spr_hunger.image = self.tex_hunger_half
-                            self.spr_hunger.draw()
+                        if f_val >= 1:
+                            fg_spr = self.hunger_fg_sprites[i]
+                            fg_spr.x = hx
+                            fg_spr.y = yo
+                            fg_spr.image = self.tex_hunger_full if f_val >= 2 else self.tex_hunger_half
+                            fg_spr.visible = True
 
                     # Render Bubbles if underwater
-                    if getattr(self.player, 'is_head_in_water', False) and hasattr(self, 'spr_bubble'):
+                    if getattr(self.player, 'is_head_in_water', False):
                         bubble_y = bar_y + 10 * scale
                         air_supply = getattr(self.player, 'air_supply', 300.0)
                         air_scale = 10.0 / 300.0
@@ -1403,15 +1407,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                         count = int(math.ceil((air_supply - 2) * air_scale))
                         extra = int(math.ceil(air_scaled)) - count
                     
-                        for i in range(count + extra):
+                        for i in range(min(10, count + extra)):
                             bx = hunger_start_x - (i * 8 * scale)
-                            self.spr_bubble.x = bx
-                            self.spr_bubble.y = bubble_y
-                            if i < count:
-                                self.spr_bubble.image = self.tex_bubble_full
-                            else:
-                                self.spr_bubble.image = self.tex_bubble_popped
-                            self.spr_bubble.draw()
+                            bspr = self.bubble_sprites[i]
+                            bspr.x = bx
+                            bspr.y = bubble_y
+                            bspr.image = self.tex_bubble_full if i < count else self.tex_bubble_popped
+                            bspr.visible = True
+
+                # Draw UI Batch! (One draw call for all labels, hearts, hunger, and bubbles)
+                if hasattr(self, 'ui_batch'):
+                    self.ui_batch.draw()
 
         glDisable(GL_BLEND)
         glEnable(GL_DEPTH_TEST)
@@ -1422,7 +1428,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         dur = (time.perf_counter() - t_start) * 1000.0
         if dur > 4.0:
-            self.log(f"[SLOW DRAW] Total: {dur:.2f}ms | Cull: {(t_cull_end-t_cull_start)*1000.0:.2f}ms | Opaque: {(t_opaque_end-t_opaque_start)*1000.0:.2f}ms | Trans: {(t_trans_end-t_trans_start)*1000.0:.2f}ms")
+            self.log(f"[SLOW DRAW] Total: {dur:.2f}ms | Cull: {(t_cull_end-t_cull_start)*1000.0:.2f}ms | Opaque: {(t_opaque_end-t_opaque_start)*1000.0:.2f}ms | Entity: {(t_entity_end-t_entity_start)*1000.0:.2f}ms | Trans: {(t_trans_end-t_trans_start)*1000.0:.2f}ms")
 
     def on_resize(self, width, height):
         super().on_resize(width, height)
@@ -1440,12 +1446,10 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             self.crosshair_sprite.scale = scale
         if hasattr(self, 'hotbar_sel_sprite') and self.hotbar_sel_sprite is not None:
             self.hotbar_sel_sprite.scale = scale
-        if hasattr(self, 'spr_heart'):
-            self.spr_heart.scale = scale
-        if hasattr(self, 'spr_hunger'):
-            self.spr_hunger.scale = scale
-        if hasattr(self, 'spr_bubble'):
-            self.spr_bubble.scale = scale
+        if hasattr(self, 'heart_bg_sprites'):
+            for spr in self.heart_bg_sprites + self.heart_fg_sprites + self.hunger_bg_sprites + self.hunger_fg_sprites + self.bubble_sprites:
+                spr.scale = scale
+                
         if hasattr(self, 'spr_xp_empty'):
             self.spr_xp_empty.scale = scale
         if hasattr(self, 'spr_xp_full'):
@@ -1480,7 +1484,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
-            import time
             current_time = time.time()
             if current_time - getattr(self, 'last_w_press_time', 0) < 0.3:
                 self.is_sprinting_w = True
@@ -1534,22 +1537,27 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             f"Pythoncraft | FPS: {fps:.0f} | "
             f"Pos: ({cam.x:.0f}, {cam.y:.0f}, {cam.z:.0f}) | "
             f"Chunks: {self.rendered_chunks}/{len(self.world_chunks)} (Q:{queued}) | "
+            f"Sim: {getattr(self, 'simulation_distance', 4)} | "
             f"Verts: {self.total_verts:,}"
         )
 
 def main():
-    import sys
     
     print("=============================================")
     print("      PYTHONCRAFT ENGINE INITIATING...       ")
     print("=============================================")
     
     distance = 4
+    sim_distance = 4
     fast_leaves = False
     debug_mode = False
     flat_mode = False
+    
     if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
+        args = sys.argv[1:]
+        i = 0
+        while i < len(args):
+            arg = args[i]
             if arg == "-fast":
                 fast_leaves = True
                 print("Fast mode enabled: Leaves are now opaque.")
@@ -1559,20 +1567,27 @@ def main():
             elif arg == "-flat":
                 flat_mode = True
                 print("Flat mode enabled: World will be generated as flat.")
+            elif arg == "-sim" and i + 1 < len(args):
+                try:
+                    sim_distance = int(args[i+1])
+                    print(f"Simulation Distance set to: {sim_distance}")
+                except ValueError:
+                    pass
+                i += 1
             else:
                 try:
                     distance = int(arg)
                     print(f"User requested Render Distance: {distance} ({distance*2}x{distance*2} = {distance*distance*4} chunks)")
                 except ValueError:
                     pass
+            i += 1
                     
     if fast_leaves:
-        from world.terrain import BLOCK_OPAQUE_ARRAY
         BLOCK_OPAQUE_ARRAY[12] = True
         BLOCK_OPAQUE_ARRAY[16] = True
         BLOCK_OPAQUE_ARRAY[17] = True
     
-    engine = PythonCraftEngine(render_distance=distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode)
+    engine = PythonCraftEngine(render_distance=distance, simulation_distance=sim_distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode)
     pyglet.app.run()
 
 if __name__ == '__main__':

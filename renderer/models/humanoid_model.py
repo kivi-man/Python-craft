@@ -39,12 +39,8 @@ class HumanoidModel(Model):
             self.leg0.compile(scale, swap_top_bottom=True, tex_w=tw, tex_h=th)
             self.leg1.compile(scale, swap_top_bottom=True, tex_w=tw, tex_h=th)
             
-        self.head.render(parent_matrix, u_view_loc, scale)
-        self.body.render(parent_matrix, u_view_loc, scale)
-        self.arm0.render(parent_matrix, u_view_loc, scale)
-        self.arm1.render(parent_matrix, u_view_loc, scale)
-        self.leg0.render(parent_matrix, u_view_loc, scale)
-        self.leg1.render(parent_matrix, u_view_loc, scale)
+        parts = [self.head, self.body, self.arm0, self.arm1, self.leg0, self.leg1]
+        self.render_batched(parts, parent_matrix, u_view_loc, scale)
 
     def setup_anim(self, walk_pos, walk_speed, alive_ticks, head_yaw, head_pitch, scale, sneaking=False, swinging=0.0):
         self.head.xRot = head_pitch / 57.2957795

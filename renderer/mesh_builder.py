@@ -307,7 +307,9 @@ def _emit_aabb_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_fron
         ]
         
         for idx in tri_order:
-            if v_idx + 15 > verts.shape[0]: return v_idx
+            if v_idx + 15 > verts.shape[0]:
+                print("WARNING: Chunk mesh vertex buffer exceeded!")
+                return v_idx
             c = corners[idx]
             u_val, v_val = uvs[idx]
             verts[v_idx]   = c[0]
@@ -345,8 +347,8 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
     lights = lights_in.copy()
     _fix_chunk_light_boundaries(lights, blocks, l_left, l_right, l_front, l_back)
     
-    opaque_verts = np.empty(2000000, dtype=np.float32)
-    trans_verts = np.empty(2000000, dtype=np.float32)
+    opaque_verts = np.empty(500000, dtype=np.float32)
+    trans_verts = np.empty(500000, dtype=np.float32)
     o_idx = 0
     t_idx = 0
     
@@ -451,7 +453,9 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                     if is_trans: v_idx = t_idx
                     else: v_idx = o_idx
                     
-                    if v_idx + 90 > verts.shape[0]: continue
+                    if v_idx + 90 > verts.shape[0]:
+                        print("WARNING: Chunk mesh vertex buffer exceeded!")
+                        return opaque_verts[:o_idx], trans_verts[:t_idx]
                     
                     d_val = float(d + (1 if direction > 0 else 0))
                     
@@ -550,7 +554,9 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
             for z in range(CHUNK_SIZE):
                 b = blocks[x, y, z]
                 if b == 31 or b == 37 or b == 38 or b == 175 or b == 176:
-                    if t_idx + 15 * 24 > trans_verts.shape[0]: continue
+                    if t_idx + 15 * 24 > trans_verts.shape[0]:
+                        print("WARNING: Chunk mesh vertex buffer exceeded!")
+                        return opaque_verts[:o_idx], trans_verts[:t_idx]
                     
                     vx = float(x) + wx
                     vy = float(y)
@@ -601,7 +607,9 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
             for z in range(CHUNK_SIZE):
                 block_id = blocks[x, y, z]
                 if is_stairs(block_id) or is_slab(block_id):
-                    if o_idx + 15 * 6 * 3 > opaque_verts.shape[0]: continue
+                    if o_idx + 15 * 6 * 3 > opaque_verts.shape[0]:
+                        print("WARNING: Chunk mesh vertex buffer exceeded!")
+                        return opaque_verts[:o_idx], trans_verts[:t_idx]
                     
                     vx = float(x) + wx
                     vy = float(y)

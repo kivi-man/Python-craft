@@ -2,11 +2,17 @@ import concurrent.futures
 import numpy as np
 import math
 import ctypes
+import collections
+import datetime
+import time
+import json
 from pyglet.gl import *
 from world.mc_terrain import load_or_generate_chunk, CHUNK_SIZE, CHUNK_HEIGHT, recalculate_chunk_light
-from core.world_db import save_chunk
+from world.mc_flat_terrain import load_or_generate_chunk as load_flat_chunk
+from core.world_db import save_chunk, save_chunk_entities, load_chunk_entities
 from renderer.mesh_builder import build_chunk_mesh
-from world.terrain import CACTUS, SAND
+from world.terrain import CACTUS, SAND, LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, AIR, SNOW
+from core.entities.pig import Pig
 
 def async_log(message):
     try:
@@ -39,11 +45,11 @@ class ChunkMixin:
         self.future_to_chunk = {}      # future -> (cx, cz)
         self.mesh_future_to_chunk = {} # future -> (cx, cz)
         
-        self.chunk_load_queue = []
+        self.chunk_load_queue = collections.deque()
         self.chunk_load_queue_set = set()
-        self.chunk_unload_queue = []
+        self.chunk_unload_queue = collections.deque()
         self.chunk_unload_queue_set = set()
-        self.chunk_mesh_queue = [] # cx, cz tuples
+        self.chunk_mesh_queue = collections.deque() # cx, cz tuples
         self.chunk_mesh_queue_set = set()
         self.modified_chunks = set()
         
@@ -52,7 +58,6 @@ class ChunkMixin:
         self.last_player_cx = None
         self.last_player_cz = None
         
-        import datetime
         self.log(f"\n=== NEW SESSION STARTED AT {datetime.datetime.now()} ===")
         self.log(f"[WORLD] Dynamic Chunk System Initialized. Pool size: {self.TOTAL_CHUNKS}")
         
@@ -106,8 +111,6 @@ class ChunkMixin:
             
         # Save and remove entities
         if hasattr(self, 'entities'):
-            import json
-            from core.world_db import save_chunk_entities
             entities_to_save = []
             keep_entities = []
             for e in self.entities:
@@ -125,7 +128,6 @@ class ChunkMixin:
                 self.executor.submit(save_chunk_entities, cx, cz, "[]")
 
     def _update_chunk_loading(self):
-        import time
         t_start = time.perf_counter()
         px = int(self.player.x / CHUNK_SIZE)
         pz = int(self.player.z / CHUNK_SIZE)
@@ -175,7 +177,6 @@ class ChunkMixin:
         
 
     def _process_chunk_queues(self):
-        import time
         t_start = time.perf_counter()
         # 0. Unload old chunks gradually (max 2 per frame)
         px = int(self.player.x / CHUNK_SIZE)
@@ -185,7 +186,7 @@ class ChunkMixin:
         unloaded = 0
         t_unload_start = time.perf_counter()
         while self.chunk_unload_queue and unloaded < 2:
-            cx, cz = self.chunk_unload_queue.pop(0)
+            cx, cz = self.chunk_unload_queue.popleft()
             self.chunk_unload_queue_set.discard((cx, cz)) # Remove from set as well
             if abs(cx - px) > unload_dist or abs(cz - pz) > unload_dist:
                 self._unload_chunk(cx, cz)
@@ -211,7 +212,7 @@ class ChunkMixin:
             if abs(cx - self.last_player_cx) > self.RENDER_DISTANCE + 2 or abs(cz - self.last_player_cz) > self.RENDER_DISTANCE + 2:
                 continue
                 
-            from world.terrain import LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, AIR, SNOW
+
             
             # Handle out_of_bounds (pending_decorations)
             for i in range(len(out_of_bounds)):
@@ -256,10 +257,6 @@ class ChunkMixin:
             
             # Load entities
             if hasattr(self, 'entities'):
-                import json
-                from core.world_db import load_chunk_entities
-                from core.entities.pig import Pig
-                
                 entities_json = load_chunk_entities(cx, cz)
                 if entities_json:
                     try:
@@ -301,13 +298,12 @@ class ChunkMixin:
         t_submit_gen_start = time.perf_counter()
         submitted_gen = 0
         while self.chunk_load_queue and len(self.future_to_chunk) < 2 and submitted_gen < 1:
-            cx, cz = self.chunk_load_queue.pop(0)
+            cx, cz = self.chunk_load_queue.popleft()
             self.chunk_load_queue_set.discard((cx, cz)) # Remove from set as well
             if hasattr(self, 'flat_mode') and self.flat_mode:
-                from world.mc_flat_terrain import load_or_generate_chunk
+                future = self.executor.submit(load_flat_chunk, cx, cz)
             else:
-                from world.mc_terrain import load_or_generate_chunk
-            future = self.executor.submit(load_or_generate_chunk, cx, cz)
+                future = self.executor.submit(load_or_generate_chunk, cx, cz)
             self.future_to_chunk[future] = (cx, cz)
             submitted_gen += 1
         t_submit_gen_end = time.perf_counter()
@@ -325,7 +321,7 @@ class ChunkMixin:
         t_submit_mesh_start = time.perf_counter()
         submitted_mesh = 0
         while self.chunk_mesh_queue and len(self.mesh_future_to_chunk) < 4 and submitted_mesh < 1:
-            cx, cz = self.chunk_mesh_queue.pop(0)
+            cx, cz = self.chunk_mesh_queue.popleft()
             self.chunk_mesh_queue_set.remove((cx, cz))
             blocks = self.world_chunks.get((cx, cz))
             if blocks is None: continue
@@ -354,7 +350,6 @@ class ChunkMixin:
 
 
     def _apply_chunk_mesh(self, cx, cz, meshes):
-        import time
         t_start = time.perf_counter()
         if (cx, cz) not in self.chunk_indices:
             return
@@ -488,7 +483,7 @@ class ChunkMixin:
                     self.chunk_mesh_queue.remove((ucx, ucz))
                 else:
                     self.chunk_mesh_queue_set.add((ucx, ucz))
-                self.chunk_mesh_queue.insert(0, (ucx, ucz))
+                self.chunk_mesh_queue.appendleft((ucx, ucz))
         
         add_urgent_mesh(cx, cz)
         if lx == 0: add_urgent_mesh(cx - 1, cz)

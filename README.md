@@ -192,11 +192,12 @@ python main.py
 ### ⚙️ Command-Line Optimizations
 Fine-tune the engine for your exact hardware constraints:
 - **Render Distance:** `python main.py 6` (sets render distance to 6 chunks).
+- **Simulation Distance:** `python main.py -sim 4` (controls how far away entities and world events are simulated, freeing up CPU).
 - **Fast Leaves:** `python main.py -fast` (makes leaves opaque, skipping transparency sorting for a huge FPS boost).
 - **Debug Profiler:** `python main.py -debug` (displays profiling, chunk state queues, memory usage, and advanced F3 metrics).
 
 ```bash
-python main.py -fast -debug 8
+python main.py 8 -sim 4 -fast -debug
 ```
 
 ---

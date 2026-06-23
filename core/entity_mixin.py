@@ -23,17 +23,48 @@ class EntityMixin:
             self.tick_timer -= 0.05
             self.spawner.tick()
             
-            for p in self.block_particles[:]:
-                if p.removed:
-                    self.block_particles.remove(p)
-                    continue
-                p.tick(self.get_block)
+            # Particle cleanup - filter instead of remove() which is O(n)
+            if self.block_particles:
+                alive_particles = []
+                for p in self.block_particles:
+                    if p.removed:
+                        continue
+                    p.tick(self.get_block)
+                    alive_particles.append(p)
+                self.block_particles = alive_particles
                 
-            for entity in self.entities[:]:
+            # Entity cleanup - filter instead of remove() which is O(n)
+            alive_entities = []
+            item_entities = []
+            
+            sim_dist = getattr(self, 'simulation_distance', 4) * 16.0
+            
+            for entity in self.entities:
                 if entity.removed:
-                    self.entities.remove(entity)
                     continue
-                entity.tick(self.get_block)
+                    
+                # Simulation Distance Check
+                dx = entity.x - self.player.x
+                dz = entity.z - self.player.z
+                dist_sq = dx*dx + dz*dz
+                
+                if dist_sq <= sim_dist * sim_dist:
+                    entity.tick(self.get_block)
+                else:
+                    # Keep frozen entities from interpolating their last movement tick
+                    entity.xo, entity.yo, entity.zo = entity.x, entity.y, entity.z
+                    entity.xRotO = entity.xRot
+                    entity.yRotO = entity.yRot
+                    if hasattr(entity, 'yHeadRot'):
+                        entity.yHeadRotO = entity.yHeadRot
+                    if hasattr(entity, 'yBodyRot'):
+                        entity.yBodyRotO = entity.yBodyRot
+                    if hasattr(entity, 'walk_anim_pos'):
+                        entity.walk_anim_pos_o = entity.walk_anim_pos
+                    if hasattr(entity, 'walk_anim_speed'):
+                        entity.walk_anim_speed_o = entity.walk_anim_speed
+                
+                alive_entities.append(entity)
                 
                 if isinstance(entity, ItemEntity):
                     if entity.pickup_delay <= 0:
@@ -50,13 +81,32 @@ class EntityMixin:
                                 entity.remove()
                                 
                     if not entity.removed:
-                        for other in self.entities:
-                            if other != entity and isinstance(other, ItemEntity):
-                                dx = other.x - entity.x
-                                dy = other.y - entity.y
-                                dz = other.z - entity.z
-                                if dx*dx + dy*dy + dz*dz < 1.0:
-                                    entity.merge_with(other)
+                        item_entities.append(entity)
+            self.entities = alive_entities
+            
+            # Spatial hash ile item merge - O(n) ortalama
+            if item_entities:
+                grid = {}
+                for item in item_entities:
+                    if item.removed:
+                        continue
+                    key = (int(item.x), int(item.y), int(item.z))
+                    if key not in grid:
+                        grid[key] = []
+                    grid[key].append(item)
+                
+                for key, items in grid.items():
+                    for i in range(len(items)):
+                        if items[i].removed:
+                            continue
+                        for j in range(i + 1, len(items)):
+                            if items[j].removed:
+                                continue
+                            dx = items[j].x - items[i].x
+                            dy = items[j].y - items[i].y
+                            dz = items[j].z - items[i].z
+                            if dx*dx + dy*dy + dz*dz < 1.0:
+                                items[i].merge_with(items[j])
                 
     def _render_entities(self, camera_view, u_view_loc, u_tint_color_loc):
         partial_tick = self.tick_timer / 0.05

@@ -4,6 +4,7 @@ from renderer.models.model_part import ModelPart
 
 class QuadrupedModel(Model):
     def __init__(self, y_offset, grow):
+        super().__init__()
         self.head = ModelPart(0, 0).add_box(-4.0, -4.0, -8.0, 8, 8, 8, grow)
         self.head.set_pos(0.0, 18.0 - y_offset, -6.0)
         
@@ -33,12 +34,8 @@ class QuadrupedModel(Model):
             self.leg2.compile(scale, swap_top_bottom=True)
             self.leg3.compile(scale, swap_top_bottom=True)
             
-        self.head.render(parent_matrix, u_view_loc, scale)
-        self.body.render(parent_matrix, u_view_loc, scale)
-        self.leg0.render(parent_matrix, u_view_loc, scale)
-        self.leg1.render(parent_matrix, u_view_loc, scale)
-        self.leg2.render(parent_matrix, u_view_loc, scale)
-        self.leg3.render(parent_matrix, u_view_loc, scale)
+        parts = [self.head, self.body, self.leg0, self.leg1, self.leg2, self.leg3]
+        self.render_batched(parts, parent_matrix, u_view_loc, scale)
         
     def setup_anim(self, walk_pos, walk_speed, alive_ticks, head_yaw, head_pitch, scale):
         self.head.xRot = head_pitch / 57.2957795

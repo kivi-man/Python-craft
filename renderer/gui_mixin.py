@@ -174,15 +174,18 @@ class GUIMixin:
             self.tex_bubble_full = get_icon_tex(16, bubble_y)
             self.tex_bubble_popped = get_icon_tex(25, bubble_y)
             
-            # Create sprites for drawing dynamically
-            self.spr_heart = pyglet.sprite.Sprite(img=self.tex_heart_empty)
-            self.spr_heart.scale = 2
+            self.ui_batch = pyglet.graphics.Batch()
             
-            self.spr_hunger = pyglet.sprite.Sprite(img=self.tex_hunger_empty)
-            self.spr_hunger.scale = 2
+            # Create sprite pools for batched drawing
+            self.heart_bg_sprites = [pyglet.sprite.Sprite(img=self.tex_heart_empty, batch=self.ui_batch) for _ in range(10)]
+            self.heart_fg_sprites = [pyglet.sprite.Sprite(img=self.tex_heart_full, batch=self.ui_batch) for _ in range(10)]
+            self.hunger_bg_sprites = [pyglet.sprite.Sprite(img=self.tex_hunger_empty, batch=self.ui_batch) for _ in range(10)]
+            self.hunger_fg_sprites = [pyglet.sprite.Sprite(img=self.tex_hunger_full, batch=self.ui_batch) for _ in range(10)]
+            self.bubble_sprites = [pyglet.sprite.Sprite(img=self.tex_bubble_full, batch=self.ui_batch) for _ in range(10)]
             
-            self.spr_bubble = pyglet.sprite.Sprite(img=self.tex_bubble_full)
-            self.spr_bubble.scale = 2
+            for spr in self.heart_bg_sprites + self.heart_fg_sprites + self.hunger_bg_sprites + self.hunger_fg_sprites + self.bubble_sprites:
+                spr.scale = 2
+                spr.visible = False
             
             # XP Bar (182x5)
             xp_empty_y = crosshair_img.height - 69

@@ -17,6 +17,8 @@ class ModelPart:
         self.vao = None
         self.vbo = None
         self.vertex_count = 0
+        # Batch rendering için ham vertex verileri (numpy array, Nx15)
+        self._raw_vertices = None
         
     def set_pos(self, x, y, z):
         self.x = x
@@ -97,6 +99,8 @@ class ModelPart:
         self.vertex_count = len(verts) // 15
         if self.vertex_count == 0: return
 
+        self.verts_array = np.array(verts, dtype=np.float32).reshape(-1, 15)
+
         v_array = (GLfloat * len(verts))(*verts)
         self.vao = GLuint()
         glGenVertexArrays(1, ctypes.byref(self.vao))
@@ -124,6 +128,40 @@ class ModelPart:
         glEnableVertexAttribArray(6)
         
         glBindVertexArray(0)
+
+    def get_transformed_vertices(self, parent_matrix, scale):
+        """CPU tarafında dönüştürülmüş vertex verilerini döndürür (batch rendering için).
+        
+        Pozisyonlar (x,y,z) final_matrix ile çarpılır (w=1),
+        normaller (nx,ny,nz) final_matrix ile çarpılır (w=0, çeviri yok).
+        Diğer attributelar (renk, uv, layer, ao, light, overlay) olduğu gibi kalır.
+        """
+        if self._raw_vertices is None:
+            return None
+        
+        local_matrix = self.get_matrix(scale)
+        final_matrix = parent_matrix @ local_matrix
+        # Geriye dönük uyumluluk için last_final_matrix'i güncelle
+        self.last_final_matrix = final_matrix
+        
+        result = self._raw_vertices.copy()
+        n = result.shape[0]
+        
+        # Pozisyonları dönüştür: (x, y, z) -> final_matrix @ (x, y, z, 1)
+        positions = result[:, 0:3]  # Nx3
+        ones = np.ones((n, 1), dtype=np.float32)
+        pos_h = np.hstack((positions, ones))  # Nx4
+        transformed_pos = (final_matrix @ pos_h.T).T  # Nx4
+        result[:, 0:3] = transformed_pos[:, 0:3]
+        
+        # Normalleri dönüştür: (nx, ny, nz) -> final_matrix @ (nx, ny, nz, 0)
+        normals = result[:, 3:6]  # Nx3
+        zeros = np.zeros((n, 1), dtype=np.float32)
+        norm_h = np.hstack((normals, zeros))  # Nx4
+        transformed_norm = (final_matrix @ norm_h.T).T  # Nx4
+        result[:, 3:6] = transformed_norm[:, 0:3]
+        
+        return result
 
     def get_matrix(self, scale):
         tx, ty, tz = self.x * scale, self.y * scale, self.z * scale
@@ -177,3 +215,28 @@ class ModelPart:
         glBindVertexArray(self.vao)
         glDrawArrays(GL_TRIANGLES, 0, self.vertex_count)
         glBindVertexArray(0)
+
+    def get_transformed_vertices(self, parent_matrix, scale):
+        if not hasattr(self, 'verts_array') or len(self.verts_array) == 0:
+            return None
+            
+        local_matrix = self.get_matrix(scale)
+        final_matrix = parent_matrix @ local_matrix
+        self.last_final_matrix = final_matrix
+        
+        # We need to transform the positions (first 3 floats) and normals (next 3 floats).
+        pts = np.ones((len(self.verts_array), 4), dtype=np.float32)
+        pts[:, :3] = self.verts_array[:, :3]
+        
+        norms = np.zeros((len(self.verts_array), 4), dtype=np.float32)
+        norms[:, :3] = self.verts_array[:, 3:6]
+        
+        # P @ M.T transforms row vectors
+        t_pts = pts @ final_matrix.T
+        t_norms = norms @ final_matrix.T
+        
+        out_verts = self.verts_array.copy()
+        out_verts[:, :3] = t_pts[:, :3]
+        out_verts[:, 3:6] = t_norms[:, :3]
+        
+        return out_verts.flatten()

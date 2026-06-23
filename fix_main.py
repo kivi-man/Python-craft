@@ -1,26 +1,44 @@
-import sys
+import os
+import re
 
-content = open(r'c:\Users\ecrin\OneDrive\Desktop\pythoncraft\main.py', encoding='utf-8').read()
+with open("main.py", "r", encoding="utf-8") as f:
+    lines = f.readlines()
 
-bad_str = """        # Update Sound System (Music and ambiance)
-        if hasattr(self, 'sound_system'):
-            self.sound_system.update_music(dt, dimension="OVERWORLD")
-            
-"""
+new_lines = []
+imports_to_add = set()
 
-if bad_str in content:
-    content = content.replace(bad_str, '')
+# Regex to match indented imports
+import_re = re.compile(r'^[ \t]+(import [a-zA-Z0-9_\.]+)[ \t]*$')
+from_import_re = re.compile(r'^[ \t]+(from [a-zA-Z0-9_\.]+ import [a-zA-Z0-9_\., ]+)[ \t]*$')
+
+# Exception for pyglet.window import mouse, we don't want to conflict if it's already there or something, but let's just collect all.
+for line in lines:
+    m1 = import_re.match(line)
+    m2 = from_import_re.match(line)
     
-    # Now insert it at the very top of update(self, dt)
-    update_str = '    def update(self, dt):'
-    insert_str = """    def update(self, dt):
-        # Update Sound System (Music and ambiance)
-        if hasattr(self, 'sound_system'):
-            self.sound_system.update_music(dt, dimension="OVERWORLD")
-"""
-    content = content.replace(update_str, insert_str)
-    
-    open(r'c:\Users\ecrin\OneDrive\Desktop\pythoncraft\main.py', 'w', encoding='utf-8').write(content)
-    print('Fixed main.py')
-else:
-    print('Could not find bad string')
+    if m1:
+        imports_to_add.add(m1.group(1))
+        # Keep empty line if needed or just skip it
+        continue
+    elif m2:
+        imports_to_add.add(m2.group(1))
+        continue
+    else:
+        new_lines.append(line)
+
+# Now add collected imports right after the initial block of imports.
+# Let's find the end of the first import block.
+insert_idx = 0
+for i, line in enumerate(new_lines):
+    if line.startswith("from renderer.camera import Camera"):
+        insert_idx = i + 1
+        break
+
+sorted_imports = sorted(list(imports_to_add))
+import_lines = [imp + "\n" for imp in sorted_imports]
+
+final_lines = new_lines[:insert_idx] + ["\n# --- MOVED IMPORTS ---\n"] + import_lines + ["# ---------------------\n\n"] + new_lines[insert_idx:]
+
+with open("main.py", "w", encoding="utf-8") as f:
+    f.writelines(final_lines)
+print("Finished moving imports in main.py")
