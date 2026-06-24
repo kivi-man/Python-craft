@@ -10,7 +10,8 @@ from world.terrain import (
     SANDSTONE_STAIRS, QUARTZ_STAIRS,
     WOODEN_SLAB, STONE_SLAB, SPRUCE_SLAB, BIRCH_SLAB, JUNGLE_SLAB,
     ACACIA_SLAB, DARK_OAK_SLAB, BRICK_SLAB, STONE_BRICK_SLAB, NETHER_BRICK_SLAB,
-    SANDSTONE_SLAB, QUARTZ_SLAB, COBBLESTONE_SLAB
+    SANDSTONE_SLAB, QUARTZ_SLAB, COBBLESTONE_SLAB,
+    WOOD_DOOR, IRON_DOOR
 )
 
 UPSIDEDOWN_BIT = 4
@@ -28,6 +29,10 @@ SLAB_IDS = (
     WOODEN_SLAB, STONE_SLAB, SPRUCE_SLAB, BIRCH_SLAB, JUNGLE_SLAB,
     ACACIA_SLAB, DARK_OAK_SLAB, BRICK_SLAB, STONE_BRICK_SLAB, NETHER_BRICK_SLAB,
     SANDSTONE_SLAB, QUARTZ_SLAB, COBBLESTONE_SLAB
+)
+
+DOOR_IDS = (
+    WOOD_DOOR, IRON_DOOR
 )
 
 SLAB_TO_FULL = {
@@ -54,6 +59,10 @@ BLOCK_IS_SLAB = np.zeros(256, dtype=np.bool_)
 for s_id in SLAB_IDS:
     BLOCK_IS_SLAB[s_id] = True
 
+BLOCK_IS_DOOR = np.zeros(256, dtype=np.bool_)
+for s_id in DOOR_IDS:
+    BLOCK_IS_DOOR[s_id] = True
+
 @njit(nogil=True)
 def is_stairs(block_id):
     if block_id < 0 or block_id > 255: return False
@@ -63,6 +72,11 @@ def is_stairs(block_id):
 def is_slab(block_id):
     if block_id < 0 or block_id > 255: return False
     return BLOCK_IS_SLAB[block_id]
+
+@njit(nogil=True)
+def is_door(block_id):
+    if block_id < 0 or block_id > 255: return False
+    return BLOCK_IS_DOOR[block_id]
 
 @njit(nogil=True)
 def is_lock_attached(neighbor_id, neighbor_data, target_data):
@@ -77,6 +91,40 @@ def get_slab_aabbs(x, y, z, data):
         return np.array([[x, y + 0.5, z, x + 1.0, y + 1.0, z + 1.0]], dtype=np.float32)
     else:
         return np.array([[x, y, z, x + 1.0, y + 0.5, z + 1.0]], dtype=np.float32)
+
+@njit(nogil=True)
+def get_door_aabbs(x, y, z, composite_data):
+    aabbs = np.zeros((1, 6), dtype=np.float32)
+    r = 3.0 / 16.0
+    dir_val = composite_data & 3
+    open = (composite_data & 4) != 0
+    hasRightHinge = (composite_data & 16) != 0
+    
+    minX, minZ, maxX, maxZ = 0.0, 0.0, 1.0, 1.0
+    
+    if dir_val == 0:
+        if open:
+            if not hasRightHinge: maxZ = r
+            else: minZ = 1.0 - r
+        else: maxX = r
+    elif dir_val == 1:
+        if open:
+            if not hasRightHinge: minX = 1.0 - r
+            else: maxX = r
+        else: maxZ = r
+    elif dir_val == 2:
+        if open:
+            if not hasRightHinge: minZ = 1.0 - r
+            else: maxZ = r
+        else: minX = 1.0 - r
+    elif dir_val == 3:
+        if open:
+            if not hasRightHinge: maxX = r
+            else: minX = 1.0 - r
+        else: minZ = 1.0 - r
+            
+    aabbs[0] = [x + minX, y, z + minZ, x + maxX, y + 1.0, z + maxZ]
+    return aabbs
 
 @njit(nogil=True)
 def get_stair_aabbs(x, y, z, data, 

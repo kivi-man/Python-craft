@@ -147,6 +147,8 @@ BLOCK_REGISTRY = {
     "WOOL_BLACK": {"id": 115, "texture": "wool_colored_black.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
     "GLASS_BLACK": {"id": 135, "texture": "glass_black.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
     "STAINED_CLAY_BLACK": {"id": 155, "texture": "hardened_clay_stained_black.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
+    "WOOD_DOOR": {"id": 162, "texture": {"top": "door_wood_upper.png", "bottom": "door_wood_lower.png", "side": "door_wood_lower.png"}, "color": (0.5, 0.3, 0.1), "transparent": True, "light": 0, "hardness": 3.0, "tool_type": "AXE"},
+    "IRON_DOOR": {"id": 163, "texture": {"top": "door_iron_upper.png", "bottom": "door_iron_lower.png", "side": "door_iron_lower.png"}, "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 5.0, "tool_type": "PICKAXE"},
     "CRAFTING_TABLE": {"id": 116, "texture": {"top": "crafting_table_top.png", "bottom": "planks_oak.png", "side": "crafting_table_side.png"}, "color": (0.6, 0.5, 0.3), "transparent": False, "light": 0, "hardness": 2.5, "tool_type": "AXE"},
     "HARDENED_CLAY": {"id": 160, "texture": "hardened_clay.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
     "OAK_STAIRS": {"id": 200, "texture": "planks_oak.png", "color": (0.6, 0.5, 0.3), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
@@ -262,6 +264,8 @@ NETHER_BRICK_SLAB = 221
 SANDSTONE_SLAB = 222
 QUARTZ_SLAB = 223
 COBBLESTONE_SLAB = 224
+WOOD_DOOR = 162
+IRON_DOOR = 163
 BOOKSHELF = 57
 MOSSY_COBBLESTONE = 58
 OBSIDIAN = 59

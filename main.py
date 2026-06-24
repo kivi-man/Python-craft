@@ -377,9 +377,29 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                                     
                                 required_time = get_break_time(broken_id, self.selected_block_id)
                                 if self.breaking_progress >= required_time:
+                                    broken_id, broken_data = self.get_block_info(hx, hy, hz)
                                     self.spawn_destruction_particles(hx, hy, hz, broken_id)
                                     self.spawn_item_entity(broken_id, hx + 0.5, hy + 0.5, hz + 0.5)
                                     self.set_block(hx, hy, hz, 0)
+                                    
+                                    from core.special_blocks import is_door
+                                    if is_door(broken_id):
+                                        if (broken_data & 8) != 0:
+                                            lower_id, _ = self.get_block_info(hx, hy - 1, hz)
+                                            if lower_id == broken_id:
+                                                self.set_block(hx, hy - 1, hz, 0)
+                                        else:
+                                            upper_id, _ = self.get_block_info(hx, hy + 1, hz)
+                                            if upper_id == broken_id:
+                                                self.set_block(hx, hy + 1, hz, 0)
+                                    
+                                    upper_id, upper_data = self.get_block_info(hx, hy + 1, hz)
+                                    if is_door(upper_id) and (upper_data & 8) == 0:
+                                        self.set_block(hx, hy + 1, hz, 0)
+                                        self.spawn_item_entity(upper_id, hx + 0.5, hy + 1.5, hz + 0.5)
+                                        uu_id, _ = self.get_block_info(hx, hy + 2, hz)
+                                        if uu_id == upper_id:
+                                            self.set_block(hx, hy + 2, hz, 0)
                                     
                                     # Play break sound
                                     sound_enum = self.sound_system.get_dig_sound(broken_id)
@@ -960,13 +980,57 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             glUniformMatrix4fv(self.u_line_proj, 1, GL_FALSE, proj)
             glUniformMatrix4fv(self.u_line_view, 1, GL_FALSE, view)
             
+            s_x, s_y, s_z = 1.0, 1.0, 1.0
+            t_x, t_y, t_z = 0.0, 0.0, 0.0
+            block_id, block_data = self.get_block_info(bx, by, bz)
+            from core.special_blocks import is_door, is_slab
+            if is_door(block_id):
+                is_upper = (block_data & 8) != 0
+                lower_data = block_data
+                upper_data = block_data
+                if is_upper:
+                    adj_id, adj_data = self.get_block_info(bx, by - 1, bz)
+                    if adj_id == block_id: lower_data = adj_data
+                else:
+                    adj_id, adj_data = self.get_block_info(bx, by + 1, bz)
+                    if adj_id == block_id: upper_data = adj_data
+                has_right_hinge = (upper_data & 1) != 0
+                dir_val = lower_data & 3
+                is_open = (lower_data & 4) != 0
+                r = 3.0 / 16.0
+                minX, minZ, maxX, maxZ = 0.0, 0.0, 1.0, 1.0
+                if dir_val == 0:
+                    if is_open:
+                        if not has_right_hinge: maxZ = r
+                        else: minZ = 1.0 - r
+                    else: maxX = r
+                elif dir_val == 1:
+                    if is_open:
+                        if not has_right_hinge: minX = 1.0 - r
+                        else: maxX = r
+                    else: maxZ = r
+                elif dir_val == 2:
+                    if is_open:
+                        if not has_right_hinge: minZ = 1.0 - r
+                        else: maxZ = r
+                    else: minX = 1.0 - r
+                elif dir_val == 3:
+                    if is_open:
+                        if not has_right_hinge: maxX = r
+                        else: minX = 1.0 - r
+                    else: minZ = 1.0 - r
+                s_x, s_z = (maxX - minX), (maxZ - minZ)
+                t_x, t_z = minX, minZ
+            elif is_slab(block_id):
+                s_y = 0.5
+                if (block_data & 4) != 0: t_y = 0.5
+            
             s = 1.005
-            o = (1.0 - s) / 2.0
             model_mat = np.array([
-                [s, 0, 0, 0],
-                [0, s, 0, 0],
-                [0, 0, s, 0],
-                [bx + o, by + o, bz + o, 1]
+                [s_x * s, 0, 0, 0],
+                [0, s_y * s, 0, 0],
+                [0, 0, s_z * s, 0],
+                [bx + t_x - (s_x * s - s_x) / 2.0, by + t_y - (s_y * s - s_y) / 2.0, bz + t_z - (s_z * s - s_z) / 2.0, 1]
             ], dtype=np.float32)
             
             glUniformMatrix4fv(self.u_line_model, 1, GL_FALSE, (GLfloat * 16)(*model_mat.flatten()))

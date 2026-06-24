@@ -229,6 +229,9 @@ MC_TO_PC = {
     293: 1028, # Diamond Hoe
     294: 1033, # Gold Hoe
     
+    324: 162,  # Wood Door Item -> Wood Door Block
+    330: 163,  # Iron Door Item -> Iron Door Block
+    
     173: 80,   # Coal Block
     174: 81,   # Packed Ice
 }

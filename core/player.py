@@ -97,26 +97,79 @@ class Player:
         iy0, iy1 = int(math.floor(min_y)), int(math.floor(max_y))
         iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
         
-        from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+        from core.special_blocks import BLOCK_IS_STAIR, BLOCK_IS_SLAB, BLOCK_IS_DOOR
         
         for x in range(ix0, ix1 + 1):
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
                     block_id, data = get_block_info(x, y, z)
                     if block_id == -1 or (block_id > 0 and block_id != 4):  # 0: Air, 4: Water
-                        if is_stairs(block_id):
-                            f_id, f_data = get_block_info(x - 1, y, z)
-                            b_id, b_data = get_block_info(x + 1, y, z)
-                            l_id, l_data = get_block_info(x, y, z - 1)
-                            r_id, r_data = get_block_info(x, y, z + 1)
-                            aabbs = get_stair_aabbs(x, y, z, data, f_id, f_data, b_id, b_data, l_id, l_data, r_id, r_data)
-                            for i in range(3):
-                                ba = aabbs[i]
-                                if ba[3] > ba[0]: # Not empty
-                                    if self._aabb_intersect(aabb, ba): return True
-                        elif is_slab(block_id):
-                            ba = get_slab_aabbs(x, y, z, data)[0]
+                        if BLOCK_IS_STAIR[block_id]:
+                            # Fast pure Python collision for stairs (base + step shape, ignoring complex corners)
+                            upside_down = (data & 4) != 0
+                            dir_val = data & 3
+                            
+                            # Base
+                            base_ba = [x, y + 0.5, z, x + 1.0, y + 1.0, z + 1.0] if upside_down else [x, y, z, x + 1.0, y + 0.5, z + 1.0]
+                            if self._aabb_intersect(aabb, base_ba): return True
+                            
+                            # Step
+                            bottom, top = (0.0, 0.5) if upside_down else (0.5, 1.0)
+                            west, east, north, south = 0.0, 1.0, 0.0, 1.0
+                            if dir_val == 0: west = 0.5
+                            elif dir_val == 1: east = 0.5
+                            elif dir_val == 2: north = 0.5
+                            elif dir_val == 3: south = 0.5
+                            
+                            step_ba = [x + west, y + bottom, z + north, x + east, y + top, z + south]
+                            if self._aabb_intersect(aabb, step_ba): return True
+                            
+                        elif BLOCK_IS_SLAB[block_id]:
+                            # Fast pure Python collision for slabs
+                            ba = [x, y + 0.5, z, x + 1.0, y + 1.0, z + 1.0] if (data & 4) != 0 else [x, y, z, x + 1.0, y + 0.5, z + 1.0]
                             if self._aabb_intersect(aabb, ba): return True
+                            
+                        elif BLOCK_IS_DOOR[block_id]:
+                            is_upper = (data & 8) != 0
+                            lower_data = data
+                            upper_data = data
+                            if is_upper:
+                                adj_id, adj_data = get_block_info(x, y - 1, z)
+                                if adj_id == block_id: lower_data = adj_data
+                            else:
+                                adj_id, adj_data = get_block_info(x, y + 1, z)
+                                if adj_id == block_id: upper_data = adj_data
+                                
+                            has_right_hinge = (upper_data & 1) != 0
+                            dir_val = lower_data & 3
+                            is_open = (lower_data & 4) != 0
+                            
+                            r = 3.0 / 16.0
+                            minX, minZ, maxX, maxZ = 0.0, 0.0, 1.0, 1.0
+                            if dir_val == 0:
+                                if is_open:
+                                    if not has_right_hinge: maxZ = r
+                                    else: minZ = 1.0 - r
+                                else: maxX = r
+                            elif dir_val == 1:
+                                if is_open:
+                                    if not has_right_hinge: minX = 1.0 - r
+                                    else: maxX = r
+                                else: maxZ = r
+                            elif dir_val == 2:
+                                if is_open:
+                                    if not has_right_hinge: minZ = 1.0 - r
+                                    else: maxZ = r
+                                else: minX = 1.0 - r
+                            elif dir_val == 3:
+                                if is_open:
+                                    if not has_right_hinge: maxX = r
+                                    else: minX = 1.0 - r
+                                else: minZ = 1.0 - r
+                                
+                            door_ba = [x + minX, y, z + minZ, x + maxX, y + 1.0, z + maxZ]
+                            if self._aabb_intersect(aabb, door_ba): return True
+                            
                         else:
                             return True
         return False
@@ -147,7 +200,7 @@ class Player:
         iy0, iy1 = int(math.floor(min_y + 0.01)), int(math.floor(max_y))
         iz0, iz1 = int(math.floor(min_z)), int(math.floor(max_z))
         
-        from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+        from core.special_blocks import BLOCK_IS_STAIR, BLOCK_IS_SLAB, BLOCK_IS_DOOR
         
         stuck_blocks = []
         for bx in range(ix0, ix1 + 1):
@@ -156,7 +209,7 @@ class Player:
                     block_id, data = get_block_info(bx, by, bz)
                     if block_id == -1 or (block_id > 0 and block_id != 4):
                         # Special check
-                        if is_stairs(block_id) or is_slab(block_id):
+                        if BLOCK_IS_STAIR[block_id] or BLOCK_IS_SLAB[block_id] or BLOCK_IS_DOOR[block_id]:
                             pass # Push out doesn't easily handle complex AABBs correctly, we just push out from full blocks for simplicity
                         else:
                             stuck_blocks.append((bx, by, bz))

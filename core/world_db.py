@@ -126,6 +126,7 @@ _mapping = {
     94: (169, 0), # SEA_LANTERN
     95: (165, 0), # SLIME_BLOCK
     96: (170, 0), # HAY_BLOCK
+    116: (58, 0), # CRAFTING_TABLE
     100: (35, 0), # WOOL_WHITE
     120: (95, 0), # GLASS_WHITE
     140: (159, 0), # STAINED_CLAY_WHITE
@@ -200,6 +201,8 @@ _mapping = {
     222: (44, 1), # SANDSTONE_SLAB
     223: (44, 7), # QUARTZ_SLAB
     224: (44, 3), # COBBLESTONE_SLAB
+    162: (64, 0), # WOOD_DOOR
+    163: (71, 0), # IRON_DOOR
 }
 
 for internal_id, (mc_id, mc_meta) in _mapping.items():

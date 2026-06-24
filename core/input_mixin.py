@@ -100,7 +100,31 @@ class InputMixin:
             return
             
         elif button == mouse.RIGHT and px is not None:
-            hit_id, _ = self.get_block_info(hx, hy, hz)
+            hit_id, hit_data = self.get_block_info(hx, hy, hz)
+            from core.special_blocks import is_door
+            if is_door(hit_id) and hit_id != 163: # 163 = IRON_DOOR
+                is_upper = (hit_data & 8) != 0
+                if is_upper:
+                    lower_id, lower_data = self.get_block_info(hx, hy - 1, hz)
+                    if lower_id == hit_id:
+                        new_data = lower_data ^ 4
+                        self.set_block(hx, hy - 1, hz, hit_id, new_data)
+                        self.set_block(hx, hy, hz, hit_id, hit_data) # Trigger update
+                    else:
+                        new_data = lower_data # Fallback
+                else:
+                    new_data = hit_data ^ 4
+                    self.set_block(hx, hy, hz, hit_id, new_data)
+                    upper_id, upper_data = self.get_block_info(hx, hy + 1, hz)
+                    if upper_id == hit_id:
+                        self.set_block(hx, hy + 1, hz, hit_id, upper_data) # Trigger update
+                        
+                if hasattr(self, 'sound_system'):
+                    is_open = (new_data & 4) != 0
+                    sound_name = "eSoundType_RANDOM_DOOR_OPEN" if is_open else "eSoundType_RANDOM_DOOR_CLOSE"
+                    self.sound_system.play(sound_name, x=hx, y=hy, z=hz, volume=0.7)
+                return
+                
             from world.terrain import CRAFTING_TABLE
             if hit_id == CRAFTING_TABLE:
                 self.crafting_open = True
@@ -146,8 +170,58 @@ class InputMixin:
                     self.selected_block_id = 0
                     
                 data = 0
-                from core.special_blocks import is_stairs, is_slab, SLAB_TO_FULL
-                if is_stairs(new_block_id) or is_slab(new_block_id):
+                from core.special_blocks import is_stairs, is_slab, is_door, SLAB_TO_FULL
+                
+                if is_door(new_block_id):
+                    if target_y >= 255: return
+                    below_id = self.get_block(target_x, target_y - 1, target_z)
+                    if below_id == 0 or below_id == 4: return # Needs solid block below
+                    upper_id = self.get_block(target_x, target_y + 1, target_z)
+                    if upper_id != 0 and upper_id != 4: return # Needs air
+                    
+                    import math
+                    yaw = self.camera.yaw % 360
+                    if yaw < 45 or yaw >= 315: d = 2 # player looks East -> door faces West
+                    elif yaw < 135: d = 3            # player looks South -> door faces North
+                    elif yaw < 225: d = 0            # player looks West -> door faces East
+                    else: d = 1                      # player looks North -> door faces South
+                        
+                    lower_data = d
+                    upper_data = 8
+                    
+                    left_block = right_block = 0
+                    if d == 0:   # East (player West)
+                        left_block = self.get_block(target_x, target_y, target_z + 1)
+                        right_block = self.get_block(target_x, target_y, target_z - 1)
+                    elif d == 1: # South (player North)
+                        left_block = self.get_block(target_x + 1, target_y, target_z)
+                        right_block = self.get_block(target_x - 1, target_y, target_z)
+                    elif d == 2: # West (player East)
+                        left_block = self.get_block(target_x, target_y, target_z - 1)
+                        right_block = self.get_block(target_x, target_y, target_z + 1)
+                    elif d == 3: # North (player South)
+                        left_block = self.get_block(target_x - 1, target_y, target_z)
+                        right_block = self.get_block(target_x + 1, target_y, target_z)
+                        
+                    if left_block == new_block_id:
+                        upper_data = 9
+                    elif right_block == new_block_id:
+                        upper_data = 8
+                    
+                    self.inventory_counts[self.selected_slot] -= 1
+                    if self.inventory_counts[self.selected_slot] <= 0:
+                        self.inventory_blocks[self.selected_slot] = 0
+                        self.selected_block_id = 0
+                        
+                    self.set_block(target_x, target_y, target_z, new_block_id, lower_data)
+                    self.set_block(target_x, target_y + 1, target_z, new_block_id, upper_data)
+                    
+                    if hasattr(self, 'sound_system'):
+                        sound_enum = self.sound_system.get_step_sound(new_block_id)
+                        self.sound_system.play(sound_enum, volume=0.5)
+                    return
+                    
+                elif is_stairs(new_block_id) or is_slab(new_block_id):
                     hx, hy, hz = self.targeted_block if hasattr(self, 'targeted_block') and self.targeted_block else (target_x, target_y - 1, target_z) # Fallback
                     
                     if is_slab(new_block_id):

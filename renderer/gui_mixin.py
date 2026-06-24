@@ -270,7 +270,11 @@ class GUIMixin:
                 tex = data.get("texture")
                 sprite = None
                 
-                if b_id >= 1000 or b_id in sprite_blocks:
+                if b_id == 162:
+                    sprite = self._create_2d_item_sprite("door_wood.png")
+                elif b_id == 163:
+                    sprite = self._create_2d_item_sprite("door_iron.png")
+                elif b_id >= 1000 or b_id in sprite_blocks:
                     if isinstance(tex, str):
                         sprite = self._create_2d_item_sprite(tex)
                 
@@ -358,7 +362,7 @@ class GUIMixin:
         # Define block IDs that should be rendered as flat 2D item sprites in hand
         # 31: Tallgrass, 37: Dandelion, 38: Rose, 175-178: Double plants, 1000: Raw Porkchop
         # 1001-1033: Tools and items
-        SPRITE_BLOCKS = {31, 37, 38, 175, 176, 177, 178} | set(range(1000, 1034))
+        SPRITE_BLOCKS = {31, 37, 38, 162, 163, 175, 176, 177, 178} | set(range(1000, 1034))
         
         for name, data in BLOCK_REGISTRY.items():
             b_id = data["id"]
@@ -367,10 +371,11 @@ class GUIMixin:
                     layer_idx = 0
                     if b_id < len(self.block_layers):
                         layer_idx = self.block_layers[b_id, 0]
-                    # Also handle if it's an item like PORKCHOP_RAW which might exceed block_layers size initially?
-                    # Wait, if b_id >= len(block_layers), we should handle it. 
-                    # Let's assume self.block_layers has it if it's registered properly.
-                    if b_id >= len(self.block_layers) and hasattr(self.texture_manager, 'item_layers') and b_id in self.texture_manager.item_layers:
+                    if b_id == 162 and "door_wood.png" in self.texture_manager.tex_names_to_layer:
+                        layer_idx = self.texture_manager.tex_names_to_layer["door_wood.png"]
+                    elif b_id == 163 and "door_iron.png" in self.texture_manager.tex_names_to_layer:
+                        layer_idx = self.texture_manager.tex_names_to_layer["door_iron.png"]
+                    elif b_id >= len(self.block_layers) and hasattr(self.texture_manager, 'item_layers') and b_id in self.texture_manager.item_layers:
                          pass
                     
                     mask = self.texture_manager.alpha_masks[int(layer_idx)] if hasattr(self.texture_manager, 'alpha_masks') and int(layer_idx) < len(self.texture_manager.alpha_masks) else None

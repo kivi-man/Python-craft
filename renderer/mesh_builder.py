@@ -7,7 +7,7 @@ from numba import njit
 import math
 from world.mc_terrain import CHUNK_SIZE, CHUNK_HEIGHT
 from world.terrain import BLOCK_COLORS_ARRAY, BLOCK_OPAQUE_ARRAY, WATER, GLASS, AIR
-from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs
+from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs, is_door, get_door_aabbs
 
 BIOME_COLORS = np.zeros((30, 3), dtype=np.float32)
 BIOME_COLORS[1] = [0.55, 0.78, 0.35] # PLAINS
@@ -338,6 +338,142 @@ def _is_opaque(b):
     return True
 
 @njit(nogil=True, cache=True)
+def _emit_door_faces(verts, v_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, top_layer_idx, overlay_idx, dir_val, is_open, has_right_hinge):
+    min_x, min_y, min_z, max_x, max_y, max_z = aabb
+    if max_x <= min_x or max_y <= min_y or max_z <= min_z:
+        return v_idx
+        
+    faces = [
+        (1,  1, 0, 2,  0.0,  1.0,  0.0, min_y, max_y, min_x, max_x, min_z, max_z), # top
+        (1, -1, 0, 2,  0.0, -1.0,  0.0, min_y, max_y, min_x, max_x, min_z, max_z), # bottom
+        (0,  1, 2, 1,  1.0,  0.0,  0.0, min_x, max_x, min_z, max_z, min_y, max_y), # right
+        (0, -1, 2, 1, -1.0,  0.0,  0.0, min_x, max_x, min_z, max_z, min_y, max_y), # left
+        (2,  1, 0, 1,  0.0,  0.0,  1.0, min_z, max_z, min_x, max_x, min_y, max_y), # front
+        (2, -1, 0, 1,  0.0,  0.0, -1.0, min_z, max_z, min_x, max_x, min_y, max_y)  # back
+    ]
+    
+    for f in range(6):
+        axis, direction, u_axis, v_axis, nx, ny, nz, d_min, d_max, u_min, u_max, v_min, v_max = faces[f]
+        
+        loc_min_x = min_x - vx
+        loc_max_x = max_x - vx
+        loc_min_y = min_y - vy
+        loc_max_y = max_y - vy
+        loc_min_z = min_z - vz
+        loc_max_z = max_z - vz
+
+        cull = False
+        if ny > 0.5 and loc_max_y >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y + 1, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y + 1, z)
+        elif ny < -0.5 and loc_min_y <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y - 1, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y - 1, z)
+        elif nx > 0.5 and loc_max_x >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x + 1, y, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x + 1, y, z)
+        elif nx < -0.5 and loc_min_x <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x - 1, y, z)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x - 1, y, z)
+        elif nz > 0.5 and loc_max_z >= 0.99:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z + 1)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z + 1)
+        elif nz < -0.5 and loc_min_z <= 0.01:
+            adj_b = _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z - 1)
+            if _is_opaque(adj_b): cull = True
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z - 1)
+        else:
+            face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z)
+            if face_light == 0:
+                adj_x, adj_y, adj_z = x, y, z
+                if ny > 0.5: adj_y += 1
+                elif ny < -0.5: adj_y -= 1
+                elif nx > 0.5: adj_x += 1
+                elif nx < -0.5: adj_x -= 1
+                elif nz > 0.5: adj_z += 1
+                elif nz < -0.5: adj_z -= 1
+                face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, adj_x, adj_y, adj_z)
+            
+        if cull: continue
+            
+        d_val = d_max if direction > 0 else d_min
+        
+        c0 = [0.0, 0.0, 0.0]; c0[axis] = d_val; c0[u_axis] = u_min; c0[v_axis] = v_min
+        c1 = [0.0, 0.0, 0.0]; c1[axis] = d_val; c1[u_axis] = u_max; c1[v_axis] = v_min
+        c2 = [0.0, 0.0, 0.0]; c2[axis] = d_val; c2[u_axis] = u_max; c2[v_axis] = v_max
+        c3 = [0.0, 0.0, 0.0]; c3[axis] = d_val; c3[u_axis] = u_min; c3[v_axis] = v_max
+        
+        e1x = c1[0] - c0[0]; e1y = c1[1] - c0[1]; e1z = c1[2] - c0[2]
+        e2x = c3[0] - c0[0]; e2y = c3[1] - c0[1]; e2z = c3[2] - c0[2]
+        cross_x = e1y*e2z - e1z*e2y
+        cross_y = e1z*e2x - e1x*e2z
+        cross_z = e1x*e2y - e1y*e2x
+        dot_prod = cross_x*nx + cross_y*ny + cross_z*nz
+        
+        if dot_prod > 0: tri_order = [0, 1, 2, 0, 2, 3]
+        else: tri_order = [0, 2, 1, 0, 3, 2]
+            
+        corners = [c0, c1, c2, c3]
+        
+        flip = False
+        if is_open:
+            if dir_val == 0 and f == 5: flip = not flip
+            elif dir_val == 1 and f == 2: flip = not flip
+            elif dir_val == 2 and f == 4: flip = not flip
+            elif dir_val == 3 and f == 3: flip = not flip
+        else:
+            if dir_val == 0 and f == 2: flip = not flip
+            elif dir_val == 1 and f == 4: flip = not flip
+            elif dir_val == 2 and f == 3: flip = not flip
+            elif dir_val == 3 and f == 5: flip = not flip
+            if has_right_hinge: flip = not flip
+            
+        if flip:
+            uvs = (
+                (1.0 - float(u_min), float(v_min)),
+                (1.0 - float(u_max), float(v_min)),
+                (1.0 - float(u_max), float(v_max)),
+                (1.0 - float(u_min), float(v_max))
+            )
+        else:
+            uvs = (
+                (float(u_min), float(v_min)),
+                (float(u_max), float(v_min)),
+                (float(u_max), float(v_max)),
+                (float(u_min), float(v_max))
+            )
+        
+        for idx in tri_order:
+            if v_idx + 15 > verts.shape[0]:
+                return v_idx
+            c = corners[idx]
+            u_val, v_val = uvs[idx]
+            verts[v_idx]   = c[0]
+            verts[v_idx+1] = c[1]
+            verts[v_idx+2] = c[2]
+            verts[v_idx+3] = nx
+            verts[v_idx+4] = ny
+            verts[v_idx+5] = nz
+            verts[v_idx+6] = r
+            verts[v_idx+7] = g
+            verts[v_idx+8] = b
+            verts[v_idx+9] = u_val
+            verts[v_idx+10]= v_val
+            verts[v_idx+11]= top_layer_idx if (f == 0 or f == 1) else layer_idx
+
+            verts[v_idx+12]= 3.0 # Fake AO
+            verts[v_idx+13]= float(face_light)
+            verts[v_idx+14]= overlay_idx
+            v_idx += 15
+            
+    return v_idx
+
+@njit(nogil=True, cache=True)
 def _build_chunk_mesh_jit(blocks, data_in, lights_in, 
                           n_left, n_right, n_front, n_back, 
                           d_left, d_right, d_front, d_back,
@@ -387,7 +523,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                     block_id = blocks[x, y, z]
                     if block_id == AIR or block_id in (31, 37, 38, 175, 176, 177, 178): continue
                     
-                    if is_stairs(block_id) or is_slab(block_id): continue
+                    if is_stairs(block_id) or is_slab(block_id) or is_door(block_id): continue
                         
                     npos = [x, y, z]
                     npos[axis] += direction
@@ -606,7 +742,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
         for y in range(CHUNK_HEIGHT):
             for z in range(CHUNK_SIZE):
                 block_id = blocks[x, y, z]
-                if is_stairs(block_id) or is_slab(block_id):
+                if is_stairs(block_id) or is_slab(block_id) or is_door(block_id):
                     if o_idx + 15 * 6 * 3 > opaque_verts.shape[0]:
                         print("WARNING: Chunk mesh vertex buffer exceeded!")
                         return opaque_verts[:o_idx], trans_verts[:t_idx]
@@ -645,6 +781,34 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         aabbs = get_slab_aabbs(vx, vy, vz, data)
                         aabb = aabbs[0]
                         o_idx = _emit_aabb_faces(opaque_verts, o_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, layer_idx, overlay_idx)
+                        
+                    elif is_door(block_id):
+                        is_upper = (data & 8) != 0
+                        
+                        # Upper half uses face 0 (top texture), Lower half uses face 4 (side texture)
+                        door_layer_idx = float(block_layers[block_id, 0]) if is_upper else float(block_layers[block_id, 4])
+                        door_top_layer_idx = float(block_layers[44, 0]) if block_id == 162 else float(block_layers[42, 0])
+
+                        
+                        # Get full composite data for shape calculation
+                        lower_data = data
+                        upper_data = data
+                        if is_upper:
+                            adj = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y - 1, z)
+                            if adj != 0: lower_data = adj
+                        else:
+                            adj = _get_data_jit(data_in, d_left, d_right, d_front, d_back, x, y + 1, z)
+                            if adj != 0: upper_data = adj
+                            
+                        has_right_hinge = (upper_data & 1) != 0
+                        composite_data = (lower_data & 7) | (8 if is_upper else 0) | (16 if has_right_hinge else 0)
+                        
+                        dir_val = composite_data & 3
+                        is_open = (composite_data & 4) != 0
+                        
+                        aabbs = get_door_aabbs(vx, vy, vz, composite_data)
+                        aabb = aabbs[0]
+                        o_idx = _emit_door_faces(opaque_verts, o_idx, aabb, lights, blocks, n_left, n_right, n_front, n_back, l_left, l_right, l_front, l_back, x, y, z, vx, vy, vz, block_id, r, g, b, door_layer_idx, door_top_layer_idx, overlay_idx, dir_val, is_open, has_right_hinge)
 
     return opaque_verts[:o_idx], trans_verts[:t_idx]
 

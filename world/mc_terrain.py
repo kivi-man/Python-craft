@@ -449,4 +449,6 @@ def load_or_generate_chunk(cx, cz):
     return blocks, data, lights, oob, chunk_biomes, True
 
 def recalculate_chunk_light(blocks, light_map):
+    # Call JIT to recalculate light
     _calc_light_jit(blocks, light_map)
+
