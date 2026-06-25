@@ -1,3 +1,4 @@
+from world.terrain import WATER
 """
 PythonCraft - Player Physics and Collision Controller
 Oyuncu fiziğini (yerçekimi, zıplama, eğilme) ve blok çarpışmalarını (AABB) yönetir.
@@ -103,7 +104,7 @@ class Player:
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
                     block_id, data = get_block_info(x, y, z)
-                    if block_id == -1 or (block_id > 0 and block_id != 4):  # 0: Air, 4: Water
+                    if block_id == -1 or (block_id > 0 and block_id not in (32, 34, 37, 38, 39, 40, 83, 106, 175, 176, 8, 9)):
                         if BLOCK_IS_STAIR[block_id]:
                             # Fast pure Python collision for stairs (base + step shape, ignoring complex corners)
                             upside_down = (data & 4) != 0
@@ -186,7 +187,7 @@ class Player:
             for y in range(iy0, iy1 + 1):
                 for z in range(iz0, iz1 + 1):
                     block_id, _ = get_block_info(x, y, z)
-                    if block_id == 4:
+                    if block_id == WATER:
                         return True
         return False
     def _push_out_of_blocks(self, get_block_info):
@@ -207,7 +208,7 @@ class Player:
             for by in range(iy0, iy1 + 1):
                 for bz in range(iz0, iz1 + 1):
                     block_id, data = get_block_info(bx, by, bz)
-                    if block_id == -1 or (block_id > 0 and block_id != 4):
+                    if block_id == -1 or (block_id > 0 and block_id not in (32, 34, 37, 38, 39, 40, 83, 106, 175, 176, 8, 9)):
                         # Special check
                         if BLOCK_IS_STAIR[block_id] or BLOCK_IS_SLAB[block_id] or BLOCK_IS_DOOR[block_id]:
                             pass # Push out doesn't easily handle complex AABBs correctly, we just push out from full blocks for simplicity
@@ -295,7 +296,7 @@ class Player:
         # Head in water / Drowning logic
         head_y = self.y + 1.62
         head_block, _ = get_block_info(int(math.floor(self.x)), int(math.floor(head_y)), int(math.floor(self.z)))
-        self.is_head_in_water = (head_block == 4)
+        self.is_head_in_water = (head_block == 9 or head_block == 8)
         
         if self.is_head_in_water:
             self.air_supply -= dt * 20.0

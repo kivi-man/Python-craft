@@ -69,8 +69,46 @@ TAIGA_HILLS = 19
 SMALLER_EXTREME_HILLS = 20
 JUNGLE = 21
 JUNGLE_HILLS = 22
+JUNGLE_EDGE = 23
+DEEP_OCEAN = 24
+COLD_BEACH = 26
+BIRCH_FOREST = 27
+BIRCH_FOREST_HILLS = 28
+ROOFED_FOREST = 29
+COLD_TAIGA = 30
+COLD_TAIGA_HILLS = 31
+MEGA_TAIGA = 32
+MEGA_TAIGA_HILLS = 33
+EXTREME_HILLS_PLUS = 34
+SAVANNA = 35
+SAVANNA_PLATEAU = 36
+MESA = 37
+MESA_PLATEAU_F = 38
+MESA_PLATEAU = 39
 
-BIOME_COUNT = 23
+SUNFLOWERS_PLAINS = 129
+DESERT_M = 130
+EXTREME_HILLS_M = 131
+FLOWER_FOREST = 132
+TAIGA_M = 133
+SWAMPLAND_M = 134
+ICE_SPIKES = 140
+JUNGLE_M = 149
+JUNGLE_EDGE_M = 151
+BIRCH_FOREST_M = 155
+BIRCH_FOREST_HILLS_M = 156
+ROOFED_FOREST_M = 157
+COLD_TAIGA_M = 158
+MEGA_SPRUCE_TAIGA = 160
+MEGA_SPRUCE_TAIGA_HILLS = 161
+EXTREME_HILLS_PLUS_M = 162
+SAVANNA_M = 163
+SAVANNA_PLATEAU_M = 164
+MESA_BRYCE = 165
+MESA_PLATEAU_F_M = 166
+MESA_PLATEAU_M = 167
+
+BIOME_COUNT = 256
 
 # Array to store biome properties:
 # [depth, scale, temperature, downfall, topMaterial, material]
@@ -85,29 +123,76 @@ def _init_biome(b_id, depth, scale, temp, down, top, filler):
     biome_data[b_id, 5] = filler
 
 # Define all biomes based on Bedrock original values
-_init_biome(OCEAN,                 -1.0,  0.4,  0.5,  0.5, DIRT, DIRT)
-_init_biome(PLAINS,                 0.125,0.05, 0.8,  0.4, GRASS, DIRT)
+_init_biome(OCEAN,                 -1.0,  0.4,  0.5,  0.5, GRAVEL, GRAVEL)
+_init_biome(PLAINS,                 0.1,  0.3,  0.8,  0.4, GRASS, DIRT)
 _init_biome(DESERT,                 0.1,  0.2,  2.0,  0.0, SAND, SAND)
 _init_biome(EXTREME_HILLS,          0.3,  1.5,  0.2,  0.3, GRASS, DIRT)
 _init_biome(FOREST,                 0.1,  0.3,  0.7,  0.8, GRASS, DIRT)
-_init_biome(TAIGA,                  0.1,  0.4,  0.05, 0.8, GRASS, DIRT)
+_init_biome(TAIGA,                  0.1,  0.4,  0.25, 0.8, GRASS, DIRT)
 _init_biome(SWAMPLAND,             -0.2,  0.1,  0.8,  0.9, GRASS, DIRT)
-_init_biome(RIVER,                 -0.5,  0.0,  0.5,  0.5, DIRT, DIRT)
-_init_biome(HELL,                   0.1,  0.2,  2.0,  0.0, STONE, STONE)
-_init_biome(SKY,                    0.1,  0.2,  0.5,  0.5, STONE, STONE)
-_init_biome(FROZEN_OCEAN,          -1.0,  0.5,  0.0,  0.5, DIRT, DIRT)
-_init_biome(FROZEN_RIVER,          -0.5,  0.0,  0.0,  0.5, DIRT, DIRT)
-_init_biome(ICE_FLATS,              0.125,0.05, 0.0,  0.5, SNOW, DIRT)
-_init_biome(ICE_MOUNTAINS,          0.3,  1.3,  0.0,  0.5, SNOW, DIRT)
+_init_biome(RIVER,                 -0.5,  0.0,  0.5,  0.5, GRASS, DIRT)
+_init_biome(HELL,                   0.1,  0.3,  2.0,  0.0, GRASS, DIRT)
+_init_biome(SKY,                    0.1,  0.3,  0.5,  0.5, DIRT, DIRT)
+_init_biome(FROZEN_OCEAN,          -1.0,  0.5,  0.0,  0.5, GRAVEL, GRAVEL)
+_init_biome(FROZEN_RIVER,          -0.5,  0.0,  0.0,  0.5, GRASS, DIRT)
+_init_biome(ICE_FLATS,              0.1,  0.3,  0.0,  0.5, GRASS, DIRT)
+_init_biome(ICE_MOUNTAINS,          0.3,  1.3,  0.0,  0.5, GRASS, DIRT)
 _init_biome(MUSHROOM_ISLAND,        0.2,  1.0,  0.9,  1.0, MYCELIUM, DIRT)
 _init_biome(MUSHROOM_ISLAND_SHORE, -1.0,  0.1,  0.9,  1.0, MYCELIUM, DIRT)
 _init_biome(BEACHES,                0.0,  0.1,  0.8,  0.4, SAND, SAND)
 _init_biome(DESERT_HILLS,           0.3,  0.8,  2.0,  0.0, SAND, SAND)
 _init_biome(FOREST_HILLS,           0.3,  0.7,  0.7,  0.8, GRASS, DIRT)
-_init_biome(TAIGA_HILLS,            0.3,  0.8,  0.05, 0.8, GRASS, DIRT)
+_init_biome(TAIGA_HILLS,            0.3,  0.8,  0.25, 0.8, GRASS, DIRT)
 _init_biome(SMALLER_EXTREME_HILLS,  0.2,  0.8,  0.2,  0.3, GRASS, DIRT)
 _init_biome(JUNGLE,                 0.2,  0.4,  1.2,  0.9, GRASS, DIRT)
 _init_biome(JUNGLE_HILLS,           1.8,  0.5,  1.2,  0.9, GRASS, DIRT)
+_init_biome(JUNGLE_EDGE,            0.1,  0.3,  0.95, 0.8, GRASS, DIRT)
+_init_biome(DEEP_OCEAN,            -1.8,  0.1,  0.5,  0.5, GRAVEL, GRAVEL)
+_init_biome(COLD_BEACH,             0.0,  0.025, 0.05, 0.3, SAND, SAND)
+_init_biome(BIRCH_FOREST,           0.1,  0.3,  0.6,  0.6, GRASS, DIRT)
+_init_biome(BIRCH_FOREST_HILLS,     0.45, 0.3,  0.6,  0.6, GRASS, DIRT)
+_init_biome(ROOFED_FOREST,          0.1,  0.3,  0.7,  0.8, GRASS, DIRT)
+_init_biome(COLD_TAIGA,             0.1,  0.4, -0.5,  0.4, GRASS, DIRT)
+_init_biome(COLD_TAIGA_HILLS,       0.3,  0.8, -0.5,  0.4, GRASS, DIRT)
+_init_biome(MEGA_TAIGA,             0.1,  0.4,  0.3,  0.8, GRASS, DIRT)
+_init_biome(MEGA_TAIGA_HILLS,       0.3,  0.8,  0.3,  0.8, GRASS, DIRT)
+_init_biome(EXTREME_HILLS_PLUS,     0.3,  1.5,  0.2,  0.3, GRASS, DIRT)
+_init_biome(SAVANNA,                0.1,  0.3,  1.2,  0.0, GRASS, DIRT)
+_init_biome(SAVANNA_PLATEAU,        1.5,  0.025,1.0,  0.0, GRASS, DIRT)
+_init_biome(MESA,                   0.1,  0.3,  2.0,  0.0, RED_SAND, STAINED_CLAY_ORANGE)
+_init_biome(MESA_PLATEAU_F,         1.5,  0.025,2.0,  0.0, RED_SAND, STAINED_CLAY_ORANGE)
+_init_biome(MESA_PLATEAU,           1.5,  0.025,2.0,  0.0, RED_SAND, STAINED_CLAY_ORANGE)
+
+def _init_mutated(b_id, base_id, depth_add=0.1, scale_add=0.2):
+    biome_data[b_id, 0] = biome_data[base_id, 0] + depth_add
+    biome_data[b_id, 1] = biome_data[base_id, 1] + scale_add
+    biome_data[b_id, 2] = biome_data[base_id, 2]
+    biome_data[b_id, 3] = biome_data[base_id, 3]
+    biome_data[b_id, 4] = biome_data[base_id, 4]
+    biome_data[b_id, 5] = biome_data[base_id, 5]
+
+_init_mutated(SUNFLOWERS_PLAINS, PLAINS, 0, 0)
+_init_mutated(DESERT_M, DESERT, 0.125, 0.05)
+_init_mutated(EXTREME_HILLS_M, EXTREME_HILLS)
+_init_mutated(FLOWER_FOREST, FOREST, 0, 0)
+_init_mutated(TAIGA_M, TAIGA, 0.2, 0)
+_init_mutated(SWAMPLAND_M, SWAMPLAND, 0.1, 0.2)
+_init_mutated(ICE_SPIKES, ICE_FLATS, 0, 0)
+biome_data[ICE_SPIKES, 4] = SNOW_LAYER
+_init_mutated(JUNGLE_M, JUNGLE)
+_init_mutated(JUNGLE_EDGE_M, JUNGLE_EDGE)
+_init_mutated(BIRCH_FOREST_M, BIRCH_FOREST)
+_init_mutated(BIRCH_FOREST_HILLS_M, BIRCH_FOREST_HILLS)
+_init_mutated(ROOFED_FOREST_M, ROOFED_FOREST)
+_init_mutated(COLD_TAIGA_M, COLD_TAIGA)
+_init_mutated(MEGA_SPRUCE_TAIGA, MEGA_TAIGA, 0.1, -0.2)
+_init_mutated(MEGA_SPRUCE_TAIGA_HILLS, MEGA_TAIGA_HILLS, -0.1, -0.6)
+_init_mutated(EXTREME_HILLS_PLUS_M, EXTREME_HILLS_PLUS)
+_init_mutated(SAVANNA_M, SAVANNA, 0.25, 1.0)
+_init_mutated(SAVANNA_PLATEAU_M, SAVANNA_PLATEAU, -0.45, 1.1875)
+_init_mutated(MESA_BRYCE, MESA_PLATEAU)
+_init_mutated(MESA_PLATEAU_F_M, MESA_PLATEAU_F)
+_init_mutated(MESA_PLATEAU_M, MESA_PLATEAU)
 
 # Initialize spawn lists for all biomes
 for b_id in range(BIOME_COUNT):

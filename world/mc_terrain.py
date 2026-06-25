@@ -2,9 +2,10 @@ import numpy as np
 from numba import njit, prange
 from world.mc_noise import JavaRandom, PerlinNoise
 from world.mc_biomes import get_biome, get_biome_properties, BIOME_DATA
-from world.mc_biomes import PLAINS, DESERT, FOREST, TAIGA, EXTREME_HILLS, JUNGLE, SWAMPLAND, FOREST_HILLS, TAIGA_HILLS, DESERT_HILLS, JUNGLE_HILLS, SMALLER_EXTREME_HILLS, OCEAN, RIVER, ICE_FLATS, BEACHES
+from world.mc_biomes import *
 from world.mc_biomes_layer import get_biome_layer_data
-from world.mc_trees import generate_oak_tree, generate_birch_tree, generate_spruce_tree, generate_cactus, generate_grass_cluster, generate_flower_cluster, generate_double_plant_cluster
+from world.mc_trees import *
+from world.mc_decorations import *
 from core.world_db import load_chunk
 from world.mc_caves import carve_caves, carve_canyons
 from world.mc_ores import carve_ores
@@ -16,9 +17,8 @@ CHUNK_HEIGHT = 256  # Minecraft 1.7 standard height
 WATER_LEVEL = 63
 
 @njit(cache=True, nogil=True)
-def get_biome_grid(cx, cz, tempNoise, downNoise):
-    # base_seed = 12345 (could be passed from world_seed later)
-    return get_biome_layer_data(cx * 4 - 2, cz * 4 - 2, 10, 10, 12345)
+def get_biome_grid(cx, cz, tempNoise, downNoise, seed=12345):
+    return get_biome_layer_data(cx * 4 - 2, cz * 4 - 2, 10, 10, seed)
 
 @njit(cache=True, nogil=True)
 def get_noise_buffer(cx, cz, lperlin1, lperlin2, perlin1, depthNoise, biome_grid):
@@ -87,7 +87,7 @@ def get_noise_buffer(cx, cz, lperlin1, lperlin2, perlin1, depthNoise, biome_grid
                 d = d * base_ySize / 16.0
                 yCenter = (base_ySize / 2.0) + (d * 4.0)
                 
-                yOffs = (yy - yCenter) * 12.0 / s_factor
+                yOffs = (yy - yCenter) * 6.0 / s_factor
                 if yOffs < 0: yOffs *= 4.0
                 
                 bb = lperlin1.getValue(wx * s, wy * hs, wz * s) / 512.0
@@ -179,15 +179,12 @@ def build_surfaces(cx, cz, blocks, random, biome_grid):
             wx = cx * CHUNK_SIZE + x
             wz = cz * CHUNK_SIZE + z
             
-            # Map chunk local coords to 4-block grid (0-15 -> 0-3)
-            # biome_grid has offset of 2, so index is x//4 + 2
             gx = (x // 4) + 2
             gz = (z // 4) + 2
             biome_id = biome_grid[gx, gz]
             _, _, top_block, filler_block = get_biome_properties(biome_id)
             
-            # Use random to vary grass/dirt depth
-            run_depth = random.nextInt(3) + 2 # 2 to 4 blocks of dirt/sand
+            run_depth = random.nextInt(3) + 2
             run = -1
                 
             for y in range(CHUNK_HEIGHT - 1, -1, -1):
@@ -206,128 +203,200 @@ def build_surfaces(cx, cz, blocks, random, biome_grid):
                         run -= 1
                         blocks[x, y, z] = filler_block
             
-            # Bedrock layer (Y=0 to 4)
             for y in range(5):
                 if y == 0 or random.nextInt(5) > y:
                     blocks[x, y, z] = BEDROCK
 
 
 @njit(cache=True, nogil=True)
-def generate_trees_for_chunk(cx, cz, blocks, random, biome_grid):
+def decorate_chunk(cx, cz, blocks, data, random, biome_grid):
     out_of_bounds = np.zeros((2000, 4), dtype=np.int32)
     out_count = 0
-    
-    # Chunk center biome
     center_biome = biome_grid[4, 4]
     
-    treeCount = 0
-    cactusCount = 0
-    grassCount = 0
-    flowerCount = 0
-    doublePlantCount = 0
+    waterlilyPerChunk = 0
+    treesPerChunk = 0
+    flowersPerChunk = 2
+    grassPerChunk = 1
+    deadBushPerChunk = 0
+    mushroomsPerChunk = 0
+    reedsPerChunk = 0
+    cactiPerChunk = 0
+    sandPerChunk = 1
+    sandPerChunk2 = 3
+    clayPerChunk = 1
+    bigMushroomsPerChunk = 0
     
-    if center_biome == PLAINS:
-        treeCount = 0
-        flowerCount = 4
-        grassCount = 10
-        doublePlantCount = 1
-    elif center_biome == FOREST or center_biome == FOREST_HILLS:
-        treeCount = 5
-        flowerCount = 2
-        grassCount = 2
-        doublePlantCount = 1
-    elif center_biome == TAIGA or center_biome == TAIGA_HILLS:
-        treeCount = 6
-        grassCount = 1
-    elif center_biome == EXTREME_HILLS or center_biome == SMALLER_EXTREME_HILLS:
-        treeCount = 1
-        grassCount = 1
-    elif center_biome == SWAMPLAND:
-        treeCount = 2
-        flowerCount = 1
-        grassCount = 5
-    elif center_biome == JUNGLE or center_biome == JUNGLE_HILLS:
-        treeCount = 15
-        grassCount = 25
-        flowerCount = 4
-    elif center_biome == DESERT or center_biome == DESERT_HILLS:
-        cactusCount = 10
+    b = center_biome
+    if b == PLAINS or b == 129:
+        treesPerChunk = 0
+        flowersPerChunk = 4
+        grassPerChunk = 10
+    elif b == DESERT or b == DESERT_HILLS or b == 130:
+        treesPerChunk = 0
+        deadBushPerChunk = 2
+        reedsPerChunk = 50
+        cactiPerChunk = 10
+    elif b == EXTREME_HILLS or b == SMALLER_EXTREME_HILLS or b == 131:
+        treesPerChunk = 1
+        flowersPerChunk = 2
+        grassPerChunk = 1
+    elif b == FOREST or b == FOREST_HILLS or b == 132:
+        treesPerChunk = 10
+        grassPerChunk = 2
+        if b == 132: flowersPerChunk = 100
+    elif b == TAIGA or b == TAIGA_HILLS or b == 133:
+        treesPerChunk = 10
+        grassPerChunk = 7
+        deadBushPerChunk = 1
+    elif b == SWAMPLAND or b == 134:
+        treesPerChunk = 2
+        flowersPerChunk = 1
+        deadBushPerChunk = 1
+        mushroomsPerChunk = 8
+        reedsPerChunk = 10
+        clayPerChunk = 1
+        waterlilyPerChunk = 4
+        sandPerChunk = 0
+        sandPerChunk2 = 0
+    elif b == RIVER or b == FROZEN_RIVER:
+        treesPerChunk = 0
+        flowersPerChunk = 0
+        grassPerChunk = 1
+    elif b == ICE_FLATS or b == COLD_TAIGA:
+        treesPerChunk = 0 if b == ICE_FLATS else 10
+        flowersPerChunk = 0
+        grassPerChunk = 1
+    elif b == MUSHROOM_ISLAND:
+        treesPerChunk = 0
+        flowersPerChunk = 0
+        grassPerChunk = 0
+        mushroomsPerChunk = 1
+        bigMushroomsPerChunk = 1
+    elif b == BEACHES:
+        treesPerChunk = 0
+        flowersPerChunk = 0
+        grassPerChunk = 0
+    elif b == JUNGLE or b == JUNGLE_HILLS or b == JUNGLE_EDGE:
+        treesPerChunk = 50
+        grassPerChunk = 25
+        flowersPerChunk = 4
+        reedsPerChunk = 50
+    elif b == SAVANNA or b == 163:
+        treesPerChunk = 1
+        flowersPerChunk = 4
+        grassPerChunk = 20
+    elif b == ROOFED_FOREST or b == 157:
+        treesPerChunk = 50
+        grassPerChunk = 2
+    elif b == MEGA_TAIGA or b == MEGA_TAIGA_HILLS:
+        treesPerChunk = 10
+        grassPerChunk = 16
+        deadBushPerChunk = 0
+        mushroomsPerChunk = 1
         
-    forests = treeCount
-    if random.nextInt(10) == 0:
-        forests += 1
+    for i in range(sandPerChunk2):
+        x = random.nextInt(16); z = random.nextInt(16); wy = -1
+        for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
+            if blocks[x, y, z] == WATER: wy = y; break
+        if wy != -1: generate_sand_disk(blocks, data, x, wy, z, random, SAND, 7)
+            
+    for i in range(clayPerChunk):
+        x = random.nextInt(16); z = random.nextInt(16); wy = -1
+        for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
+            if blocks[x, y, z] == WATER: wy = y; break
+        if wy != -1: generate_sand_disk(blocks, data, x, wy, z, random, CLAY_BLOCK, 4)
+            
+    for i in range(sandPerChunk):
+        x = random.nextInt(16); z = random.nextInt(16); wy = -1
+        for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
+            if blocks[x, y, z] == WATER: wy = y; break
+        if wy != -1: generate_sand_disk(blocks, data, x, wy, z, random, GRAVEL, 6)
+
+    forests = treesPerChunk
+    if random.nextInt(10) == 0: forests += 1
         
     for i in range(forests):
-        x = random.nextInt(16)
-        z = random.nextInt(16)
-        
-        # Determine the EXACT biome at this specific block column
+        x = random.nextInt(16); z = random.nextInt(16)
         b_id = biome_grid[(x // 4) + 2, (z // 4) + 2]
-        
-        # Filter out invalid biomes for trees
-        if b_id == DESERT or b_id == OCEAN or b_id == RIVER or b_id == ICE_FLATS or b_id == BEACHES:
-            continue
-        
-        wx = cx * CHUNK_SIZE + x
-        wz = cz * CHUNK_SIZE + z
-        
+        if b_id == DESERT or b_id == DESERT_HILLS or b_id == OCEAN or b_id == RIVER or b_id == ICE_FLATS or b_id == BEACHES: continue
+        wx = cx * CHUNK_SIZE + x; wz = cz * CHUNK_SIZE + z
         wy = -1
         for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
-            b = blocks[x, y, z]
-            if b == GRASS or b == SAND or b == DIRT or b == SNOW:
-                wy = y + 1
-                break
+            bl = blocks[x, y, z]
+            if bl == GRASS or bl == SAND or bl == DIRT or bl == SNOW_LAYER or bl == PODZOL or bl == MYCELIUM:
+                wy = y + 1; break
                 
         if wy != -1 and wy < CHUNK_HEIGHT - 15:
-            # Generate tree based on the local block's biome (b_id), NOT the center_biome
             if b_id == FOREST or b_id == FOREST_HILLS:
-                if random.nextInt(5) == 0:
-                    out_count = generate_birch_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
-                else:
-                    out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                if random.nextInt(5) == 0: out_count = generate_birch_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                else: out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            elif b_id == BIRCH_FOREST or b_id == BIRCH_FOREST_HILLS:
+                out_count = generate_birch_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
             elif b_id == TAIGA or b_id == TAIGA_HILLS:
                 out_count = generate_spruce_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            elif b_id == MEGA_TAIGA or b_id == MEGA_TAIGA_HILLS:
+                if random.nextInt(10) == 0: out_count = generate_mega_pine_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                else: out_count = generate_spruce_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count, pine=True)
+            elif b_id == SWAMPLAND or b_id == 134:
+                out_count = generate_swamp_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            elif b_id == JUNGLE or b_id == JUNGLE_HILLS or b_id == JUNGLE_EDGE:
+                if random.nextInt(10) == 0: out_count = generate_mega_jungle_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                elif random.nextInt(2) == 0: out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count, add_vines=True)
+                else: out_count = generate_jungle_bush(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            elif b_id == SAVANNA or b_id == 163:
+                if random.nextInt(5) == 0: out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                else: out_count = generate_savanna_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            elif b_id == ROOFED_FOREST or b_id == 157:
+                if random.nextInt(5) == 0: out_count = generate_roof_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+                else: out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
             else:
                 out_count = generate_oak_tree(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
                 
-    for i in range(cactusCount):
-        x = random.nextInt(16)
-        z = random.nextInt(16)
-        wx = cx * CHUNK_SIZE + x
-        wz = cz * CHUNK_SIZE + z
-        
-        wy = -1
+    for i in range(bigMushroomsPerChunk):
+        x = random.nextInt(16); z = random.nextInt(16); wy = -1
         for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
-            if blocks[x, y, z] == SAND:
-                wy = y + 1
-                break
-                
-        if wy != -1 and wy < CHUNK_HEIGHT - 5:
-            out_count = generate_cactus(cx, cz, wx, wy, wz, blocks, random, out_of_bounds, out_count)
+            bl = blocks[x, y, z]
+            if bl == GRASS or bl == MYCELIUM or bl == DIRT: wy = y + 1; break
+        if wy != -1 and wy < CHUNK_HEIGHT - 10:
+            out_count = generate_huge_mushroom(cx, cz, cx * CHUNK_SIZE + x, wy, cz * CHUNK_SIZE + z, blocks, random, out_of_bounds, out_count, random.nextInt(2) == 0)
 
-    for i in range(grassCount):
-        x = random.nextInt(16)
-        y = random.nextInt(128)
-        z = random.nextInt(16)
+    for i in range(grassPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
         out_count = generate_grass_cluster(cx, cz, cx * CHUNK_SIZE + x, y, cz * CHUNK_SIZE + z, blocks, random, out_of_bounds, out_count)
 
-    for i in range(flowerCount):
-        x = random.nextInt(16)
-        y = random.nextInt(128)
-        z = random.nextInt(16)
-        f_type = 37 if random.nextInt(3) == 0 else 38 # 1/3 Dandelion, 2/3 Rose
+    for i in range(flowersPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
+        f_type = 37 if random.nextInt(3) == 0 else 38
         out_count = generate_flower_cluster(cx, cz, cx * CHUNK_SIZE + x, y, cz * CHUNK_SIZE + z, blocks, random, out_of_bounds, out_count, f_type)
         
-    for i in range(doublePlantCount):
-        x = random.nextInt(16)
-        y = random.nextInt(128)
-        z = random.nextInt(16)
-        is_rose = (random.nextInt(3) == 0)
-        btm = 177 if is_rose else 175
-        top = 178 if is_rose else 176
-        out_count = generate_double_plant_cluster(cx, cz, cx * CHUNK_SIZE + x, y, cz * CHUNK_SIZE + z, blocks, random, out_of_bounds, out_count, btm, top)
+    for i in range(deadBushPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
+        generate_dead_bush(blocks, data, x, y, z, random)
+        
+    for i in range(waterlilyPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
+        generate_waterlily(blocks, data, x, y, z, random)
+        
+    for i in range(mushroomsPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
+        generate_mushroom(blocks, data, x, y, z, random, MUSHROOM_BROWN if random.nextInt(2)==0 else MUSHROOM_RED)
+
+    for i in range(reedsPerChunk):
+        x = random.nextInt(16); y = random.nextInt(128); z = random.nextInt(16)
+        generate_reeds(blocks, data, x, y, z, random)
+        
+    for i in range(cactiPerChunk):
+        x = random.nextInt(16); z = random.nextInt(16); wy = -1
+        for y in range(CHUNK_HEIGHT - 1, WATER_LEVEL - 2, -1):
+            if blocks[x, y, z] == SAND: wy = y + 1; break
+        if wy != -1: out_count = generate_cactus(cx, cz, cx * CHUNK_SIZE + x, wy, cz * CHUNK_SIZE + z, blocks, random, out_of_bounds, out_count)
+        
+    if random.nextInt(32) == 0: generate_pumpkin(blocks, data, random.nextInt(16), 64, random.nextInt(16), random)
+    if center_biome == JUNGLE and random.nextInt(32) == 0: generate_melon(blocks, data, random.nextInt(16), 64, random.nextInt(16), random)
 
     return out_of_bounds[:out_count]
+
 
 @njit(cache=True, nogil=True)
 def _calc_light_jit(blocks, light_map):
@@ -386,8 +455,9 @@ def _calc_light_jit(blocks, light_map):
                         queue_z[tail] = nz
                         tail += 1
 
+
 # Instantiate singletons for world generation
-_WORLD_SEED = 12345
+_WORLD_SEED = 1357
 _GLOBAL_RANDOM = JavaRandom(_WORLD_SEED)
 _LPERLIN1 = PerlinNoise(JavaRandom(_WORLD_SEED), 16)
 _LPERLIN2 = PerlinNoise(JavaRandom(_WORLD_SEED), 16)
@@ -401,7 +471,7 @@ def generate_chunk(cx, cz):
     random = JavaRandom(cx * 341873128712 + cz * 132897987541)
     
     # Generate biome grid
-    biome_grid = get_biome_grid(cx, cz, _TEMP, _DOWN)
+    biome_grid = get_biome_grid(cx, cz, _TEMP, _DOWN, _WORLD_SEED)
     
     # Generate height buffer
     buffer = get_noise_buffer(cx, cz, _LPERLIN1, _LPERLIN2, _PERLIN1, _DEPTH, biome_grid)
@@ -412,15 +482,15 @@ def generate_chunk(cx, cz):
     # Build surfaces (top grass, filler dirt, bedrock)
     build_surfaces(cx, cz, blocks, random, biome_grid)
     
-    # Generate ores
-    carve_ores(cx, cz, blocks, _WORLD_SEED)
-    
-    # Carve caves and canyons
+    # Generate caves and ores in proper order (caves -> canyons -> ores)
     carve_caves(cx, cz, blocks, _WORLD_SEED, biome_grid)
     carve_canyons(cx, cz, blocks, _WORLD_SEED, biome_grid)
+    carve_ores(cx, cz, blocks, _WORLD_SEED)
     
-    # Generate trees and decorations
-    out_of_bounds = generate_trees_for_chunk(cx, cz, blocks, random, biome_grid)
+    data = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
+    
+    # Generate trees and decorations based on biome
+    out_of_bounds = decorate_chunk(cx, cz, blocks, data, random, biome_grid)
     
     # Lighting
     light_map = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
@@ -430,15 +500,12 @@ def generate_chunk(cx, cz):
         for lz in range(CHUNK_SIZE):
             chunk_biomes[lx, lz] = biome_grid[(lx//4)+2, (lz//4)+2]
             
-    # Data metadata array
-    data = np.zeros((CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE), dtype=np.uint8)
-            
     return blocks, data, light_map, out_of_bounds, chunk_biomes
 
 def load_or_generate_chunk(cx, cz):
     chunk_data = load_chunk(cx, cz)
     if chunk_data is not None:
-        biome_grid = get_biome_grid(cx, cz, _TEMP, _DOWN)
+        biome_grid = get_biome_grid(cx, cz, _TEMP, _DOWN, _WORLD_SEED)
         chunk_biomes = np.zeros((CHUNK_SIZE, CHUNK_SIZE), dtype=np.int32)
         for lx in range(CHUNK_SIZE):
             for lz in range(CHUNK_SIZE):
@@ -451,4 +518,3 @@ def load_or_generate_chunk(cx, cz):
 def recalculate_chunk_light(blocks, light_map):
     # Call JIT to recalculate light
     _calc_light_jit(blocks, light_map)
-

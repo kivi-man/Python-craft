@@ -69,5 +69,5 @@ void main() {
     // Final Color (Apply all multipliers)
     vec3 lit_color = base_color * light_factor * ao_multiplier * sky_light_factor;
     
-    FragColor = vec4(lit_color, 1.0);
+    FragColor = vec4(lit_color, texColor.a * u_tint_color.a);
 }

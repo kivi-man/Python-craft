@@ -36,188 +36,7 @@ def ensure_level_dat():
         data.tags.append(nbt.TAG_Long(name="lastPlayed", value=int(time.time() * 1000)))
         
         root.write_file(level_dat_path)
-
-INTERNAL_TO_MC_ID = np.zeros(256, dtype=np.uint8)
-INTERNAL_TO_MC_META = np.zeros(256, dtype=np.uint8)
-
-_mapping = {
-    1: (1, 0),    # STONE
-    2: (3, 0),    # DIRT
-    3: (2, 0),    # GRASS
-    4: (9, 0),    # WATER
-    5: (12, 0),   # SAND
-    6: (80, 0),   # SNOW
-    7: (7, 0),    # BEDROCK
-    8: (13, 0),   # GRAVEL
-    9: (24, 0),   # SANDSTONE
-    10: (110, 0), # MYCELIUM
-    11: (17, 0),  # WOOD (Oak)
-    12: (18, 0),  # LEAVES (Oak)
-    13: (81, 0),  # CACTUS
-    14: (17, 2),  # BIRCH_WOOD
-    15: (17, 1),  # SPRUCE_WOOD
-    16: (18, 2),  # BIRCH_LEAVES
-    17: (18, 1),  # SPRUCE_LEAVES
-    20: (20, 0),  # GLASS
-    21: (21, 0),  # LAPIS_ORE
-    22: (11, 0),  # LAVA
-    31: (31, 1),  # TALLGRASS
-    37: (37, 0),  # DANDELION
-    38: (38, 0),  # ROSE
-    40: (14, 0),  # GOLD_ORE
-    41: (15, 0),  # IRON_ORE
-    42: (16, 0),  # COAL_ORE
-    56: (56, 0),  # DIAMOND_ORE
-    73: (73, 0),  # REDSTONE_ORE
-    79: (79, 0),  # ICE
-    129: (129, 0),# EMERALD_ORE
-    175: (175, 2),# DOUBLE_GRASS_BTM
-    176: (175, 10),# DOUBLE_GRASS_TOP
-    177: (175, 4),# DOUBLE_ROSE_BTM
-    178: (175, 10),# DOUBLE_ROSE_TOP
-    43: (4, 0), # COBBLESTONE
-    44: (5, 0), # PLANKS_OAK
-    45: (5, 1), # PLANKS_SPRUCE
-    46: (5, 2), # PLANKS_BIRCH
-    47: (5, 3), # PLANKS_JUNGLE
-    48: (5, 4), # PLANKS_ACACIA
-    49: (5, 5), # PLANKS_DARK_OAK
-    50: (19, 0), # SPONGE
-    51: (22, 0), # LAPIS_BLOCK
-    52: (41, 0), # GOLD_BLOCK
-    53: (42, 0), # IRON_BLOCK
-    54: (45, 0), # BRICKS
-    55: (46, 0), # TNT
-    57: (47, 0), # BOOKSHELF
-    58: (48, 0), # MOSSY_COBBLESTONE
-    59: (49, 0), # OBSIDIAN
-    60: (57, 0), # DIAMOND_BLOCK
-    61: (82, 0), # CLAY_BLOCK
-    62: (84, 0), # JUKEBOX
-    63: (87, 0), # NETHERRACK
-    64: (88, 0), # SOUL_SAND
-    65: (89, 0), # GLOWSTONE
-    66: (98, 0), # STONEBRICK
-    67: (98, 1), # STONEBRICK_MOSSY
-    68: (98, 2), # STONEBRICK_CRACKED
-    69: (98, 3), # STONEBRICK_CARVED
-    70: (103, 0), # MELON_BLOCK
-    71: (112, 0), # NETHER_BRICK
-    72: (121, 0), # END_STONE
-    74: (133, 0), # EMERALD_BLOCK_SOLID
-    75: (152, 0), # REDSTONE_BLOCK
-    76: (155, 0), # QUARTZ_BLOCK
-    77: (155, 1), # QUARTZ_CHISELED
-    78: (155, 2), # QUARTZ_PILLAR
-    80: (173, 0), # COAL_BLOCK_SOLID
-    81: (174, 0), # PACKED_ICE
-    82: (12, 1), # RED_SAND
-    83: (3, 2), # PODZOL
-    84: (3, 1), # COARSE_DIRT
-    85: (1, 5), # ANDESITE
-    86: (1, 6), # ANDESITE_POLISHED
-    87: (1, 3), # DIORITE
-    88: (1, 4), # DIORITE_POLISHED
-    89: (1, 1), # GRANITE
-    90: (1, 2), # GRANITE_POLISHED
-    91: (168, 0), # PRISMARINE
-    92: (168, 1), # PRISMARINE_BRICKS
-    93: (168, 2), # PRISMARINE_DARK
-    94: (169, 0), # SEA_LANTERN
-    95: (165, 0), # SLIME_BLOCK
-    96: (170, 0), # HAY_BLOCK
-    116: (58, 0), # CRAFTING_TABLE
-    100: (35, 0), # WOOL_WHITE
-    120: (95, 0), # GLASS_WHITE
-    140: (159, 0), # STAINED_CLAY_WHITE
-    101: (35, 1), # WOOL_ORANGE
-    121: (95, 1), # GLASS_ORANGE
-    141: (159, 1), # STAINED_CLAY_ORANGE
-    102: (35, 2), # WOOL_MAGENTA
-    122: (95, 2), # GLASS_MAGENTA
-    142: (159, 2), # STAINED_CLAY_MAGENTA
-    103: (35, 3), # WOOL_LIGHT_BLUE
-    123: (95, 3), # GLASS_LIGHT_BLUE
-    143: (159, 3), # STAINED_CLAY_LIGHT_BLUE
-    104: (35, 4), # WOOL_YELLOW
-    124: (95, 4), # GLASS_YELLOW
-    144: (159, 4), # STAINED_CLAY_YELLOW
-    105: (35, 5), # WOOL_LIME
-    125: (95, 5), # GLASS_LIME
-    145: (159, 5), # STAINED_CLAY_LIME
-    106: (35, 6), # WOOL_PINK
-    126: (95, 6), # GLASS_PINK
-    146: (159, 6), # STAINED_CLAY_PINK
-    107: (35, 7), # WOOL_GRAY
-    127: (95, 7), # GLASS_GRAY
-    147: (159, 7), # STAINED_CLAY_GRAY
-    108: (35, 8), # WOOL_SILVER
-    128: (95, 8), # GLASS_SILVER
-    148: (159, 8), # STAINED_CLAY_SILVER
-    109: (35, 9), # WOOL_CYAN
-    129: (95, 9), # GLASS_CYAN
-    149: (159, 9), # STAINED_CLAY_CYAN
-    110: (35, 10), # WOOL_PURPLE
-    130: (95, 10), # GLASS_PURPLE
-    150: (159, 10), # STAINED_CLAY_PURPLE
-    111: (35, 11), # WOOL_BLUE
-    131: (95, 11), # GLASS_BLUE
-    151: (159, 11), # STAINED_CLAY_BLUE
-    112: (35, 12), # WOOL_BROWN
-    132: (95, 12), # GLASS_BROWN
-    152: (159, 12), # STAINED_CLAY_BROWN
-    113: (35, 13), # WOOL_GREEN
-    133: (95, 13), # GLASS_GREEN
-    153: (159, 13), # STAINED_CLAY_GREEN
-    114: (35, 14), # WOOL_RED
-    134: (95, 14), # GLASS_RED
-    154: (159, 14), # STAINED_CLAY_RED
-    115: (35, 15), # WOOL_BLACK
-    135: (95, 15), # GLASS_BLACK
-    155: (159, 15), # STAINED_CLAY_BLACK
-    160: (172, 0), # HARDENED_CLAY
-    200: (53, 0), # OAK_STAIRS
-    201: (67, 0), # COBBLESTONE_STAIRS
-    202: (126, 0), # WOODEN_SLAB (OAK)
-    203: (44, 0), # STONE_SLAB
-    204: (134, 0), # SPRUCE_STAIRS
-    205: (135, 0), # BIRCH_STAIRS
-    206: (136, 0), # JUNGLE_STAIRS
-    207: (163, 0), # ACACIA_STAIRS
-    208: (164, 0), # DARK_OAK_STAIRS
-    209: (108, 0), # BRICK_STAIRS
-    210: (109, 0), # STONE_BRICK_STAIRS
-    211: (114, 0), # NETHER_BRICK_STAIRS
-    212: (128, 0), # SANDSTONE_STAIRS
-    213: (156, 0), # QUARTZ_STAIRS
-    214: (126, 1), # SPRUCE_SLAB
-    215: (126, 2), # BIRCH_SLAB
-    216: (126, 3), # JUNGLE_SLAB
-    217: (126, 4), # ACACIA_SLAB
-    218: (126, 5), # DARK_OAK_SLAB
-    219: (44, 4), # BRICK_SLAB
-    220: (44, 5), # STONE_BRICK_SLAB
-    221: (44, 6), # NETHER_BRICK_SLAB
-    222: (44, 1), # SANDSTONE_SLAB
-    223: (44, 7), # QUARTZ_SLAB
-    224: (44, 3), # COBBLESTONE_SLAB
-    162: (64, 0), # WOOD_DOOR
-    163: (71, 0), # IRON_DOOR
-}
-
-for internal_id, (mc_id, mc_meta) in _mapping.items():
-    INTERNAL_TO_MC_ID[internal_id] = mc_id
-    INTERNAL_TO_MC_META[internal_id] = mc_meta
-
-MC_TO_INTERNAL = np.zeros((256, 16), dtype=np.uint8)
-for internal_id, (mc_id, mc_meta) in _mapping.items():
-    MC_TO_INTERNAL[mc_id, mc_meta] = internal_id
-
-# Fallback metadata to primary block type if exact meta not found
-for internal_id, (mc_id, mc_meta) in _mapping.items():
-    for m in range(16):
-        if MC_TO_INTERNAL[mc_id, m] == 0:
-            MC_TO_INTERNAL[mc_id, m] = internal_id
+from world.mc_id_converter import INTERNAL_TO_MC_ID, INTERNAL_TO_MC_META, MC_TO_INTERNAL
 
 def init_db():
     os.makedirs(REGION_DIR, exist_ok=True)
@@ -429,4 +248,100 @@ def load_player_data(player_id):
     if os.path.exists(filename):
         with open(filename, 'r') as f:
             return f.read()
+    return None
+
+def save_level_dat(player_pos, player_rot, inventory_blocks, inventory_counts):
+    level_dat_path = os.path.join(WORLD_DIR, "level.dat")
+    try:
+        if os.path.exists(level_dat_path):
+            root = nbt.NBTFile(level_dat_path, 'rb')
+        else:
+            root = nbt.NBTFile()
+            root.tags.append(nbt.TAG_Compound(name="Data"))
+            
+        data = root["Data"]
+        
+        if "Player" not in data:
+            data.tags.append(nbt.TAG_Compound(name="Player"))
+            
+        player_tag = data["Player"]
+        
+        # Pos
+        if "Pos" in player_tag:
+            del player_tag["Pos"]
+        pos_list = nbt.TAG_List(name="Pos", type=nbt.TAG_Double)
+        pos_list.tags.extend([nbt.TAG_Double(val) for val in player_pos])
+        player_tag.tags.append(pos_list)
+        
+        # Rotation
+        if "Rotation" in player_tag:
+            del player_tag["Rotation"]
+        rot_list = nbt.TAG_List(name="Rotation", type=nbt.TAG_Float)
+        rot_list.tags.extend([nbt.TAG_Float(val) for val in player_rot])
+        player_tag.tags.append(rot_list)
+        
+        # Inventory
+        if "Inventory" in player_tag:
+            del player_tag["Inventory"]
+        inv_list = nbt.TAG_List(name="Inventory", type=nbt.TAG_Compound)
+        
+        for slot in range(min(36, len(inventory_blocks))):
+            internal_id = inventory_blocks[slot]
+            count = inventory_counts[slot]
+            if count > 0 and internal_id > 0:
+                item_tag = nbt.TAG_Compound()
+                mc_id = INTERNAL_TO_MC_ID[internal_id]
+                mc_meta = INTERNAL_TO_MC_META[internal_id]
+                
+                item_tag.tags.append(nbt.TAG_Byte(name="Slot", value=slot))
+                item_tag.tags.append(nbt.TAG_Short(name="id", value=int(mc_id)))
+                item_tag.tags.append(nbt.TAG_Byte(name="Count", value=int(count)))
+                item_tag.tags.append(nbt.TAG_Short(name="Damage", value=int(mc_meta)))
+                inv_list.tags.append(item_tag)
+                
+        player_tag.tags.append(inv_list)
+        
+        root.write_file(level_dat_path)
+    except Exception as e:
+        print(f"Error saving level.dat: {e}")
+
+def load_level_dat():
+    level_dat_path = os.path.join(WORLD_DIR, "level.dat")
+    if not os.path.exists(level_dat_path):
+        return None
+        
+    try:
+        root = nbt.NBTFile(level_dat_path, 'rb')
+        if "Data" in root and "Player" in root["Data"]:
+            player_tag = root["Data"]["Player"]
+            
+            result = {}
+            if "Pos" in player_tag:
+                result["pos"] = [val.value for val in player_tag["Pos"].tags]
+            if "Rotation" in player_tag:
+                result["rot"] = [val.value for val in player_tag["Rotation"].tags]
+                
+            if "Inventory" in player_tag:
+                inv_blocks = [0] * 55
+                inv_counts = [0] * 55
+                for item in player_tag["Inventory"].tags:
+                    slot = item["Slot"].value
+                    if slot >= 0 and slot < 55:
+                        # nbtlib or nbt might parse short or string id. If we use numeric for 1.7.10
+                        if hasattr(item["id"], 'value'):
+                            mc_id = item["id"].value
+                        else:
+                            mc_id = int(item["id"])
+                        mc_meta = item["Damage"].value if "Damage" in item else 0
+                        count = item["Count"].value
+                        
+                        internal_id = MC_TO_INTERNAL[mc_id, mc_meta]
+                        inv_blocks[slot] = int(internal_id)
+                        inv_counts[slot] = int(count)
+                result["inventory_blocks"] = inv_blocks
+                result["inventory_counts"] = inv_counts
+                
+            return result
+    except Exception as e:
+        print(f"Error loading level.dat: {e}")
     return None

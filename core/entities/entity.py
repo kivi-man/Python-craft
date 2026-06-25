@@ -1,3 +1,4 @@
+from world.terrain import CACTUS
 import math
 
 class AABB:
@@ -103,9 +104,9 @@ class Entity:
         
     def is_in_water(self, get_block_func):
         b = get_block_func(int(math.floor(self.x)), int(math.floor(self.y)), int(math.floor(self.z)))
-        if b == 4: return True
+        if b == 9 or b == 8: return True
         b = get_block_func(int(math.floor(self.x)), int(math.floor(self.y + 0.4)), int(math.floor(self.z)))
-        return b == 4
+        return b == 9 or b == 8
         
     def tick(self, get_block_func):
         self.xo = self.x
@@ -164,10 +165,10 @@ class Entity:
             for by in range(min_y, max_y + 1):
                 for bz in range(min_z, max_z + 1):
                     block = get_block_func(bx, by, bz)
-                    if block == 38: # CACTUS
+                    if block == CACTUS: # CACTUS
                         if bounds.intersects(AABB(bx, by, bz, bx + 1, by + 1, bz + 1)):
                             self.hurt(1)
-                    if block == -1 or (block > 0 and block not in (31, 37, 38, 175, 176, 8, 9, 4)): # Solid blocks (4 is WATER)
+                    if block == -1 or (block > 0 and block not in (32, 34, 37, 38, 39, 40, 83, 106, 175, 176, 8, 9)): # Solid blocks
                         blocks_bboxes.append(AABB(bx, by, bz, bx + 1, by + 1, bz + 1))
         
         # Resolve Y

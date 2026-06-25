@@ -27,6 +27,7 @@ from world.mc_terrain import generate_chunk, recalculate_chunk_light, CHUNK_SIZE
 from world.terrain import CACTUS, SAND, BLOCK_MAX_STACK_ARRAY
 from renderer.mesh_builder import build_chunk_mesh
 from core.player import Player
+from core.world_db import load_level_dat, save_level_dat
 from core.raycast import raycast
 from core.math_utils import perspective_matrix, look_at_matrix, normalize_vec, sub_vec, cross_vec, dot_vec
 from renderer.shader import create_shader_program
@@ -204,10 +205,23 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0)
         
         self.camera = Camera()
-        self.player = Player(32.0, 100.0, 32.0)
+        self.player = Player(44.0, 100.0, -4.0)
         self.sound_system = SoundSystem(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'SFX', 'Pythoncraft'))
         self.inventory_blocks = [0] * 55
         self.inventory_counts = [0] * 55
+        
+        player_data = load_level_dat()
+        if player_data:
+            if "pos" in player_data:
+                px, py, pz = player_data["pos"]
+                self.player.x, self.player.y, self.player.z = px, py, pz
+            if "rot" in player_data:
+                ryaw, rpitch = player_data["rot"]
+                self.player.rotation = [ryaw, rpitch]
+            if "inventory_blocks" in player_data:
+                self.inventory_blocks = player_data["inventory_blocks"]
+                self.inventory_counts = player_data["inventory_counts"]
+
         self.selected_slot = 0
         self.selected_block_id = self.inventory_blocks[self.selected_slot]
         
@@ -265,6 +279,14 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         if hasattr(self, 'executor'):
             self.executor.shutdown(wait=True)
+            
+        print("[MAIN] Saving player data...")
+        save_level_dat(
+            [self.player.x, self.player.y, self.player.z],
+            self.player.rotation,
+            self.inventory_blocks,
+            self.inventory_counts
+        )
             
         super().on_close()
 
@@ -1077,11 +1099,11 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         # Find closest water surface
         u_water_surface_y = -1000.0
-        if self.get_block(cx, cy_int + 1, cz) == 4:
+        if self.get_block(cx, cy_int + 1, cz) in (8, 9):
             u_water_surface_y = cy_int + 2.0
-        elif self.get_block(cx, cy_int, cz) == 4:
+        elif self.get_block(cx, cy_int, cz) in (8, 9):
             u_water_surface_y = cy_int + 1.0
-        elif self.get_block(cx, cy_int - 1, cz) == 4:
+        elif self.get_block(cx, cy_int - 1, cz) in (8, 9):
             u_water_surface_y = float(cy_int)
             
         if u_water_surface_y > -999.0:

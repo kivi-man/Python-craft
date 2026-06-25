@@ -26,7 +26,7 @@ def raycast(start_pos, direction, get_block_func, max_distance=5.0, step_size=0.
     start_by = int(math.floor(y))
     start_bz = int(math.floor(z))
     start_block_id = get_block_func(start_bx, start_by, start_bz)
-    if start_block_id > 0 and start_block_id != 4:
+    if start_block_id > 0 and start_block_id not in (8, 9):
         return (start_bx, start_by, start_bz, start_bx, start_by, start_bz)
         
     distance_traveled = 0.0
@@ -48,8 +48,7 @@ def raycast(start_pos, direction, get_block_func, max_distance=5.0, step_size=0.
         if bx != prev_bx or by != prev_by or bz != prev_bz:
             block_id = get_block_func(bx, by, bz)
             
-            # 0: AIR, 4: WATER (Suyu veya havayı kıramazsınız)
-            if block_id > 0 and block_id != 4:
+            if block_id > 0 and block_id not in (8, 9):
                 return (bx, by, bz, prev_bx, prev_by, prev_bz)
                 
             prev_bx, prev_by, prev_bz = bx, by, bz

@@ -12,7 +12,7 @@ BLOCK_REGISTRY = {
     "AIR": {"id": 0, "texture": None, "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
     "STONE": {"id": 1, "texture": "stone.png", "color": (0.45, 0.45, 0.45), "transparent": False, "light": 0, "hardness": 1.5, "tool_type": "PICKAXE"},
     "DIRT": {"id": 2, "texture": "dirt.png", "color": (0.40, 0.26, 0.13), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
-    "GRASS": {"id": 3, "texture": {"top": "grass_top.png", "bottom": "dirt.png", "side": "grass_side.png"}, "color": (0.30, 0.65, 0.20), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
+    "GRASS": {"id": 2, "texture": {"top": "grass_top.png", "bottom": "dirt.png", "side": "grass_side.png"}, "color": (0.6, 0.8, 0.4), "transparent": False, "light": 0, "hardness": 0.6, "tool_type": "SHOVEL"},
     "WATER": {"id": 4, "texture": "water.png", "color": (0.20, 0.40, 0.75), "transparent": True, "light": 0, "hardness": -1.0, "tool_type": "NONE"},
     "SAND": {"id": 5, "texture": "sand.png", "color": (0.85, 0.80, 0.55), "transparent": False, "light": 0, "hardness": 0.5, "tool_type": "SHOVEL"},
     "SNOW": {"id": 6, "texture": "snow.png", "color": (0.95, 0.95, 0.95), "transparent": False, "light": 0, "hardness": 0.2, "tool_type": "SHOVEL"},
@@ -127,7 +127,7 @@ BLOCK_REGISTRY = {
     "GLASS_SILVER": {"id": 128, "texture": "glass_silver.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
     "STAINED_CLAY_SILVER": {"id": 148, "texture": "hardened_clay_stained_silver.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
     "WOOL_CYAN": {"id": 109, "texture": "wool_colored_cyan.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
-    "GLASS_CYAN": {"id": 129, "texture": "glass_cyan.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
+    "GLASS_CYAN": {"id": 225, "texture": "glass_cyan.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
     "STAINED_CLAY_CYAN": {"id": 149, "texture": "hardened_clay_stained_cyan.png", "color": (0.6, 0.4, 0.4), "transparent": False, "light": 0, "hardness": 1.25, "tool_type": "PICKAXE"},
     "WOOL_PURPLE": {"id": 110, "texture": "wool_colored_purple.png", "color": (0.8, 0.8, 0.8), "transparent": False, "light": 0, "hardness": 0.8, "tool_type": "NONE"},
     "GLASS_PURPLE": {"id": 130, "texture": "glass_purple.png", "color": (0.8, 0.8, 0.8), "transparent": True, "light": 0, "hardness": 0.3, "tool_type": "NONE"},
@@ -177,6 +177,22 @@ BLOCK_REGISTRY = {
     "QUARTZ_SLAB": {"id": 223, "texture": "quartz_block_side.png", "color": (0.9, 0.9, 0.9), "transparent": True, "light": 0, "hardness": 0.8, "tool_type": "PICKAXE"},
     "COBBLESTONE_SLAB": {"id": 224, "texture": "cobblestone.png", "color": (0.5, 0.5, 0.5), "transparent": True, "light": 0, "hardness": 2.0, "tool_type": "PICKAXE"},
     
+    # Missing Biome and Decor Blocks
+    "DEADBUSH": {"id": 32, "texture": "deadbush.png", "color": (0.6, 0.4, 0.2), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "MUSHROOM_BROWN": {"id": 39, "texture": "mushroom_brown.png", "color": (0.8, 0.7, 0.5), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "MUSHROOM_RED": {"id": 230, "texture": "mushroom_red.png", "color": (0.9, 0.2, 0.2), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "VINE": {"id": 231, "texture": "vine.png", "color": (0.2, 0.6, 0.2), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "REEDS": {"id": 232, "texture": "reeds.png", "color": (0.4, 0.8, 0.3), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "WATERLILY": {"id": 233, "texture": "waterlily.png", "color": (0.2, 0.7, 0.3), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
+    "PUMPKIN": {"id": 234, "texture": {"top": "pumpkin_top.png", "bottom": "pumpkin_top.png", "side": "pumpkin_side.png"}, "color": (0.9, 0.5, 0.1), "transparent": False, "light": 0, "hardness": 1.0, "tool_type": "AXE"},
+    "SNOW_LAYER": {"id": 235, "texture": "snow.png", "color": (0.95, 0.95, 0.95), "transparent": True, "light": 0, "hardness": 0.1, "tool_type": "SHOVEL"},
+    "JUNGLE_WOOD": {"id": 236, "texture": {"top": "log_jungle_top.png", "bottom": "log_jungle_top.png", "side": "log_jungle.png"}, "color": (0.5, 0.4, 0.2), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "ACACIA_WOOD": {"id": 237, "texture": {"top": "log_acacia_top.png", "bottom": "log_acacia_top.png", "side": "log_acacia.png"}, "color": (0.6, 0.5, 0.4), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "DARK_OAK_WOOD": {"id": 238, "texture": {"top": "log_big_oak_top.png", "bottom": "log_big_oak_top.png", "side": "log_big_oak.png"}, "color": (0.3, 0.2, 0.1), "transparent": False, "light": 0, "hardness": 2.0, "tool_type": "AXE"},
+    "JUNGLE_LEAVES": {"id": 239, "texture": "leaves_jungle.png", "color": (0.2, 0.6, 0.1), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "ACACIA_LEAVES": {"id": 240, "texture": "leaves_acacia.png", "color": (0.4, 0.7, 0.3), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+    "DARK_OAK_LEAVES": {"id": 241, "texture": "leaves_big_oak.png", "color": (0.1, 0.4, 0.1), "transparent": True, "light": 0, "hardness": 0.2, "tool_type": "NONE"},
+
     # Items
     "STICK": {"id": 1001, "texture": "stick.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
     "DIAMOND": {"id": 1002, "texture": "diamond.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
@@ -218,211 +234,232 @@ BLOCK_REGISTRY = {
     "GOLD_HOE": {"id": 1033, "texture": "gold_hoe.png", "color": (1.0, 1.0, 1.0), "transparent": True, "light": 0, "hardness": 0.0, "tool_type": "NONE"},
 }
 
-# Dinamik yerine statik tanımlama (Flake8 ve Numba için daha güvenli)
+# --- DYNAMICALLY ASSIGNED FROM MC_ID_CONVERTER ---
 AIR = 0
 STONE = 1
-DIRT = 2
-GRASS = 3
-WATER = 4
-SAND = 5
-SNOW = 6
-COBBLESTONE = 43
-PLANKS_OAK = 44
-PLANKS_SPRUCE = 45
-PLANKS_BIRCH = 46
-PLANKS_JUNGLE = 47
-PLANKS_ACACIA = 48
-PLANKS_DARK_OAK = 49
-SPONGE = 50
-LAPIS_BLOCK = 51
-GOLD_BLOCK = 52
-IRON_BLOCK = 53
-BRICKS = 54
-TNT = 55
-OAK_STAIRS = 200
-COBBLESTONE_STAIRS = 201
-WOODEN_SLAB = 202
-STONE_SLAB = 203
-SPRUCE_STAIRS = 204
-BIRCH_STAIRS = 205
-JUNGLE_STAIRS = 206
-ACACIA_STAIRS = 207
-DARK_OAK_STAIRS = 208
-BRICK_STAIRS = 209
-STONE_BRICK_STAIRS = 210
-NETHER_BRICK_STAIRS = 211
-SANDSTONE_STAIRS = 212
-QUARTZ_STAIRS = 213
-SPRUCE_SLAB = 214
-BIRCH_SLAB = 215
-JUNGLE_SLAB = 216
-ACACIA_SLAB = 217
-DARK_OAK_SLAB = 218
-BRICK_SLAB = 219
-STONE_BRICK_SLAB = 220
-NETHER_BRICK_SLAB = 221
-SANDSTONE_SLAB = 222
-QUARTZ_SLAB = 223
-COBBLESTONE_SLAB = 224
-WOOD_DOOR = 162
-IRON_DOOR = 163
-BOOKSHELF = 57
-MOSSY_COBBLESTONE = 58
-OBSIDIAN = 59
-DIAMOND_BLOCK = 60
-CLAY_BLOCK = 61
-JUKEBOX = 62
-NETHERRACK = 63
-SOUL_SAND = 64
-GLOWSTONE = 65
-STONEBRICK = 66
-STONEBRICK_MOSSY = 67
-STONEBRICK_CRACKED = 68
-STONEBRICK_CARVED = 69
-MELON_BLOCK = 70
-NETHER_BRICK = 71
-END_STONE = 72
-EMERALD_BLOCK_SOLID = 74
-REDSTONE_BLOCK = 75
-QUARTZ_BLOCK = 76
-QUARTZ_CHISELED = 77
-QUARTZ_PILLAR = 78
-COAL_BLOCK_SOLID = 80
-PACKED_ICE = 81
-RED_SAND = 82
-PODZOL = 83
-COARSE_DIRT = 84
-ANDESITE = 85
-ANDESITE_POLISHED = 86
-DIORITE = 87
-DIORITE_POLISHED = 88
-GRANITE = 89
-GRANITE_POLISHED = 90
-PRISMARINE = 91
-PRISMARINE_BRICKS = 92
-PRISMARINE_DARK = 93
-SEA_LANTERN = 94
-SLIME_BLOCK = 95
-PORKCHOP_RAW = 1000
-
-# Items
-STICK = 1001
-DIAMOND = 1002
-IRON_INGOT = 1003
-GOLD_INGOT = 1004
-COAL = 1005
-CHARCOAL = 1006
-BOWL = 1007
-MUSHROOM_STEW = 1008
-WOODEN_SWORD = 1009
-WOODEN_SHOVEL = 1010
-WOODEN_PICKAXE = 1011
-WOODEN_AXE = 1012
-WOODEN_HOE = 1013
-STONE_SWORD = 1014
-STONE_SHOVEL = 1015
-STONE_PICKAXE = 1016
-STONE_AXE = 1017
-STONE_HOE = 1018
-IRON_SWORD = 1019
-IRON_SHOVEL = 1020
-IRON_PICKAXE = 1021
-IRON_AXE = 1022
-IRON_HOE = 1023
-DIAMOND_SWORD = 1024
-DIAMOND_SHOVEL = 1025
-DIAMOND_PICKAXE = 1026
-DIAMOND_AXE = 1027
-DIAMOND_HOE = 1028
-GOLD_SWORD = 1029
-GOLD_SHOVEL = 1030
-GOLD_PICKAXE = 1031
-GOLD_AXE = 1032
-GOLD_HOE = 1033
-HAY_BLOCK = 96
-WOOL_WHITE = 100
-GLASS_WHITE = 120
-STAINED_CLAY_WHITE = 140
-WOOL_ORANGE = 101
-GLASS_ORANGE = 121
-STAINED_CLAY_ORANGE = 141
-WOOL_MAGENTA = 102
-GLASS_MAGENTA = 122
-STAINED_CLAY_MAGENTA = 142
-WOOL_LIGHT_BLUE = 103
-GLASS_LIGHT_BLUE = 123
-STAINED_CLAY_LIGHT_BLUE = 143
-WOOL_YELLOW = 104
-GLASS_YELLOW = 124
-STAINED_CLAY_YELLOW = 144
-WOOL_LIME = 105
-GLASS_LIME = 125
-STAINED_CLAY_LIME = 145
-WOOL_PINK = 106
-GLASS_PINK = 126
-STAINED_CLAY_PINK = 146
-WOOL_GRAY = 107
-GLASS_GRAY = 127
-STAINED_CLAY_GRAY = 147
-WOOL_SILVER = 108
-GLASS_SILVER = 128
-STAINED_CLAY_SILVER = 148
-WOOL_CYAN = 109
-GLASS_CYAN = 129
-STAINED_CLAY_CYAN = 149
-WOOL_PURPLE = 110
-GLASS_PURPLE = 130
-STAINED_CLAY_PURPLE = 150
-WOOL_BLUE = 111
-GLASS_BLUE = 131
-STAINED_CLAY_BLUE = 151
-WOOL_BROWN = 112
-GLASS_BROWN = 132
-STAINED_CLAY_BROWN = 152
-WOOL_GREEN = 113
-GLASS_GREEN = 133
-STAINED_CLAY_GREEN = 153
-WOOL_RED = 114
-GLASS_RED = 134
-STAINED_CLAY_RED = 154
-WOOL_BLACK = 115
-GLASS_BLACK = 135
-STAINED_CLAY_BLACK = 155
-CRAFTING_TABLE = 116
-HARDENED_CLAY = 160
+GRASS = 2
+DIRT = 3
+COBBLESTONE = 4
+PLANKS_OAK = 5
 BEDROCK = 7
-ICE = 79
-GRAVEL = 8
-SANDSTONE = 9
-MYCELIUM = 10
-WOOD = 11
-LEAVES = 12
-CACTUS = 13
-BIRCH_WOOD = 14
-SPRUCE_WOOD = 15
-BIRCH_LEAVES = 16
-SPRUCE_LEAVES = 17
+WATER = 9
+LAVA = 11
+SAND = 12
+GRAVEL = 13
+GOLD_ORE = 14
+IRON_ORE = 15
+COAL_ORE = 16
+WOOD = 17
+LEAVES = 18
+SPONGE = 19
 GLASS = 20
-LAVA = 22
-
-GOLD_ORE = 40
-IRON_ORE = 41
-COAL_ORE = 42
 LAPIS_ORE = 21
-DIAMOND_ORE = 56
-REDSTONE_ORE = 73
-EMERALD_ORE = 129
-
-TALLGRASS = 31
+LAPIS_BLOCK = 22
+SANDSTONE = 24
+DEADBUSH = 32
+WOOL_WHITE = 35
 DANDELION = 37
 ROSE = 38
-DOUBLE_GRASS_BTM = 175
-DOUBLE_GRASS_TOP = 176
-DOUBLE_ROSE_BTM = 177
-DOUBLE_ROSE_TOP = 178
-PORKCHOP_RAW = 1000
+MUSHROOM_BROWN = 39
+MUSHROOM_RED = 40
+GOLD_BLOCK = 41
+IRON_BLOCK = 42
+STONE_SLAB = 44
+WOODEN_SLAB = 126
+BRICKS = 45
+TNT = 46
+BOOKSHELF = 47
+MOSSY_COBBLESTONE = 48
+OBSIDIAN = 49
+OAK_STAIRS = 53
+DIAMOND_ORE = 56
+DIAMOND_BLOCK = 57
+CRAFTING_TABLE = 58
+WOOD_DOOR = 64
+COBBLESTONE_STAIRS = 67
+IRON_DOOR = 71
+REDSTONE_ORE = 73
+SNOW_LAYER = 78
+ICE = 79
+SNOW = 80
+CACTUS = 81
+CLAY_BLOCK = 82
+REEDS = 83
+JUKEBOX = 84
+NETHERRACK = 87
+SOUL_SAND = 88
+GLOWSTONE = 89
+GLASS_WHITE = 95
+STONEBRICK = 98
+MELON_BLOCK = 103
+VINE = 106
+BRICK_STAIRS = 108
+STONE_BRICK_STAIRS = 109
+MYCELIUM = 110
+WATERLILY = 111
+NETHER_BRICK = 112
+NETHER_BRICK_STAIRS = 114
+END_STONE = 121
+SANDSTONE_STAIRS = 128
+EMERALD_ORE = 129
+EMERALD_BLOCK_SOLID = 133
+SPRUCE_STAIRS = 134
+BIRCH_STAIRS = 135
+JUNGLE_STAIRS = 136
+REDSTONE_BLOCK = 152
+QUARTZ_BLOCK = 155
+QUARTZ_STAIRS = 156
+STAINED_CLAY_WHITE = 159
+HARDENED_CLAY = 172
+ACACIA_LEAVES = 161
+ACACIA_WOOD = 162
+ACACIA_STAIRS = 163
+DARK_OAK_STAIRS = 164
+SLIME_BLOCK = 165
+PRISMARINE = 168
+SEA_LANTERN = 169
+HAY_BLOCK = 170
+COAL_BLOCK_SOLID = 173
+PACKED_ICE = 174
+PUMPKIN = 86
+PLANKS_SPRUCE = 6
+PLANKS_BIRCH = 8
+PLANKS_JUNGLE = 10
+PLANKS_ACACIA = 23
+PLANKS_DARK_OAK = 25
+RED_SAND = 26
+SPRUCE_WOOD = 27
+BIRCH_WOOD = 28
+JUNGLE_WOOD = 29
+SPRUCE_LEAVES = 30
+BIRCH_LEAVES = 31
+JUNGLE_LEAVES = 33
+TALLGRASS = 34
+WOOL_ORANGE = 36
+WOOL_MAGENTA = 43
+WOOL_LIGHT_BLUE = 50
+WOOL_YELLOW = 51
+WOOL_LIME = 52
+WOOL_PINK = 54
+WOOL_GRAY = 55
+WOOL_SILVER = 59
+WOOL_CYAN = 60
+WOOL_PURPLE = 61
+WOOL_BLUE = 62
+WOOL_BROWN = 63
+WOOL_GREEN = 65
+WOOL_RED = 66
+WOOL_BLACK = 68
+SANDSTONE_SLAB = 69
+COBBLESTONE_SLAB = 70
+BRICK_SLAB = 72
+STONE_BRICK_SLAB = 74
+NETHER_BRICK_SLAB = 75
+QUARTZ_SLAB = 76
+GLASS_ORANGE = 77
+GLASS_MAGENTA = 85
+GLASS_LIGHT_BLUE = 90
+GLASS_YELLOW = 91
+GLASS_LIME = 92
+GLASS_PINK = 93
+GLASS_GRAY = 94
+GLASS_SILVER = 96
+GLASS_CYAN = 97
+GLASS_PURPLE = 99
+GLASS_BLUE = 100
+GLASS_BROWN = 101
+GLASS_GREEN = 102
+GLASS_RED = 104
+GLASS_BLACK = 105
+STONEBRICK_MOSSY = 107
+STONEBRICK_CRACKED = 113
+STONEBRICK_CARVED = 115
+SPRUCE_SLAB = 116
+BIRCH_SLAB = 117
+JUNGLE_SLAB = 118
+ACACIA_SLAB = 119
+DARK_OAK_SLAB = 120
+QUARTZ_CHISELED = 122
+QUARTZ_PILLAR = 123
+STAINED_CLAY_ORANGE = 124
+STAINED_CLAY_MAGENTA = 125
+STAINED_CLAY_LIGHT_BLUE = 127
+STAINED_CLAY_YELLOW = 130
+STAINED_CLAY_LIME = 131
+STAINED_CLAY_PINK = 132
+STAINED_CLAY_GRAY = 137
+STAINED_CLAY_SILVER = 138
+STAINED_CLAY_CYAN = 139
+STAINED_CLAY_PURPLE = 140
+STAINED_CLAY_BLUE = 141
+STAINED_CLAY_BROWN = 142
+STAINED_CLAY_GREEN = 143
+STAINED_CLAY_RED = 144
+STAINED_CLAY_BLACK = 145
+DARK_OAK_LEAVES = 146
+DARK_OAK_WOOD = 147
+PRISMARINE_BRICKS = 148
+PRISMARINE_DARK = 149
+DOUBLE_GRASS_BTM = 150
+DOUBLE_GRASS_TOP = 151
+DOUBLE_ROSE_BTM = 153
+DOUBLE_ROSE_TOP = 154
+PODZOL = 157
+COARSE_DIRT = 158
+ANDESITE = 160
+ANDESITE_POLISHED = 166
+DIORITE = 167
+DIORITE_POLISHED = 171
+GRANITE = 175
+GRANITE_POLISHED = 176
+STICK = 280
+DIAMOND = 264
+IRON_INGOT = 265
+GOLD_INGOT = 266
+COAL = 263
+CHARCOAL = 263
+BOWL = 281
+MUSHROOM_STEW = 282
+WOODEN_SWORD = 268
+WOODEN_SHOVEL = 269
+WOODEN_PICKAXE = 270
+WOODEN_AXE = 271
+WOODEN_HOE = 290
+STONE_SWORD = 272
+STONE_SHOVEL = 273
+STONE_PICKAXE = 274
+STONE_AXE = 275
+STONE_HOE = 291
+IRON_SWORD = 267
+IRON_SHOVEL = 256
+IRON_PICKAXE = 257
+IRON_AXE = 258
+IRON_HOE = 292
+DIAMOND_SWORD = 276
+DIAMOND_SHOVEL = 277
+DIAMOND_PICKAXE = 278
+DIAMOND_AXE = 279
+DIAMOND_HOE = 293
+GOLD_SWORD = 283
+GOLD_SHOVEL = 284
+GOLD_PICKAXE = 285
+GOLD_AXE = 286
+GOLD_HOE = 294
+PORKCHOP_RAW = 319
 
-# Numba için hızlı erişim dizileri (0-2048 ID'ler için)
+from world.mc_id_converter import INTERNAL_NAMES_MAP, BLOCK_TINT_ARRAY
+
+import sys
+_mod = sys.modules[__name__]
+for _k, _v in INTERNAL_NAMES_MAP.items():
+    setattr(_mod, _k, _v)
+
+# --- DYNAMICALLY OVERRIDE BLOCK_REGISTRY IDs ---
+for name, block in BLOCK_REGISTRY.items():
+    if name in INTERNAL_NAMES_MAP:
+        block["id"] = INTERNAL_NAMES_MAP[name]
+
+# Numba için hızlı erişim dizileri (max id 2048 instead of dynamically looking up)
 BLOCK_OPAQUE_ARRAY = np.ones(2048, dtype=np.bool_)
 BLOCK_LIGHT_EMISSION_ARRAY = np.zeros(2048, dtype=np.uint8)
 BLOCK_COLORS_ARRAY = np.ones((2048, 3), dtype=np.float32)
@@ -683,23 +720,23 @@ def get_break_time(block_id, held_id):
     multiplier = 1.0
     
     # 1: PICKAXE, 2: AXE, 3: SHOVEL
-    if held_id in (1011, 1016, 1021, 1026, 1031):
+    if held_id in (270, 274, 257, 278, 285):
         held_tool_type = 1
-    elif held_id in (1012, 1017, 1022, 1027, 1032):
+    elif held_id in (271, 275, 258, 279, 286):
         held_tool_type = 2
-    elif held_id in (1010, 1015, 1020, 1025, 1030):
+    elif held_id in (269, 273, 256, 277, 284):
         held_tool_type = 3
         
     if held_tool_type > 0 and held_tool_type == block_tool_type:
-        if held_id in (1009, 1010, 1011, 1012, 1013): # Wood
+        if held_id in (268, 269, 270, 271, 290): # Wood
             multiplier = 2.0
-        elif held_id in (1014, 1015, 1016, 1017, 1018): # Stone
+        elif held_id in (272, 273, 274, 275, 291): # Stone
             multiplier = 4.0
-        elif held_id in (1019, 1020, 1021, 1022, 1023): # Iron
+        elif held_id in (267, 256, 257, 258, 292): # Iron
             multiplier = 6.0
-        elif held_id in (1024, 1025, 1026, 1027, 1028): # Diamond
+        elif held_id in (276, 277, 278, 279, 293): # Diamond
             multiplier = 8.0
-        elif held_id in (1029, 1030, 1031, 1032, 1033): # Gold
+        elif held_id in (283, 284, 285, 286, 294): # Gold
             multiplier = 12.0
             
         return base_time / multiplier

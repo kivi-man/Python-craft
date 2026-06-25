@@ -270,9 +270,9 @@ class GUIMixin:
                 tex = data.get("texture")
                 sprite = None
                 
-                if b_id == 162:
+                if b_id == 64:
                     sprite = self._create_2d_item_sprite("door_wood.png")
-                elif b_id == 163:
+                elif b_id == 71:
                     sprite = self._create_2d_item_sprite("door_iron.png")
                 elif b_id >= 1000 or b_id in sprite_blocks:
                     if isinstance(tex, str):
@@ -371,9 +371,9 @@ class GUIMixin:
                     layer_idx = 0
                     if b_id < len(self.block_layers):
                         layer_idx = self.block_layers[b_id, 0]
-                    if b_id == 162 and "door_wood.png" in self.texture_manager.tex_names_to_layer:
+                    if b_id == 64 and "door_wood.png" in self.texture_manager.tex_names_to_layer:
                         layer_idx = self.texture_manager.tex_names_to_layer["door_wood.png"]
-                    elif b_id == 163 and "door_iron.png" in self.texture_manager.tex_names_to_layer:
+                    elif b_id == 71 and "door_iron.png" in self.texture_manager.tex_names_to_layer:
                         layer_idx = self.texture_manager.tex_names_to_layer["door_iron.png"]
                     elif b_id >= len(self.block_layers) and hasattr(self.texture_manager, 'item_layers') and b_id in self.texture_manager.item_layers:
                          pass
@@ -394,7 +394,7 @@ class GUIMixin:
                             [-0.5, -0.5, -0.5, 0.5, 0.0, 0.5],
                             [0.0, 0.0, -0.5, 0.5, 0.5, 0.5]
                         ]
-                    elif b_id == 13: # Cactus
+                    elif b_id == 81: # Cactus
                         aabbs = [[-0.4375, -0.5, -0.4375, 0.4375, 0.5, 0.4375]]
                         
                     mesh = get_hand_cube_vertices(b_id, self.block_layers, aabbs=aabbs)

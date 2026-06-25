@@ -41,7 +41,7 @@ class TextureManager:
         
         # Overlays
         self.block_overlays = {
-            3: {"top": "grass_top_overlay.png", "side": "grass_side_overlay.png"}
+            2: {"top": "grass_top_overlay.png", "side": "grass_side_overlay.png"}
         }
         
     def load_textures(self):

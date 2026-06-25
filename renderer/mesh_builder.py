@@ -6,18 +6,53 @@ import numpy as np
 from numba import njit
 import math
 from world.mc_terrain import CHUNK_SIZE, CHUNK_HEIGHT
-from world.terrain import BLOCK_COLORS_ARRAY, BLOCK_OPAQUE_ARRAY, WATER, GLASS, AIR
+from world.terrain import BLOCK_COLORS_ARRAY, BLOCK_OPAQUE_ARRAY, BLOCK_TINT_ARRAY, WATER, GLASS, AIR
 from core.special_blocks import is_stairs, is_slab, get_stair_aabbs, get_slab_aabbs, is_door, get_door_aabbs
 
-BIOME_COLORS = np.zeros((30, 3), dtype=np.float32)
-BIOME_COLORS[1] = [0.55, 0.78, 0.35] # PLAINS
+BIOME_COLORS = np.zeros((256, 3), dtype=np.float32)
+# Default
+BIOME_COLORS[:] = [0.55, 0.78, 0.35]
+
+from world.mc_biomes import BIOME_DATA
+for i in range(256):
+    temp = BIOME_DATA[i, 2]
+    rain = BIOME_DATA[i, 3]
+    if temp == 0 and rain == 0:
+        continue # empty biome
+    
+    # Simple temperature-humidity mapping to RGB
+    temp = np.clip(temp, 0.0, 1.0)
+    rain = np.clip(rain, 0.0, 1.0)
+    
+    # Base green
+    r, g, b = 0.55, 0.78, 0.35
+    
+    # Warmer -> yellower/browner
+    if temp > 0.8:
+        r += (temp - 0.8) * 0.5
+        g -= (temp - 0.8) * 0.2
+        b -= (temp - 0.8) * 0.5
+    
+    # Colder -> bluer/whiter
+    if temp < 0.3:
+        r -= (0.3 - temp) * 0.5
+        b += (0.3 - temp) * 0.5
+        
+    # Dryer -> more yellow/brown
+    if rain < 0.3:
+        r += (0.3 - rain) * 0.4
+        g -= (0.3 - rain) * 0.1
+        b -= (0.3 - rain) * 0.4
+        
+    BIOME_COLORS[i] = [np.clip(r, 0.0, 1.0), np.clip(g, 0.0, 1.0), np.clip(b, 0.0, 1.0)]
+
+# Hardcode some specific overrides to match vanilla colors closely
 BIOME_COLORS[2] = [0.80, 0.80, 0.30] # DESERT
-BIOME_COLORS[3] = [0.45, 0.60, 0.40] # EXTREME_HILLS
-BIOME_COLORS[4] = [0.35, 0.65, 0.25] # FOREST
-BIOME_COLORS[5] = [0.30, 0.50, 0.40] # TAIGA
 BIOME_COLORS[6] = [0.40, 0.45, 0.20] # SWAMP
 BIOME_COLORS[12] = [0.60, 0.80, 0.60] # ICE_PLAINS
 BIOME_COLORS[21] = [0.30, 0.70, 0.15] # JUNGLE
+BIOME_COLORS[35] = [0.70, 0.70, 0.20] # SAVANNA
+BIOME_COLORS[36] = [0.70, 0.70, 0.20] # SAVANNA_PLATEAU
 
 @njit(nogil=True, cache=True)
 def _get_block_jit(blocks, n_left, n_right, n_front, n_back, x, y, z):
@@ -202,7 +237,7 @@ def _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z):
             nx = x + dx
             nz = z + dz
             biome_id = _get_biome_jit(biomes, b_left, b_right, b_front, b_back, nx, nz)
-            if 0 <= biome_id < 30:
+            if 0 <= biome_id < 256:
                 c = BIOME_COLORS[biome_id]
                 if c[0] == 0.0 and c[1] == 0.0 and c[2] == 0.0:
                     c = BIOME_COLORS[1]
@@ -521,7 +556,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                     x, y, z = pos[0], pos[1], pos[2]
                     
                     block_id = blocks[x, y, z]
-                    if block_id == AIR or block_id in (31, 37, 38, 175, 176, 177, 178): continue
+                    if block_id == AIR or block_id in (34, 37, 38, 175, 176, 177, 178): continue
                     
                     if is_stairs(block_id) or is_slab(block_id) or is_door(block_id): continue
                         
@@ -535,7 +570,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         if block_id == neighbor_id:
                             # Cull faces between same transparent blocks (Water-Water, Glass-Glass)
                             # BUT do not cull Leaves (12, 16, 17) so canopy looks dense inside
-                            if block_id == 12 or block_id == 16 or block_id == 17:
+                            if BLOCK_TINT_ARRAY[block_id] == 2:
                                 render_face = True
                             else:
                                 render_face = False
@@ -547,7 +582,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         ao00, ao10, ao11, ao01 = _get_ao_values(blocks, n_left, n_right, n_front, n_back, npos[0], npos[1], npos[2], u_dir, v_dir)
                         
                         biome_bits = 0
-                        if block_id == 3 or block_id == 12 or block_id == 16 or block_id == 17:
+                        if BLOCK_TINT_ARRAY[block_id] in (1, 2):
                             biome_bits = biomes[x, z] & 0xF
                             
                         mask_val = block_id | (ao00 << 8) | (ao10 << 12) | (ao11 << 16) | (ao01 << 20) | (face_light << 24) | (biome_bits << 28)
@@ -628,7 +663,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         ao_val = float(aos[idx])
                         u_val, v_val = uvs[idx]
                         
-                        if block_id == 4:
+                        if block_id == WATER:
                             vx, vy, vz = c[0] + wx, c[1], c[2] + wz
                             if abs(c[1] - round(c[1])) < 0.01:
                                 bx = int(math.floor(c[0] + 0.01)) if nx <= 0 else int(math.floor(c[0] - 0.01))
@@ -643,7 +678,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                             verts[v_idx] = vx
                             verts[v_idx+1] = vy
                             verts[v_idx+2] = vz
-                        elif block_id == 13:
+                        elif block_id == 81:
                             vx, vy, vz = c[0] + wx, c[1], c[2] + wz
                             if f == 2: vx -= 0.0625
                             elif f == 3: vx += 0.0625
@@ -661,10 +696,10 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         verts[v_idx+4] = float(ny)
                         verts[v_idx+5] = float(nz)
                         
-                        if block_id == 3 and (f == 0 or (f >= 2 and overlay_idx > 0.0)):
+                        if BLOCK_TINT_ARRAY[block_id] == 1 and (f == 0 or (f >= 2 and overlay_idx > 0.0)):
                             vr, vg, vb = _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, int(c[0]), int(c[2]))
                             verts[v_idx+6] = vr; verts[v_idx+7] = vg; verts[v_idx+8] = vb
-                        elif block_id == 12 or block_id == 16 or block_id == 17:
+                        elif BLOCK_TINT_ARRAY[block_id] == 2:
                             vr, vg, vb = _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, int(c[0]), int(c[2]))
                             verts[v_idx+6] = vr; verts[v_idx+7] = vg; verts[v_idx+8] = vb
                         else:
@@ -689,7 +724,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
         for y in range(CHUNK_HEIGHT):
             for z in range(CHUNK_SIZE):
                 b = blocks[x, y, z]
-                if b == 31 or b == 37 or b == 38 or b == 175 or b == 176:
+                if b == 34 or b == 37 or b == 38 or b == 175 or b == 176:
                     if t_idx + 15 * 24 > trans_verts.shape[0]:
                         print("WARNING: Chunk mesh vertex buffer exceeded!")
                         return opaque_verts[:o_idx], trans_verts[:t_idx]
@@ -701,7 +736,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                     face_light = _get_light_jit(lights, l_left, l_right, l_front, l_back, x, y, z)
                     layer_idx = float(block_layers[b, 0])
                     
-                    if b == 31 or b == 175 or b == 176:
+                    if b == 34 or b == 175 or b == 176:
                         vr, vg, vb = _get_smooth_biome_color(biomes, b_left, b_right, b_front, b_back, x, z)
                     else:
                         vr, vg, vb = 1.0, 1.0, 1.0
@@ -787,7 +822,7 @@ def _build_chunk_mesh_jit(blocks, data_in, lights_in,
                         
                         # Upper half uses face 0 (top texture), Lower half uses face 4 (side texture)
                         door_layer_idx = float(block_layers[block_id, 0]) if is_upper else float(block_layers[block_id, 4])
-                        door_top_layer_idx = float(block_layers[44, 0]) if block_id == 162 else float(block_layers[42, 0])
+                        door_top_layer_idx = float(block_layers[44, 0]) if block_id == 64 else float(block_layers[42, 0])
 
                         
                         # Get full composite data for shape calculation

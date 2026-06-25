@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import ctypes
+from world.terrain import BLOCK_TINT_ARRAY
 from pyglet.gl import *
 
 class ParticleRenderer:
@@ -89,7 +90,7 @@ class ParticleRenderer:
             if p.block_id == 3:
                 cr, cg, cb = 0.5, 0.8, 0.4
             # Leaves (block_id == 12)
-            elif p.block_id == 12:
+            elif BLOCK_TINT_ARRAY[p.block_id] == 2:
                 cr, cg, cb = 0.3, 0.6, 0.2
             
             v1_pos = (x - xa * r - xa2 * r, y - ya * r, z - za * r - za2 * r)

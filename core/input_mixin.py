@@ -175,7 +175,7 @@ class InputMixin:
                 if is_door(new_block_id):
                     if target_y >= 255: return
                     below_id = self.get_block(target_x, target_y - 1, target_z)
-                    if below_id == 0 or below_id == 4: return # Needs solid block below
+                    if below_id == 0 or below_id == WATER: return # Needs solid block below
                     upper_id = self.get_block(target_x, target_y + 1, target_z)
                     if upper_id != 0 and upper_id != 4: return # Needs air
                     
