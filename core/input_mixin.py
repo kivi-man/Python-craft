@@ -274,8 +274,9 @@ class InputMixin:
             return
 
         # Eger pencere odaktan cikip mouse kilidini kaybettiyse, ilk tiklamayla geri kilitle
-        if not getattr(self, '_exclusive_mouse', False):
+        if not getattr(self, 'mouse_locked', False):
             self.set_exclusive_mouse(True)
+            self.mouse_locked = True
             return
 
         if button in (mouse.LEFT, mouse.RIGHT):
@@ -306,7 +307,7 @@ class InputMixin:
         self.mouse_pos = (x, y)
         if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
         
-        if getattr(self, '_exclusive_mouse', False):
+        if getattr(self, 'mouse_locked', False):
             self.camera.yaw += dx * self.camera.sensitivity
             self.camera.pitch += dy * self.camera.sensitivity
             self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
@@ -315,7 +316,7 @@ class InputMixin:
         self.mouse_pos = (x, y)
         if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
         
-        if getattr(self, '_exclusive_mouse', False):
+        if getattr(self, 'mouse_locked', False):
             self.camera.yaw += dx * self.camera.sensitivity
             self.camera.pitch += dy * self.camera.sensitivity
             self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))

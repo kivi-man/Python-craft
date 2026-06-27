@@ -338,6 +338,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
                 print("[Console] Invalid tp coordinates. Use: tp x z y")
 
     def on_close(self):
+        self.is_closing = True
         print("[MAIN] Saving all chunks before exit. Please wait...")
         # Save all chunks
         for cx, cz in list(getattr(self, 'world_chunks', {}).keys()):
@@ -350,7 +351,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         print("[MAIN] Saving player data...")
         save_level_dat(
             [self.player.x, self.player.y, self.player.z],
-            self.player.rotation,
+            [self.camera.yaw, self.camera.pitch],
             self.inventory_blocks,
             self.inventory_counts
         )
@@ -358,6 +359,8 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         super().on_close()
 
     def update(self, dt):
+        if getattr(self, 'is_closing', False): return
+        
         # Update Sound System (Music and ambiance)
         if hasattr(self, 'sound_system'):
             self.sound_system.update_music(dt, dimension="OVERWORLD")
@@ -1636,11 +1639,13 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if getattr(self, 'inventory_open', False):
                 self.inventory_open = False
                 self.set_exclusive_mouse(True)
+                self.mouse_locked = True
                 self._drop_inventory_excess()
                 return pyglet.event.EVENT_HANDLED
             elif getattr(self, 'crafting_open', False):
                 self.crafting_open = False
                 self.set_exclusive_mouse(True)
+                self.mouse_locked = True
                 self._drop_inventory_excess()
                 return pyglet.event.EVENT_HANDLED
         
@@ -1651,11 +1656,13 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if getattr(self, 'crafting_open', False):
                 self.crafting_open = False
                 self.set_exclusive_mouse(True)
+                self.mouse_locked = True
                 self._drop_inventory_excess()
                 self._evaluate_crafting()
             else:
                 self.inventory_open = not getattr(self, 'inventory_open', False)
                 self.set_exclusive_mouse(not self.inventory_open)
+                self.mouse_locked = not self.inventory_open
                 if not self.inventory_open:
                     self._drop_inventory_excess()
                 self._evaluate_crafting()
@@ -1669,6 +1676,12 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         # super().on_key_release(symbol, modifiers)
         if hasattr(InputMixin, 'on_key_release'):
             InputMixin.on_key_release(self, symbol, modifiers)
+            
+    def on_deactivate(self):
+        self.set_exclusive_mouse(False)
+        self.mouse_locked = False
+        if hasattr(super(), 'on_deactivate'):
+            super().on_deactivate()
             
     def _update_title(self, dt):
         fps = self._frame_count / max(dt, 0.001)
