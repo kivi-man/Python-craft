@@ -1,4 +1,5 @@
 import json
+import os
 from world.mc_id_converter import MC_TO_INTERNAL, INTERNAL_NAMES_MAP
 
 class RecipeManager:
@@ -57,7 +58,7 @@ class RecipeManager:
             
             for r in recipe_list:
                 result_count = 1
-                pc_res_id = MC_TO_PC.get(mc_res_id, 0)
+                pc_res_id = int(MC_TO_INTERNAL[mc_res_id, 0]) if mc_res_id < 256 else mc_res_id
                 
                 if "result" in r:
                     res_obj = r["result"]
@@ -66,10 +67,10 @@ class RecipeManager:
                         if "id" in res_obj:
                             r_id = res_obj["id"]
                             r_meta = res_obj.get("metadata", 0)
-                            if (r_id, r_meta) in MC_TO_PC:
-                                pc_res_id = MC_TO_PC[(r_id, r_meta)]
+                            if r_id < 256:
+                                pc_res_id = int(MC_TO_INTERNAL[r_id, r_meta])
                             else:
-                                pc_res_id = MC_TO_PC.get(r_id, 0)
+                                pc_res_id = r_id
                             
                 # If the result block doesn't exist in Pythoncraft, skip this recipe!
                 if pc_res_id == 0:

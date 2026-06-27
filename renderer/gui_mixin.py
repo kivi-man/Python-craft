@@ -16,20 +16,21 @@ class GUIMixin:
         from PIL import Image
         import pyglet.image
         import pyglet.sprite
+        import numpy as np
         
         blocks_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'textures', 'blocks')
         
-        def load_pillow_img(name):
+        def load_numpy_img(name):
             p = os.path.join(blocks_dir, name)
             if os.path.exists(p):
-                return Image.open(p).convert("RGBA")
+                return np.array(Image.open(p).convert("RGBA"), dtype=np.float32)
             return None
             
-        top_img = load_pillow_img(top_name)
-        left_img = load_pillow_img(left_name)
-        right_img = load_pillow_img(right_name)
+        top_img = load_numpy_img(top_name)
+        left_img = load_numpy_img(left_name)
+        right_img = load_numpy_img(right_name)
         
-        if not top_img and not left_img and not right_img:
+        if top_img is None and left_img is None and right_img is None:
             # Fallback
             fallback = Image.new("RGBA", (64, 64), (255, 255, 255, 255))
             raw_data = fallback.tobytes()
@@ -38,46 +39,52 @@ class GUIMixin:
             sprite = pyglet.sprite.Sprite(img=tex)
             return sprite
             
-        if not top_img: top_img = left_img or right_img
-        if not left_img: left_img = top_img or right_img
-        if not right_img: right_img = top_img or left_img
+        if top_img is None: top_img = left_img if left_img is not None else right_img
+        if left_img is None: left_img = top_img if top_img is not None else right_img
+        if right_img is None: right_img = top_img if top_img is not None else left_img
         
-        dest = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-        dest_pix = dest.load()
-        top_pix = top_img.load()
-        left_pix = left_img.load()
-        right_pix = right_img.load()
+        dest = np.zeros((64, 64, 4), dtype=np.uint8)
         
-        for y in range(64):
-            for x in range(64):
-                # Top Face
-                if (x + 2*y >= 32) and (x - 2*y <= 32) and (x - 2*y >= -32) and (x + 2*y <= 96) and (y < 32):
-                    x_prime = (x - 32) / 32.0
-                    y_prime = (y - 16) / 16.0
-                    u = int(8 * (x_prime + y_prime + 1))
-                    v = int(8 * (-x_prime + y_prime + 1))
-                    u = max(0, min(15, u))
-                    v = max(0, min(15, v))
-                    dest_pix[x, y] = top_pix[u, v]
-                # Left Face (Shaded 0.6)
-                elif (x >= 0) and (x < 32) and (y >= 16 + x/2) and (y < 48 + x/2):
-                    u = int(x / 2)
-                    v = int((y - (16 + x/2.0)) / 2)
-                    u = max(0, min(15, u))
-                    v = max(0, min(15, v))
-                    r, g, b, a = left_pix[u, v]
-                    dest_pix[x, y] = (int(r * 0.6), int(g * 0.6), int(b * 0.6), a)
-                # Right Face (Shaded 0.8)
-                elif (x >= 32) and (x < 64) and (y >= 48 - x/2) and (y < 80 - x/2):
-                    u = int((x - 32) / 2)
-                    v = int((y - (48 - x/2.0)) / 2)
-                    u = max(0, min(15, u))
-                    v = max(0, min(15, v))
-                    r, g, b, a = right_pix[u, v]
-                    dest_pix[x, y] = (int(r * 0.8), int(g * 0.8), int(b * 0.8), a)
-                    
-        # Flip vertically for Pyglet coordinates compatibility
-        dest = dest.transpose(Image.FLIP_TOP_BOTTOM)
+        Y, X = np.mgrid[0:64, 0:64]
+        
+        # Masks
+        top_mask = (X + 2*Y >= 32) & (X - 2*Y <= 32) & (X - 2*Y >= -32) & (X + 2*Y <= 96) & (Y < 32)
+        left_mask = (X >= 0) & (X < 32) & (Y >= 16 + X/2.0) & (Y < 48 + X/2.0)
+        right_mask = (X >= 32) & (X < 64) & (Y >= 48 - X/2.0) & (Y < 80 - X/2.0)
+        
+        # Resolving overlaps like original `elif`
+        left_mask = left_mask & ~top_mask
+        right_mask = right_mask & ~top_mask & ~left_mask
+        
+        # Top Mapping
+        x_prime = (X[top_mask] - 32) / 32.0
+        y_prime = (Y[top_mask] - 16) / 16.0
+        u_top = np.clip(np.floor(8 * (x_prime + y_prime + 1)).astype(int), 0, 15)
+        v_top = np.clip(np.floor(8 * (-x_prime + y_prime + 1)).astype(int), 0, 15)
+        # Original PIL coordinates are transposed compared to numpy arrays
+        # In original: dest_pix[x, y] = top_pix[u, v]. PIL image data is usually accessed (x,y)
+        # In NumPy, image shape is (H, W, 4), so array[y, x] corresponds to PIL [x, y]
+        dest[Y[top_mask], X[top_mask]] = top_img[v_top, u_top]
+        
+        # Left Mapping
+        u_left = np.clip(np.floor(X[left_mask] / 2.0).astype(int), 0, 15)
+        v_left = np.clip(np.floor((Y[left_mask] - (16 + X[left_mask]/2.0)) / 2.0).astype(int), 0, 15)
+        left_vals = left_img[v_left, u_left].copy()
+        left_vals[:, 0:3] *= 0.6
+        dest[Y[left_mask], X[left_mask]] = left_vals.astype(np.uint8)
+        
+        # Right Mapping
+        u_right = np.clip(np.floor((X[right_mask] - 32) / 2.0).astype(int), 0, 15)
+        v_right = np.clip(np.floor((Y[right_mask] - (48 - X[right_mask]/2.0)) / 2.0).astype(int), 0, 15)
+        right_vals = right_img[v_right, u_right].copy()
+        right_vals[:, 0:3] *= 0.8
+        dest[Y[right_mask], X[right_mask]] = right_vals.astype(np.uint8)
+        
+        # Flip vertically for Pyglet coordinates compatibility (flipud)
+        dest = np.flipud(dest)
+        
+        # Make contiguous in memory to avoid pyglet issues
+        dest = np.ascontiguousarray(dest)
         raw_data = dest.tobytes()
         pyglet_img = pyglet.image.ImageData(64, 64, 'RGBA', raw_data)
         tex = pyglet_img.get_texture()

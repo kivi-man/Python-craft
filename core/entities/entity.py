@@ -152,13 +152,13 @@ class Entity:
         hw = self.width / 2.0
         bounds = AABB(self.x - hw, self.y, self.z - hw, self.x + hw, self.y + self.height, self.z + hw)
         
-        # Simple AABB collision checking
-        min_x = int(math.floor(bounds.min_x + min(0, dx))) - 1
-        max_x = int(math.floor(bounds.max_x + max(0, dx))) + 1
-        min_y = int(math.floor(bounds.min_y + min(0, dy))) - 1
-        max_y = int(math.floor(bounds.max_y + max(0, dy))) + 1
-        min_z = int(math.floor(bounds.min_z + min(0, dz))) - 1
-        max_z = int(math.floor(bounds.max_z + max(0, dz))) + 1
+        # Simple AABB collision checking - optimized bounds to avoid redundant lookups
+        min_x = int(math.floor(bounds.min_x + min(0, dx)))
+        max_x = int(math.floor(bounds.max_x + max(0, dx)))
+        min_y = int(math.floor(bounds.min_y + min(0, dy)))
+        max_y = int(math.floor(bounds.max_y + max(0, dy)))
+        min_z = int(math.floor(bounds.min_z + min(0, dz)))
+        max_z = int(math.floor(bounds.max_z + max(0, dz)))
 
         blocks_bboxes = []
         for bx in range(min_x, max_x + 1):

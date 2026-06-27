@@ -1,0 +1,91 @@
+#version 430 core
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+struct ChunkData {
+    vec4 min_bounds; // x, y, z, active (1.0 = active, 0.0 = inactive)
+    vec4 max_bounds; // x, y, z, pad
+    uint o_count;
+    uint o_first;
+    uint t_count;
+    uint t_first;
+};
+
+struct DrawArraysIndirectCommand {
+    uint count;
+    uint instanceCount;
+    uint first;
+    uint baseInstance;
+};
+
+layout(std430, binding = 0) readonly buffer ChunkDataBuffer {
+    ChunkData chunks[];
+};
+
+layout(std430, binding = 1) writeonly buffer OpaqueCommandBuffer {
+    DrawArraysIndirectCommand opaqueCmds[];
+};
+
+layout(std430, binding = 2) writeonly buffer TransCommandBuffer {
+    DrawArraysIndirectCommand transCmds[];
+};
+
+layout(std430, binding = 3) buffer CounterBuffer {
+    uint opaqueCount;
+    uint transCount;
+};
+
+uniform mat4 projView;
+uniform int totalChunks;
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= totalChunks) return;
+    
+    ChunkData c = chunks[idx];
+    if (c.min_bounds.w == 0.0) return; // not active
+    
+    // Frustum Culling
+    // Extract planes from projView
+    vec4 planes[6];
+    planes[0] = projView[3] + projView[0]; // Left
+    planes[1] = projView[3] - projView[0]; // Right
+    planes[2] = projView[3] + projView[1]; // Bottom
+    planes[3] = projView[3] - projView[1]; // Top
+    planes[4] = projView[3] + projView[2]; // Near
+    planes[5] = projView[3] - projView[2]; // Far
+    
+    bool visible = true;
+    for(int p = 0; p < 6; p++) {
+        vec4 plane = planes[p];
+        // Calculate the positive vertex of the AABB for this plane
+        vec3 pVertex = vec3(
+            (plane.x > 0.0) ? c.max_bounds.x : c.min_bounds.x,
+            (plane.y > 0.0) ? c.max_bounds.y : c.min_bounds.y,
+            (plane.z > 0.0) ? c.max_bounds.z : c.min_bounds.z
+        );
+        
+        float dist = plane.x * pVertex.x + plane.y * pVertex.y + plane.z * pVertex.z + plane.w;
+        if(dist < 0.0) {
+            visible = false;
+            break;
+        }
+    }
+    
+    if (visible) {
+        if (c.o_count > 0) {
+            uint cmdIdx = atomicAdd(opaqueCount, 1);
+            opaqueCmds[cmdIdx].count = c.o_count;
+            opaqueCmds[cmdIdx].instanceCount = 1;
+            opaqueCmds[cmdIdx].first = c.o_first;
+            opaqueCmds[cmdIdx].baseInstance = 0;
+        }
+        if (c.t_count > 0) {
+            uint cmdIdx = atomicAdd(transCount, 1);
+            transCmds[cmdIdx].count = c.t_count;
+            transCmds[cmdIdx].instanceCount = 1;
+            transCmds[cmdIdx].first = c.t_first;
+            transCmds[cmdIdx].baseInstance = 0;
+        }
+    }
+}

@@ -32,3 +32,6 @@ main.exe
 main.spec
 dist/
 build/
+
+# Customizations
+.agents/

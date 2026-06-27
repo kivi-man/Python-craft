@@ -31,14 +31,14 @@ class ChunkMixin:
         diameter = (self.RENDER_DISTANCE + 2) * 2
         self.TOTAL_CHUNKS = diameter * diameter
         
-        # Numba JIT Frustum Culling Arrayleri
-        self.chunk_bounds = np.zeros((self.TOTAL_CHUNKS, 6), dtype=np.float32)
-        self.chunk_active = np.zeros(self.TOTAL_CHUNKS, dtype=np.bool_)
-        self.visible_indices = np.zeros(self.TOTAL_CHUNKS, dtype=np.int32)
-        
-        self.chunk_indices = {}
-        self.chunk_vaos_array = [None] * self.TOTAL_CHUNKS # [ (vao, vbo, vertex_count) ]
-        self.free_chunk_indices = list(range(self.TOTAL_CHUNKS))
+        # Initialize Renderer based on GPU mode
+        if getattr(self, 'gpu_mode', False):
+            from renderer.modern_chunk_renderer import ModernChunkRenderer
+            self.chunk_renderer = ModernChunkRenderer(self.TOTAL_CHUNKS)
+        else:
+            from renderer.legacy_chunk_renderer import LegacyChunkRenderer
+            self.chunk_renderer = LegacyChunkRenderer(self.TOTAL_CHUNKS)
+
         
         # Multithreading Worker Pool
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
@@ -49,8 +49,9 @@ class ChunkMixin:
         self.chunk_load_queue_set = set()
         self.chunk_unload_queue = collections.deque()
         self.chunk_unload_queue_set = set()
-        self.chunk_mesh_queue = collections.deque() # cx, cz tuples
+        self.chunk_mesh_queue = collections.deque()
         self.chunk_mesh_queue_set = set()
+        self.pending_vram_chunks = set() # Chunks that failed VRAM allocation
         self.modified_chunks = set()
         
         self.empty_chunk = np.zeros((0,0,0), dtype=np.uint8)
@@ -72,26 +73,7 @@ class ChunkMixin:
             
 
     def _unload_chunk(self, cx, cz):
-        if (cx, cz) not in self.chunk_indices: return
-        
-        chunk_idx = self.chunk_indices.pop((cx, cz))
-        self.free_chunk_indices.append(chunk_idx)
-        self.chunk_active[chunk_idx] = False
-        
-        # Free VRAM
-        old_data = self.chunk_vaos_array[chunk_idx]
-        if old_data is not None:
-            o_vao, o_vbo, o_count, t_vao, t_vbo, t_count = old_data
-            if o_vao.value != 0:
-                glDeleteVertexArrays(1, ctypes.byref(o_vao))
-            if o_vbo.value != 0:
-                glDeleteBuffers(1, ctypes.byref(o_vbo))
-            if t_vao.value != 0:
-                glDeleteVertexArrays(1, ctypes.byref(t_vao))
-            if t_vbo.value != 0:
-                glDeleteBuffers(1, ctypes.byref(t_vbo))
-            self.total_verts -= (o_count + t_count)
-            self.chunk_vaos_array[chunk_idx] = None
+        self.chunk_renderer.unload_chunk(cx, cz)
             
         if (cx, cz) in self.world_chunks:
             if (cx, cz) in self.modified_chunks:
@@ -140,7 +122,7 @@ class ChunkMixin:
         
         # 1. Queue old chunks for unloading
         unload_dist = self.RENDER_DISTANCE + 2
-        for (cx, cz) in list(self.chunk_indices.keys()):
+        for (cx, cz) in list(self.world_chunks.keys()):
             if abs(cx - px) > unload_dist or abs(cz - pz) > unload_dist:
                 if (cx, cz) not in self.chunk_unload_queue_set:
                     self.chunk_unload_queue.append((cx, cz))
@@ -159,7 +141,7 @@ class ChunkMixin:
         new_queue = []
         for cx in range(px - self.RENDER_DISTANCE, px + self.RENDER_DISTANCE + 1):
             for cz in range(pz - self.RENDER_DISTANCE, pz + self.RENDER_DISTANCE + 1):
-                if (cx, cz) not in self.world_chunks and (cx, cz) not in self.chunk_indices:
+                if (cx, cz) not in self.world_chunks:
                     # check if it's already queued or generating
                     if (cx, cz) not in self.chunk_load_queue_set and (cx, cz) not in self.future_to_chunk.values():
                         dist_sq = (cx - px)**2 + (cz - pz)**2
@@ -192,6 +174,13 @@ class ChunkMixin:
                 self._unload_chunk(cx, cz)
                 unloaded += 1
         t_unload_end = time.perf_counter()
+        
+        # If we unloaded chunks, VRAM is freed. Let's retry 1 pending chunk if any!
+        if unloaded > 0 and self.pending_vram_chunks:
+            retry_cx, retry_cz = self.pending_vram_chunks.pop()
+            if (retry_cx, retry_cz) in self.world_chunks and (retry_cx, retry_cz) not in self.chunk_mesh_queue_set:
+                self.chunk_mesh_queue.append((retry_cx, retry_cz))
+                self.chunk_mesh_queue_set.add((retry_cx, retry_cz))
 
         # 1. Check pending generation tasks
         t_gen_start = time.perf_counter()
@@ -271,16 +260,8 @@ class ChunkMixin:
                     except Exception as e:
                         self.log(f"[ERROR] Failed to load entities for {cx}, {cz}: {e}")
             
-            if not self.free_chunk_indices:
-                self.log(f"[WARNING] No free chunk indices for ({cx}, {cz})!")
-                continue
-                
-            chunk_idx = self.free_chunk_indices.pop()
-            self.chunk_indices[(cx, cz)] = chunk_idx
-            self.chunk_bounds[chunk_idx] = [
-                cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE,
-                (cx + 1) * CHUNK_SIZE, CHUNK_HEIGHT, (cz + 1) * CHUNK_SIZE
-            ]
+            self.chunk_renderer.add_chunk_bounds(cx, cz)
+
             
             if (cx, cz) not in self.chunk_mesh_queue_set:
                 self.chunk_mesh_queue.append((cx, cz))
@@ -351,77 +332,14 @@ class ChunkMixin:
 
     def _apply_chunk_mesh(self, cx, cz, meshes):
         t_start = time.perf_counter()
-        if (cx, cz) not in self.chunk_indices:
-            return
-            
-        opaque_mesh, trans_mesh = meshes
-        o_count = len(opaque_mesh) // 15
-        t_count = len(trans_mesh) // 15
-        
-        chunk_idx = self.chunk_indices[(cx, cz)]
-        old_data = self.chunk_vaos_array[chunk_idx]
-        
-        o_vao, o_vbo, old_o_count, t_vao, t_vbo, old_t_count = 0, 0, 0, 0, 0, 0
-        
-        def create_vao(mesh, count):
-            if count == 0: return GLuint(0), GLuint(0)
-            vao = GLuint(0)
-            glGenVertexArrays(1, ctypes.byref(vao))
-            glBindVertexArray(vao)
-            vbo = GLuint(0)
-            glGenBuffers(1, ctypes.byref(vbo))
-            glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(GL_ARRAY_BUFFER, mesh.nbytes, mesh.ctypes.data, GL_STATIC_DRAW)
-            
-            stride = 15 * 4
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
-            glEnableVertexAttribArray(0)
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
-            glEnableVertexAttribArray(1)
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(24))
-            glEnableVertexAttribArray(2)
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(36))
-            glEnableVertexAttribArray(3)
-            glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(48))
-            glEnableVertexAttribArray(4)
-            glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(52))
-            glEnableVertexAttribArray(5)
-            glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(56))
-            glEnableVertexAttribArray(6)
-            
-            glBindBuffer(GL_ARRAY_BUFFER, 0)
-            glBindVertexArray(0)
-            return vao, vbo
-
-        if old_data is not None:
-            o_vao, o_vbo, old_o_count, t_vao, t_vbo, old_t_count = old_data
-            self.total_verts -= (old_o_count + old_t_count)
-            
-            if o_count > 0:
-                if o_vbo.value != 0:
-                    glBindBuffer(GL_ARRAY_BUFFER, o_vbo)
-                    glBufferData(GL_ARRAY_BUFFER, opaque_mesh.nbytes, opaque_mesh.ctypes.data, GL_STATIC_DRAW)
-                    glBindBuffer(GL_ARRAY_BUFFER, 0)
-                else:
-                    o_vao, o_vbo = create_vao(opaque_mesh, o_count)
-            if t_count > 0:
-                if t_vbo.value != 0:
-                    glBindBuffer(GL_ARRAY_BUFFER, t_vbo)
-                    glBufferData(GL_ARRAY_BUFFER, trans_mesh.nbytes, trans_mesh.ctypes.data, GL_STATIC_DRAW)
-                    glBindBuffer(GL_ARRAY_BUFFER, 0)
-                else:
-                    t_vao, t_vbo = create_vao(trans_mesh, t_count)
-                
-            self.chunk_vaos_array[chunk_idx] = (o_vao, o_vbo, o_count, t_vao, t_vbo, t_count)
-            self.total_verts += (o_count + t_count)
-            self.chunk_active[chunk_idx] = (o_count > 0 or t_count > 0)
+        if getattr(self, 'gpu_mode', False):
+            success = self.chunk_renderer.add_chunk_mesh(cx, cz, meshes)
+            if not success:
+                self.pending_vram_chunks.add((cx, cz))
+            else:
+                self.pending_vram_chunks.discard((cx, cz))
         else:
-            o_vao, o_vbo = create_vao(opaque_mesh, o_count)
-            t_vao, t_vbo = create_vao(trans_mesh, t_count)
-            
-            self.chunk_vaos_array[chunk_idx] = (o_vao, o_vbo, o_count, t_vao, t_vbo, t_count)
-            self.total_verts += (o_count + t_count)
-            self.chunk_active[chunk_idx] = (o_count > 0 or t_count > 0)
+            self.chunk_renderer.add_chunk_mesh(cx, cz, meshes)
             
         dur = (time.perf_counter() - t_start) * 1000.0
         if dur > 1.0:

@@ -129,77 +129,22 @@ class ModelPart:
         
         glBindVertexArray(0)
 
-    def get_transformed_vertices(self, parent_matrix, scale):
-        """CPU tarafında dönüştürülmüş vertex verilerini döndürür (batch rendering için).
-        
-        Pozisyonlar (x,y,z) final_matrix ile çarpılır (w=1),
-        normaller (nx,ny,nz) final_matrix ile çarpılır (w=0, çeviri yok).
-        Diğer attributelar (renk, uv, layer, ao, light, overlay) olduğu gibi kalır.
-        """
-        if self._raw_vertices is None:
-            return None
-        
-        local_matrix = self.get_matrix(scale)
-        final_matrix = parent_matrix @ local_matrix
-        # Geriye dönük uyumluluk için last_final_matrix'i güncelle
-        self.last_final_matrix = final_matrix
-        
-        result = self._raw_vertices.copy()
-        n = result.shape[0]
-        
-        # Pozisyonları dönüştür: (x, y, z) -> final_matrix @ (x, y, z, 1)
-        positions = result[:, 0:3]  # Nx3
-        ones = np.ones((n, 1), dtype=np.float32)
-        pos_h = np.hstack((positions, ones))  # Nx4
-        transformed_pos = (final_matrix @ pos_h.T).T  # Nx4
-        result[:, 0:3] = transformed_pos[:, 0:3]
-        
-        # Normalleri dönüştür: (nx, ny, nz) -> final_matrix @ (nx, ny, nz, 0)
-        normals = result[:, 3:6]  # Nx3
-        zeros = np.zeros((n, 1), dtype=np.float32)
-        norm_h = np.hstack((normals, zeros))  # Nx4
-        transformed_norm = (final_matrix @ norm_h.T).T  # Nx4
-        result[:, 3:6] = transformed_norm[:, 0:3]
-        
-        return result
+    # Duplicate get_transformed_vertices removed.
 
     def get_matrix(self, scale):
         tx, ty, tz = self.x * scale, self.y * scale, self.z * scale
-        t_mat = np.array([
-            [1, 0, 0, tx],
-            [0, 1, 0, ty],
-            [0, 0, 1, tz],
-            [0, 0, 0, 1]
+        
+        cx, sx = math.cos(self.xRot), math.sin(self.xRot)
+        cy, sy = math.cos(self.yRot), math.sin(self.yRot)
+        cz, sz = math.cos(self.zRot), math.sin(self.zRot)
+        
+        # Analytic result of T @ Ry @ Rx @ Rz
+        return np.array([
+            [cy*cz + sy*sx*sz, -cy*sz + sy*sx*cz, sy*cx, tx],
+            [cx*sz, cx*cz, -sx, ty],
+            [-sy*cz + cy*sx*sz, sy*sz + cy*sx*cz, cy*cx, tz],
+            [0.0, 0.0, 0.0, 1.0]
         ], dtype=np.float32)
-
-        rx_rad = self.xRot
-        cx, sx = math.cos(rx_rad), math.sin(rx_rad)
-        rx_mat = np.array([
-            [1, 0, 0, 0],
-            [0, cx, -sx, 0],
-            [0, sx, cx, 0],
-            [0, 0, 0, 1]
-        ], dtype=np.float32)
-
-        ry_rad = self.yRot
-        cy, sy = math.cos(ry_rad), math.sin(ry_rad)
-        ry_mat = np.array([
-            [cy, 0, sy, 0],
-            [0, 1, 0, 0],
-            [-sy, 0, cy, 0],
-            [0, 0, 0, 1]
-        ], dtype=np.float32)
-
-        rz_rad = self.zRot
-        cz, sz = math.cos(rz_rad), math.sin(rz_rad)
-        rz_mat = np.array([
-            [cz, -sz, 0, 0],
-            [sz, cz, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ], dtype=np.float32)
-
-        return t_mat @ ry_mat @ rx_mat @ rz_mat
 
     def render(self, parent_matrix, u_view_loc, scale):
         if not self.vao: return
@@ -224,19 +169,21 @@ class ModelPart:
         final_matrix = parent_matrix @ local_matrix
         self.last_final_matrix = final_matrix
         
-        # We need to transform the positions (first 3 floats) and normals (next 3 floats).
-        pts = np.ones((len(self.verts_array), 4), dtype=np.float32)
-        pts[:, :3] = self.verts_array[:, :3]
+        n = len(self.verts_array)
         
-        norms = np.zeros((len(self.verts_array), 4), dtype=np.float32)
-        norms[:, :3] = self.verts_array[:, 3:6]
+        # Optimize by working directly with (N,3) instead of creating (N,4) intermediate ones and hstacks
+        # (x', y', z') = (x, y, z) @ M[:3,:3].T + M[:3, 3]
+        pts = self.verts_array[:, :3]
+        t_pts = pts @ final_matrix[:3, :3].T + final_matrix[:3, 3]
         
-        # P @ M.T transforms row vectors
-        t_pts = pts @ final_matrix.T
-        t_norms = norms @ final_matrix.T
+        # Normal vectors transform only by the 3x3 rotation/scale part
+        norms = self.verts_array[:, 3:6]
+        t_norms = norms @ final_matrix[:3, :3].T
         
+        # We don't need a full copy if we just create the output buffer directly
+        # or we just copy and replace
         out_verts = self.verts_array.copy()
-        out_verts[:, :3] = t_pts[:, :3]
-        out_verts[:, 3:6] = t_norms[:, :3]
+        out_verts[:, :3] = t_pts
+        out_verts[:, 3:6] = t_norms
         
         return out_verts.flatten()

@@ -67,19 +67,31 @@ from core.world_db import save_chunk
 from core.sound_system import SoundSystem
 
 
+def check_gl_version():
+    """Checks for GL 4.3 support."""
+    version_str = pyglet.gl.gl_info.get_version()
+    try:
+        major, minor = map(int, version_str.split('.')[:2])
+        if major < 4 or (major == 4 and minor < 3):
+            print(f"Warning: GL version {version_str} is below 4.3. Some features may not work.")
+    except:
+        pass
+
 from renderer.gui_mixin import GUIMixin
 from world.chunk_mixin import ChunkMixin
 from core.input_mixin import InputMixin
 from core.entity_mixin import EntityMixin
 
 class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, EntityMixin):
-    def __init__(self, render_distance=4, simulation_distance=4, fast_leaves=False, debug_mode=False, flat_mode=False):
+    def __init__(self, render_distance=4, simulation_distance=4, fast_leaves=False, debug_mode=False, flat_mode=False, console_mode=False, config=None, gpu_mode=False):
         super().__init__(width=1280, height=720, caption="PythonCraft Engine",
-                         resizable=True, vsync=False)
+                         resizable=True, vsync=False, config=config)
+        self.gpu_mode = gpu_mode
         self.render_distance = render_distance
         self.simulation_distance = simulation_distance
         self.debug_mode = debug_mode
         self.flat_mode = flat_mode
+        self.console_mode = console_mode
         
         self.set_exclusive_mouse(True)
         self.keys = key.KeyStateHandler()
@@ -248,6 +260,21 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self._init_gui()
         self.bob_time = 0.0
         self.swing_time = 0.0
+        
+        if self.console_mode:
+            import socket
+            import subprocess
+            self.console_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.console_sock.bind(('127.0.0.1', 25565))
+            self.console_sock.setblocking(False)
+            pyglet.clock.schedule_interval(self.poll_console, 0.1)
+            try:
+                # Open a new terminal window on Windows
+                subprocess.Popen([sys.executable, "console_client.py"], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                print("[Console] Server started on port 25565, console window spawned.")
+            except Exception as e:
+                print(f"[Console] Failed to launch console window: {e}")
+                
         self._init_hand_blocks()
         self._init_entities()
         
@@ -269,6 +296,34 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         print("   ENGINE READY. ENTERING MAIN GAME LOOP.    ")
         print("   WASD: Movement | Mouse: Look | ESC: Exit ")
         print("=============================================")
+
+    def poll_console(self, dt):
+        try:
+            while True:
+                data, addr = self.console_sock.recvfrom(1024)
+                cmd = data.decode('utf-8').strip()
+                self._handle_console_command(cmd)
+        except BlockingIOError:
+            pass
+        except Exception as e:
+            print(f"[Console] Error receiving: {e}")
+
+    def _handle_console_command(self, cmd):
+        parts = cmd.split()
+        if not parts:
+            return
+        if parts[0].lower() == 'tp' and len(parts) >= 4:
+            try:
+                x = float(parts[1])
+                z = float(parts[2])
+                y = float(parts[3])
+                self.player.x = x
+                self.player.y = y
+                self.player.z = z
+                self.camera.position = (x, y, z)
+                print(f"[Console] Teleported to X:{x}, Z:{z}, Y:{y}")
+            except ValueError:
+                print("[Console] Invalid tp coordinates. Use: tp x z y")
 
     def on_close(self):
         print("[MAIN] Saving all chunks before exit. Please wait...")
@@ -943,9 +998,11 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         proj_view = (v @ p).flatten()
         
         # Light-speed Frustum Culling using Numba
-        visible_count = get_visible_chunk_indices(proj_view, self.chunk_bounds, self.chunk_active, self.visible_indices)
-        self.rendered_chunks = visible_count
+        self.chunk_renderer.update_frustum(proj_view)
         t_cull_end = time.perf_counter()
+        
+        # Re-bind the main rendering program (since compute shader might have changed it)
+        glUseProgram(self.program)
         
         # Trigger draw calls only for visible chunks
         glActiveTexture(GL_TEXTURE0)
@@ -953,12 +1010,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         
         t_opaque_start = time.perf_counter()
         # OPAQUE PASS
-        for i in range(visible_count):
-            chunk_idx = self.visible_indices[i]
-            o_vao, _, o_count, _, _, _ = self.chunk_vaos_array[chunk_idx]
-            if o_count > 0:
-                glBindVertexArray(o_vao)
-                glDrawArrays(GL_TRIANGLES, 0, o_count)
+        self.chunk_renderer.render_opaque()
         t_opaque_end = time.perf_counter()
         
         # ENTITY PASS
@@ -984,12 +1036,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         
-        for i in range(visible_count):
-            chunk_idx = self.visible_indices[i]
-            _, _, _, t_vao, _, t_count = self.chunk_vaos_array[chunk_idx]
-            if t_count > 0:
-                glBindVertexArray(t_vao)
-                glDrawArrays(GL_TRIANGLES, 0, t_count)
+        self.chunk_renderer.render_transparent()
                 
         glDisable(GL_BLEND)
         glBindVertexArray(0)
@@ -1057,11 +1104,9 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             
             glUniformMatrix4fv(self.u_line_model, 1, GL_FALSE, (GLfloat * 16)(*model_mat.flatten()))
             
-            glLineWidth(2.0)
             glBindVertexArray(self.line_vao)
             glDrawArrays(GL_LINES, 0, 24)
             glBindVertexArray(0)
-            glLineWidth(1.0)
             glUseProgram(0)
             
             # Break animation overlay
@@ -1622,9 +1667,9 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.set_caption(
             f"Pythoncraft | FPS: {fps:.0f} | "
             f"Pos: ({cam.x:.0f}, {cam.y:.0f}, {cam.z:.0f}) | "
-            f"Chunks: {self.rendered_chunks}/{len(self.world_chunks)} (Q:{queued}) | "
+            f"Chunks: {self.chunk_renderer.visible_count}/{len(self.world_chunks)} (Q:{queued}) | "
             f"Sim: {getattr(self, 'simulation_distance', 4)} | "
-            f"Verts: {self.total_verts:,}"
+            f"Verts: {self.chunk_renderer.total_verts:,}"
         )
 
 def main():
@@ -1638,6 +1683,7 @@ def main():
     fast_leaves = False
     debug_mode = False
     flat_mode = False
+    console_mode = False
     
     if len(sys.argv) > 1:
         args = sys.argv[1:]
@@ -1660,6 +1706,9 @@ def main():
                 except ValueError:
                     pass
                 i += 1
+            elif arg == "-console":
+                console_mode = True
+                print("Console mode enabled.")
             else:
                 try:
                     distance = int(arg)
@@ -1672,8 +1721,24 @@ def main():
         BLOCK_OPAQUE_ARRAY[12] = True
         BLOCK_OPAQUE_ARRAY[16] = True
         BLOCK_OPAQUE_ARRAY[17] = True
-    
-    engine = PythonCraftEngine(render_distance=distance, simulation_distance=sim_distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode)
+        
+    gpu_mode = False
+    config = None
+    try:
+        pyglet.options['search_local_libs'] = True
+        config_43 = pyglet.gl.Config(major_version=4, minor_version=3, forward_compatible=True, depth_size=24, double_buffer=True)
+        test_win = pyglet.window.Window(width=1, height=1, config=config_43, visible=False)
+        test_win.close()
+        gpu_mode = True
+        config = config_43
+        print("GPU_MODE [AKTIF]: OpenGL 4.3 destekleniyor. Compute Shaders kullanilacak.")
+    except Exception as e:
+        gpu_mode = False
+        config = pyglet.gl.Config(depth_size=24, double_buffer=True)
+        print(f"GPU_MODE [PASIF]: OpenGL 4.3 desteklenmiyor. Legacy Mode kullanilacak. ({e})")
+        
+    # TODO: Pass gpu_mode to engine if needed or let engine access global state
+    engine = PythonCraftEngine(render_distance=distance, simulation_distance=sim_distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode, console_mode=console_mode, config=config, gpu_mode=gpu_mode)
     pyglet.app.run()
 
 if __name__ == '__main__':

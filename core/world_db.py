@@ -49,13 +49,31 @@ def init_db():
 
 init_db()
 
-def _get_region_file(cx, cz):
-    rx = cx >> 5
-    rz = cz >> 5
+_REGION_CACHE = {}
+
+def _get_region_file_cached(rx, rz):
+    key = (rx, rz)
+    if key in _REGION_CACHE:
+        # Move to end (LRU behavior in python 3.7+ dict)
+        val = _REGION_CACHE.pop(key)
+        _REGION_CACHE[key] = val
+        return val
+        
     filename = os.path.join(REGION_DIR, f"r.{rx}.{rz}.mca")
     if not os.path.exists(filename):
         open(filename, 'wb').close()
-    return region.RegionFile(filename)
+        
+    if len(_REGION_CACHE) >= 32:
+        oldest_k = next(iter(_REGION_CACHE))
+        try:
+            _REGION_CACHE[oldest_k].close()
+        except:
+            pass
+        del _REGION_CACHE[oldest_k]
+        
+    rfile = region.RegionFile(filename)
+    _REGION_CACHE[key] = rfile
+    return rfile
 
 def pack_nibble_array(arr):
     # arr is a 1D numpy array of shape (N,) containing values 0-15
@@ -145,11 +163,13 @@ def save_chunk(cx, cz, blocks, data, lights):
     
     try:
         with DB_LOCK:
-            rfile = _get_region_file(cx, cz)
-            rx = cx % 32
-            rz = cz % 32
-            rfile.write_chunk(rx, rz, root)
-            rfile.close()
+            rx = cx >> 5
+            rz = cz >> 5
+            rfile = _get_region_file_cached(rx, rz)
+            rx_chunk = cx % 32
+            rz_chunk = cz % 32
+            rfile.write_chunk(rx_chunk, rz_chunk, root)
+            # Not closing rfile because it's cached
     except Exception as e:
         print(f"Error saving chunk {cx}, {cz}: {e}")
 
@@ -163,20 +183,17 @@ def load_chunk(cx, cz):
             return None
             
         with DB_LOCK:
-            rfile = region.RegionFile(filename)
+            rfile = _get_region_file_cached(rx, rz)
             rx_chunk = cx % 32
             rz_chunk = cz % 32
             
             try:
                 chunk_nbt = rfile.get_chunk(rx_chunk, rz_chunk)
             except region.InconceivedChunk:
-                rfile.close()
                 return None
             except Exception:
-                rfile.close()
                 return None
-                
-            rfile.close()
+
         
         if not chunk_nbt or "Level" not in chunk_nbt:
             return None
