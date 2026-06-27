@@ -199,7 +199,7 @@ If you attempt to load a world so massive that it exceeds your hardware's VRAM l
 |:---:|:---:|
 | ![Crafting](./crafting.gif) | ![Pig Wandering](./pig.gif) |
 | **smooth biome transition** | **Endless Voxel Biomes** |
-| <img src="https://github.com/user-attachments/assets/310551e9-c8ba-45ef-84f9-56abeda0b851" width="600" alt="Pythoncraft Logo" /> | *<img width="2559" height="1132" alt="Ekran görüntüsü 2026-06-21 152803" src="https://github.com/user-attachments/assets/5f7a7799-b921-4514-a500-f3c529c036e4" />* |
+| <img src="https://github.com/user-attachments/assets/310551e9-c8ba-45ef-84f9-56abeda0b851" width="600" alt="Pythoncraft Logo" /> | *<img width="1267" height="741" alt="Ekran görüntüsü 2026-06-25 032349" src="https://github.com/user-attachments/assets/2d7aa69c-5a22-4f76-8f49-7b6b5a17b0cf" />* |
 
 ---
 
