@@ -273,6 +273,11 @@ class InputMixin:
                 self._handle_inventory_click(x, y, button)
             return
 
+        # Eger pencere odaktan cikip mouse kilidini kaybettiyse, ilk tiklamayla geri kilitle
+        if not getattr(self, '_exclusive_mouse', False):
+            self.set_exclusive_mouse(True)
+            return
+
         if button in (mouse.LEFT, mouse.RIGHT):
             self.mouse_held[button] = True
             self.swing_time = 0.01 # Swing animasyonunu tetikle
@@ -300,19 +305,20 @@ class InputMixin:
     def on_mouse_motion(self, x, y, dx, dy):
         self.mouse_pos = (x, y)
         if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
-
-        self.camera.yaw += dx * self.camera.sensitivity
-        self.camera.pitch += dy * self.camera.sensitivity
-        self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
         
+        if getattr(self, '_exclusive_mouse', False):
+            self.camera.yaw += dx * self.camera.sensitivity
+            self.camera.pitch += dy * self.camera.sensitivity
+            self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.mouse_pos = (x, y)
         if getattr(self, 'inventory_open', False) or getattr(self, 'crafting_open', False): return
-
-        self.camera.yaw += dx * self.camera.sensitivity
-        self.camera.pitch += dy * self.camera.sensitivity
-        self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
+        
+        if getattr(self, '_exclusive_mouse', False):
+            self.camera.yaw += dx * self.camera.sensitivity
+            self.camera.pitch += dy * self.camera.sensitivity
+            self.camera.pitch = max(-89.0, min(89.0, self.camera.pitch))
     
 
     def on_key_press(self, symbol, modifiers):
