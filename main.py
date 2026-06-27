@@ -223,6 +223,7 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         self.inventory_counts = [0] * 55
         
         player_data = load_level_dat()
+        self.void_mode = False
         if player_data:
             if "pos" in player_data:
                 px, py, pz = player_data["pos"]
@@ -233,6 +234,17 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
             if "inventory_blocks" in player_data:
                 self.inventory_blocks = player_data["inventory_blocks"]
                 self.inventory_counts = player_data["inventory_counts"]
+            
+            # Autodetect if this map is a flat/void map to prevent procedural generation over it
+            gen_name = player_data.get("generatorName", "").lower()
+            gen_opts = player_data.get("generatorOptions", "")
+            if gen_name == "flat" or gen_name == "void":
+                # If there are no options, or it specifies air, treat it as a void map
+                # This prevents generating huge mountains around a parkour map
+                if "minecraft:air" in str(gen_opts) or not gen_opts:
+                    self.void_mode = True
+                else:
+                    self.flat_mode = True
 
         self.selected_slot = 0
         self.selected_block_id = self.inventory_blocks[self.selected_slot]

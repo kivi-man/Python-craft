@@ -226,9 +226,9 @@ MC_1_7_ITEMS = {
     "PORKCHOP_RAW": 319,
 }
 
-INTERNAL_TO_MC_ID = np.zeros(256, dtype=np.uint8)
-INTERNAL_TO_MC_META = np.zeros(256, dtype=np.uint8)
-MC_TO_INTERNAL = np.zeros((256, 16), dtype=np.uint8)
+INTERNAL_TO_MC_ID = np.zeros(4096, dtype=np.uint16)
+INTERNAL_TO_MC_META = np.zeros(4096, dtype=np.uint8)
+MC_TO_INTERNAL = np.zeros((4096, 16), dtype=np.uint16)
 
 def get_block_registry():
     registry = {}
@@ -266,7 +266,7 @@ def get_block_registry():
             MC_TO_INTERNAL[mc_id, mc_meta] = internal_id
             
     # Fallback missing metas to meta 0
-    for i in range(256):
+    for i in range(4096):
         if MC_TO_INTERNAL[i, 0] != 0:
             for m in range(1, 16):
                 if MC_TO_INTERNAL[i, m] == 0:
@@ -275,15 +275,18 @@ def get_block_registry():
     # Register items
     for name, mc_id in MC_1_7_ITEMS.items():
         registry[name] = mc_id
+        INTERNAL_TO_MC_ID[mc_id] = mc_id
+        INTERNAL_TO_MC_META[mc_id] = 0
+        MC_TO_INTERNAL[mc_id, 0] = mc_id
         
     return registry
 
 def get_tint_array(registry):
-    arr = np.zeros(256, dtype=np.uint8)
+    arr = np.zeros(4096, dtype=np.uint8)
     for name, internal_id in registry.items():
         if name in MC_1_7_BLOCKS:
             _, _, tint_type = MC_1_7_BLOCKS[name]
-            if internal_id < 256:
+            if internal_id < 4096:
                 arr[internal_id] = tint_type
     return arr
 

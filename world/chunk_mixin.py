@@ -8,7 +8,7 @@ import time
 import json
 from pyglet.gl import *
 from world.mc_terrain import load_or_generate_chunk, CHUNK_SIZE, CHUNK_HEIGHT, recalculate_chunk_light
-from world.mc_flat_terrain import load_or_generate_chunk as load_flat_chunk
+from world.mc_flat_terrain import load_or_generate_chunk as load_flat_chunk, load_or_generate_void_chunk as load_void_chunk
 from core.world_db import save_chunk, save_chunk_entities, load_chunk_entities
 from renderer.mesh_builder import build_chunk_mesh
 from world.terrain import CACTUS, SAND, LEAVES, BIRCH_LEAVES, SPRUCE_LEAVES, AIR, SNOW
@@ -302,7 +302,9 @@ class ChunkMixin:
         while self.chunk_load_queue and len(self.future_to_chunk) < 2 and submitted_gen < 1:
             cx, cz = self.chunk_load_queue.popleft()
             self.chunk_load_queue_set.discard((cx, cz)) # Remove from set as well
-            if hasattr(self, 'flat_mode') and self.flat_mode:
+            if hasattr(self, 'void_mode') and self.void_mode:
+                future = self.executor.submit(load_void_chunk, cx, cz)
+            elif hasattr(self, 'flat_mode') and self.flat_mode:
                 future = self.executor.submit(load_flat_chunk, cx, cz)
             else:
                 future = self.executor.submit(load_or_generate_chunk, cx, cz)

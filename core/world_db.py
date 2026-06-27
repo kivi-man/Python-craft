@@ -141,7 +141,7 @@ def save_chunk(cx, cz, blocks, data, lights):
         sec_tag.tags.append(nbt.TAG_Byte(name="Y", value=y_sec))
         
         blocks_tag = nbt.TAG_Byte_Array(name="Blocks")
-        blocks_tag.value = bytearray(sec_blocks_mc.tobytes())
+        blocks_tag.value = bytearray(sec_blocks_mc.astype(np.uint8).tobytes())
         sec_tag.tags.append(blocks_tag)
         
         data_tag = nbt.TAG_Byte_Array(name="Data")
@@ -352,11 +352,20 @@ def load_level_dat():
                         mc_meta = item["Damage"].value if "Damage" in item else 0
                         count = item["Count"].value
                         
-                        internal_id = MC_TO_INTERNAL[mc_id, mc_meta]
-                        inv_blocks[slot] = int(internal_id)
-                        inv_counts[slot] = int(count)
+                        if mc_id >= 0 and mc_id < 4096:
+                            internal_id = MC_TO_INTERNAL[mc_id, mc_meta]
+                            inv_blocks[slot] = int(internal_id)
+                            inv_counts[slot] = int(count)
+                        else:
+                            inv_blocks[slot] = 0
+                            inv_counts[slot] = 0
                 result["inventory_blocks"] = inv_blocks
                 result["inventory_counts"] = inv_counts
+            
+            if "generatorName" in root["Data"]:
+                result["generatorName"] = root["Data"]["generatorName"].value
+            if "generatorOptions" in root["Data"]:
+                result["generatorOptions"] = root["Data"]["generatorOptions"].value
                 
             return result
     except Exception as e:

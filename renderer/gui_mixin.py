@@ -281,7 +281,7 @@ class GUIMixin:
                     sprite = self._create_2d_item_sprite("door_wood.png")
                 elif b_id == 71:
                     sprite = self._create_2d_item_sprite("door_iron.png")
-                elif b_id >= 1000 or b_id in sprite_blocks:
+                elif b_id >= 256 or b_id in sprite_blocks:
                     if isinstance(tex, str):
                         sprite = self._create_2d_item_sprite(tex)
                 
@@ -368,8 +368,8 @@ class GUIMixin:
         
         # Define block IDs that should be rendered as flat 2D item sprites in hand
         # 31: Tallgrass, 37: Dandelion, 38: Rose, 175-178: Double plants, 1000: Raw Porkchop
-        # 1001-1033: Tools and items
-        SPRITE_BLOCKS = {31, 37, 38, 162, 163, 175, 176, 177, 178} | set(range(1000, 1034))
+        # 256-1033: Tools and items
+        SPRITE_BLOCKS = {31, 37, 38, 162, 163, 175, 176, 177, 178} | set(range(256, 1034))
         
         for name, data in BLOCK_REGISTRY.items():
             b_id = data["id"]

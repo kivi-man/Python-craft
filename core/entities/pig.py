@@ -44,4 +44,10 @@ class Pig(Animal):
         super().hurt(damage)
         if self.dead and not was_dead:
             if hasattr(self, 'level') and self.level is not None:
-                self.level.spawn_item_entity(1000, self.x, self.y, self.z)
+                # Biraz yukarıdan ve rastgele bir yöne fırlat
+                import random
+                from world.terrain import PORKCHOP_RAW
+                xd = random.uniform(-0.1, 0.1)
+                zd = random.uniform(-0.1, 0.1)
+                yd = 0.35 # Yukarı doğru sekmesi için
+                self.level.spawn_item_entity(PORKCHOP_RAW, self.x, self.y + 0.5, self.z, xd=xd, yd=yd, zd=zd)
