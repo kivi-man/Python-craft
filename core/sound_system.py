@@ -338,66 +338,6 @@ class SoundSystem:
                 print(f"Error playing sound {sound_enum_name} ({file_path}): {e}")
 
 
-    def play(self, sound_enum_name, x=None, y=None, z=None, volume=1.0, pitch=1.0):
-        sound_name = self.sound_names.get(sound_enum_name)
-        if not sound_name: return
-        
-        base_path = os.path.join(self.sfx_dir, sound_name.replace(".", "/"))
-        file_path = base_path + ".ogg"
-        
-        if not os.path.exists(file_path):
-            file_path = base_path + ".wav"
-            
-        # If no exact match, look for numbered variants (e.g. stone1.ogg, stone2.ogg)
-        if not os.path.exists(file_path):
-            import random
-            import glob
-            variants = glob.glob(base_path + "[0-9]*.ogg") + glob.glob(base_path + "[0-9]*.wav")
-            if variants:
-                file_path = random.choice(variants)
-                
-        if os.path.exists(file_path):
-            try:
-                # Clean up finished players to prevent memory leaks
-                self.active_sounds = [snd for snd in self.active_sounds if snd['player'].playing]
-                
-                # C++ MAX_POLYPHONY check
-                if len(self.active_sounds) >= self.MAX_POLYPHONY:
-                    return
-                    
-                # C++ MAX_SAME_SOUNDS_PLAYING check
-                same_sound_count = sum(1 for snd in self.active_sounds if snd['file_path'] == file_path)
-                if same_sound_count >= self.MAX_SAME_SOUNDS_PLAYING:
-                    return
-                
-                # We cache loaded sounds based on the final file path to avoid reloading
-                if file_path not in self.sounds:
-                    self.sounds[file_path] = pyglet.media.load(file_path, streaming=False)
-                    
-                # Manual 16-block cut-off check before creating the player
-                if x is not None and y is not None and z is not None:
-                    try:
-                        import math
-                        listener = pyglet.media.get_audio_driver().get_listener()
-                        lx, ly, lz = listener.position
-                        dist = math.sqrt((x - lx)**2 + (y - ly)**2 + (z - lz)**2)
-                        if dist > 16.0:
-                            return # Do not play sounds that are too far away
-                    except Exception:
-                        pass
-                        
-                player = self.sounds[file_path].play()
-                player.volume = volume
-                player.pitch = pitch
-                
-                # Positional 3D audio setup if coords are given
-                if x is not None and y is not None and z is not None:
-                    player.position = (x, y, z)
-                    
-                self.active_sounds.append({'player': player, 'file_path': file_path})
-            except Exception as e:
-                print(f"Error playing sound {sound_enum_name} ({file_path}): {e}")
-
     def get_dig_sound(self, block_id):
         # Maps basic block IDs to dig sounds
         from world.terrain import BLOCK_REGISTRY

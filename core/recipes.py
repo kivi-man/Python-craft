@@ -2,6 +2,75 @@ import json
 import os
 from world.mc_id_converter import MC_TO_INTERNAL, INTERNAL_NAMES_MAP
 
+class ShapedRecipe:
+    def __init__(self, pattern, result_id, result_count):
+        self.pattern = pattern
+        self.height = len(pattern)
+        self.width = len(pattern[0]) if self.height > 0 else 0
+        self.result_id = result_id
+        self.result_count = result_count
+
+    def match(self, grid, grid_width, grid_height):
+        # grid is 2D list of item IDs
+        for y_offset in range(grid_height - self.height + 1):
+            for x_offset in range(grid_width - self.width + 1):
+                if self._check_match(grid, grid_width, grid_height, x_offset, y_offset, False):
+                    return True
+                if self._check_match(grid, grid_width, grid_height, x_offset, y_offset, True):
+                    return True
+        return False
+
+    def _check_match(self, grid, grid_width, grid_height, x_offset, y_offset, mirror):
+        for y in range(grid_height):
+            for x in range(grid_width):
+                py = y - y_offset
+                px = x - x_offset
+                if mirror:
+                    px = self.width - 1 - px
+                    
+                target = set([-1])
+                if 0 <= py < self.height and 0 <= px < self.width:
+                    target = self.pattern[py][px]
+                    
+                grid_item = grid[y][x]
+                if grid_item == 0:
+                    if target != set([-1]):
+                        return False
+                else:
+                    if target == set([-1]) or grid_item not in target:
+                        return False
+        return True
+
+class ShapelessRecipe:
+    def __init__(self, ingredients, result_id, result_count):
+        self.ingredients = ingredients
+        self.result_id = result_id
+        self.result_count = result_count
+
+    def match(self, grid, grid_width, grid_height):
+        # Flatten grid
+        items = []
+        for row in grid:
+            for item in row:
+                if item != 0:
+                    items.append(item)
+                    
+        if len(items) != len(self.ingredients):
+            return False
+            
+        used = [False] * len(items)
+        for target_set in self.ingredients:
+            found = False
+            for i, item in enumerate(items):
+                if not used[i] and item in target_set:
+                    used[i] = True
+                    found = True
+                    break
+            if not found:
+                return False
+                
+        return True
+
 class RecipeManager:
     def __init__(self, path):
         self.recipes = []

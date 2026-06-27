@@ -80,20 +80,20 @@ class InputMixin:
                 if min_t < block_dist:
                     hit_entity.hurt(4) # Player hits for 4 damage
                     # Apply Knockback
-                hit_entity.dx += direction[0] * 0.4
-                hit_entity.dy = 0.3
-                hit_entity.dz += direction[2] * 0.4
-                
-                # Play hit sound
-                if hasattr(self, 'sound_system'):
-                    from core.entities.pig import Pig
-                    if isinstance(hit_entity, Pig):
-                        if hit_entity.dead:
-                            self.sound_system.play("eSoundType_MOB_PIG_DEATH", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.7)
+                    hit_entity.dx += direction[0] * 0.4
+                    hit_entity.dy = 0.3
+                    hit_entity.dz += direction[2] * 0.4
+                    
+                    # Play hit sound
+                    if hasattr(self, 'sound_system'):
+                        from core.entities.pig import Pig
+                        if isinstance(hit_entity, Pig):
+                            if hit_entity.dead:
+                                self.sound_system.play("eSoundType_MOB_PIG_DEATH", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.7)
+                            else:
+                                self.sound_system.play("eSoundType_MOB_PIG_AMBIENT", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.5, pitch=1.2) # Pitch up for hurt
                         else:
-                            self.sound_system.play("eSoundType_MOB_PIG_AMBIENT", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.5, pitch=1.2) # Pitch up for hurt
-                    else:
-                        self.sound_system.play("eSoundType_DAMAGE_HURT", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.5)
+                            self.sound_system.play("eSoundType_DAMAGE_HURT", x=hit_entity.x, y=hit_entity.y, z=hit_entity.z, volume=0.5)
                     return
                 
             # Block breaking is handled progressively in main loop update()
@@ -164,11 +164,6 @@ class InputMixin:
                  
         if target_x is not None:
             if button == mouse.RIGHT and 0 < new_block_id < 256:
-                self.inventory_counts[self.selected_slot] -= 1
-                if self.inventory_counts[self.selected_slot] <= 0:
-                    self.inventory_blocks[self.selected_slot] = 0
-                    self.selected_block_id = 0
-                    
                 data = 0
                 from core.special_blocks import is_stairs, is_slab, is_door, SLAB_TO_FULL
                 
@@ -228,6 +223,10 @@ class InputMixin:
                         t_id, t_data = self.get_block_info(hx, hy, hz)
                         if t_id == new_block_id:
                             if (t_data == 0 and target_y == hy + 1) or (t_data == 4 and target_y == hy - 1):
+                                self.inventory_counts[self.selected_slot] -= 1
+                                if self.inventory_counts[self.selected_slot] <= 0:
+                                    self.inventory_blocks[self.selected_slot] = 0
+                                    self.selected_block_id = 0
                                 self.set_block(hx, hy, hz, SLAB_TO_FULL.get(new_block_id, 1), 0)
                                 return
 
@@ -259,6 +258,10 @@ class InputMixin:
                     elif is_slab(new_block_id):
                         data = upside_down
                 
+                self.inventory_counts[self.selected_slot] -= 1
+                if self.inventory_counts[self.selected_slot] <= 0:
+                    self.inventory_blocks[self.selected_slot] = 0
+                    self.selected_block_id = 0
                 self.set_block(target_x, target_y, target_z, new_block_id, data)
                 
                 # Play block place sound
