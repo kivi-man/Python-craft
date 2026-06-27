@@ -136,38 +136,51 @@ Instead, Pythoncraft connects to an asynchronous SQLite database (`world_db.py`)
 
 ---
 
-## 🚀 Deep Dive 5: Next-Gen GPU Render Pipeline (Mega-VBOs & Compute Culling)
+## 🚀 Deep Dive 5: The 3-Tier "Smart Engine" Architecture & Dynamic VRAM
 
-As the render distance increases, CPU overhead for culling and drawing chunks bottlenecks performance. Pythoncraft solves this by dynamically detecting if your system supports **OpenGL 4.3+** and switching to an advanced GPU-driven architecture.
+As render distances increase, CPU overhead for culling and drawing chunks bottlenecks performance. Pythoncraft solves this by featuring a revolutionary **3-Tier GPU Pipeline**. Upon startup, the engine dynamically probes your hardware, analyzing your OpenGL version and total VRAM to select the most optimal and safe rendering pipeline for your specific machine.
 
 ### 🧠 The Dynamic VRAM Allocator
-Pythoncraft detects your physical GPU VRAM (e.g., 8 GB NVIDIA, or AMD) and dynamically dedicates a safe budget for the engine, leaving headroom for the OS. It splits this budget into two massive pre-allocated buffers (**Mega-VBOs**):
+Regardless of the Tier you are on, Pythoncraft natively queries the GPU (using `GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX` or standard fallback queries) to detect your physical GPU VRAM capacity (e.g., 8 GB NVIDIA). It dynamically reserves a safe budget for the engine, leaving 512 MB headroom for the OS. 
+
+This budget is then split into two massive pre-allocated buffers (**Mega-VBOs**):
 - **Opaque VRAM Pool (70%)**
 - **Transparent VRAM Pool (30%)**
 
-### 📐 Frustum Culling on the GPU (Compute Shaders)
-Instead of Python looping over chunks to check if you can see them, Pythoncraft passes a **Shader Storage Buffer Object (SSBO)** containing the bounding boxes of every loaded chunk directly to the GPU. A lightning-fast **Compute Shader** evaluates tens of thousands of chunks in `< 0.5ms` and outputs the visible chunk commands into an **Indirect Draw Buffer**.
+---
 
-### ⚡ The Single Draw Call
-Finally, the CPU issues *one single command*: `glMultiDrawArraysIndirect`. The GPU reads the indirect buffer and draws the entire 40,000-chunk world instantly, completely bypassing the Python Global Interpreter Lock (GIL).
+### 🖥️ Tier 1: Modern GPU Mode (Compute Shaders)
+For modern systems supporting **OpenGL 4.3+**:
+- **SSBO Culling:** Instead of Python looping over chunks to check visibility, the engine passes a **Shader Storage Buffer Object (SSBO)** containing the bounding boxes of every loaded chunk directly to the GPU.
+- **Compute Shader:** A lightning-fast Compute Shader evaluates tens of thousands of chunks in `< 0.5ms` and outputs the visible chunk commands into an **Indirect Draw Buffer**.
+- **Single Draw Call:** The CPU issues *one single command*: `glMultiDrawArraysIndirect`. The GPU reads the indirect buffer and draws the entire 40,000-chunk world instantly, completely bypassing the Python Global Interpreter Lock (GIL).
+
+### ⚡ Tier 2: Legacy Mega Mode (High VRAM, Old GPU)
+For older systems that do not support Compute Shaders (OpenGL 3.3) but have **> 1.5 GB VRAM**:
+- **Mega-VBOs + Numba CPU Culling:** Keeps the massive pre-allocated buffers, ensuring memory fragmentation is zero. Without Compute Shaders, the visibility math is passed to a heavily JIT-compiled C-level `Numba` function.
+- **MultiDrawArrays:** Numba computes the pointers for visible chunks into a compact C-Array. Python then sends this array to the GPU using `glMultiDrawArrays`. This effectively removes the Python `for` loops, rendering the world in a single draw call without needing OpenGL 4.3!
+
+### 🥔 Tier 3: Potato Mode (Low-End & Low VRAM)
+If your system is old AND has **< 1.5 GB VRAM** (e.g. 512 MB GPUs):
+- The engine gracefully falls back to the classic **LegacyChunkRenderer**. 
+- It abandons the Mega-VBO architecture to prevent VRAM exhaustion and OS freezing.
+- It allocates tiny, individual VBOs only for the chunks immediately around you. As you walk away, these mini-VBOs are destroyed. This guarantees absolute stability on extremely old hardware.
 
 ```mermaid
 graph TD
-    A[Dynamic VRAM Allocator] -->|Reserves GBs of VRAM| B[(Mega-VBO)]
-    C[Chunk Mesher Thread] -->|Uploads chunk mesh offset/size| B
-    C -->|Uploads Chunk Bounding Box| D[(SSBO Data Buffer)]
+    A[Engine Startup] --> B{Check OpenGL 4.3}
+    B -->|Yes| C[Tier 1: Modern Engine]
+    B -->|No| D{Check VRAM > 1.5GB}
+    D -->|Yes| E[Tier 2: Legacy Mega Engine]
+    D -->|No| F[Tier 3: Potato Engine]
     
-    E[Player Camera] -->|Extracts View/Proj Matrix| F[Compute Shader]
-    D -.->|Feeds AABB data| F
-    
-    F -->|Tests 40,000+ chunks in < 1ms| G[(Indirect Command Buffer)]
-    G -->|Visible Chunk offsets| H[glMultiDrawArraysIndirect]
-    B -.->|Vertex Data| H
-    H -->|Draws Entire World at Once| I[Screen]
+    C --> G[Compute Shaders + MultiDrawIndirect]
+    E --> H[Numba CPU Culling + MultiDrawArrays]
+    F --> I[Individual VBOs + glDrawArrays]
 ```
 
 ### ♻️ Graceful VRAM Eviction (Lazy Uploads)
-If you attempt to load a world so massive that it exceeds your hardware's VRAM limits, the engine does not crash. It queues the meshes in System RAM. When you move and distant chunks are unloaded, the engine gracefully "lazily uploads" the waiting meshes into the newly freed VRAM slots, guaranteeing 100% stability.
+If you attempt to load a world so massive that it exceeds your hardware's VRAM limits (in Tier 1 or 2), the engine does not crash. It queues the meshes in System RAM. When you move and distant chunks are unloaded, the engine gracefully "lazily uploads" the waiting meshes into the newly freed VRAM slots, guaranteeing 100% stability.
 
 ---
 

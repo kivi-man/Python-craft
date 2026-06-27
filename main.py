@@ -1673,7 +1673,6 @@ class PythonCraftEngine(pyglet.window.Window, InputMixin, ChunkMixin, GUIMixin, 
         )
 
 def main():
-    
     print("=============================================")
     print("      PYTHONCRAFT ENGINE INITIATING...       ")
     print("=============================================")
@@ -1684,7 +1683,9 @@ def main():
     debug_mode = False
     flat_mode = False
     console_mode = False
+    force_legacy = False
     
+    import sys
     if len(sys.argv) > 1:
         args = sys.argv[1:]
         i = 0
@@ -1709,6 +1710,9 @@ def main():
             elif arg == "-console":
                 console_mode = True
                 print("Console mode enabled.")
+            elif arg == "-legacy":
+                force_legacy = True
+                print("Legacy mode forced via command line.")
             else:
                 try:
                     distance = int(arg)
@@ -1717,6 +1721,7 @@ def main():
                     pass
             i += 1
                     
+    from world.terrain import BLOCK_OPAQUE_ARRAY
     if fast_leaves:
         BLOCK_OPAQUE_ARRAY[12] = True
         BLOCK_OPAQUE_ARRAY[16] = True
@@ -1724,20 +1729,25 @@ def main():
         
     gpu_mode = False
     config = None
-    try:
-        pyglet.options['search_local_libs'] = True
-        config_43 = pyglet.gl.Config(major_version=4, minor_version=3, forward_compatible=True, depth_size=24, double_buffer=True)
-        test_win = pyglet.window.Window(width=1, height=1, config=config_43, visible=False)
-        test_win.close()
-        gpu_mode = True
-        config = config_43
-        print("GPU_MODE [AKTIF]: OpenGL 4.3 destekleniyor. Compute Shaders kullanilacak.")
-    except Exception as e:
+    import pyglet
+    if force_legacy:
         gpu_mode = False
         config = pyglet.gl.Config(depth_size=24, double_buffer=True)
-        print(f"GPU_MODE [PASIF]: OpenGL 4.3 desteklenmiyor. Legacy Mode kullanilacak. ({e})")
+        print("GPU_MODE [PASIF]: Force Legacy Mode aktif. OpenGL 3.3 kullanilacak.")
+    else:
+        try:
+            pyglet.options['search_local_libs'] = True
+            config_43 = pyglet.gl.Config(major_version=4, minor_version=3, forward_compatible=True, depth_size=24, double_buffer=True)
+            test_win = pyglet.window.Window(width=1, height=1, config=config_43, visible=False)
+            test_win.close()
+            gpu_mode = True
+            config = config_43
+            print("GPU_MODE [AKTIF]: OpenGL 4.3 destekleniyor. Compute Shaders kullanilacak.")
+        except Exception as e:
+            gpu_mode = False
+            config = pyglet.gl.Config(depth_size=24, double_buffer=True)
+            print(f"GPU_MODE [PASIF]: OpenGL 4.3 desteklenmiyor. Legacy Mode kullanilacak. ({e})")
         
-    # TODO: Pass gpu_mode to engine if needed or let engine access global state
     engine = PythonCraftEngine(render_distance=distance, simulation_distance=sim_distance, fast_leaves=fast_leaves, debug_mode=debug_mode, flat_mode=flat_mode, console_mode=console_mode, config=config, gpu_mode=gpu_mode)
     pyglet.app.run()
 

@@ -61,3 +61,48 @@ def get_visible_chunk_indices(proj_view, chunk_bounds, active_flags, out_indices
             visible_count += 1
             
     return visible_count
+
+
+@njit(cache=True)
+def get_multidraw_indices(proj_view, chunk_bounds, chunk_active, chunk_vram_data, o_firsts, o_counts, t_firsts, t_counts):
+    """
+    chunk_vram_data: N x 4 array (o_offset, o_count, t_offset, t_count)
+    """
+    planes = extract_planes(proj_view)
+    o_visible_count = 0
+    t_visible_count = 0
+    
+    n_chunks = chunk_bounds.shape[0]
+    for i in range(n_chunks):
+        if not chunk_active[i]:
+            continue
+            
+        # AABB: min_x, min_y, min_z, max_x, max_y, max_z
+        min_x, min_y, min_z, max_x, max_y, max_z = chunk_bounds[i]
+        
+        is_visible = True
+        for p in range(6):
+            px = max_x if planes[p][0] > 0 else min_x
+            py = max_y if planes[p][1] > 0 else min_y
+            pz = max_z if planes[p][2] > 0 else min_z
+            
+            if (planes[p][0]*px + planes[p][1]*py + planes[p][2]*pz + planes[p][3]) < -0.1:
+                is_visible = False
+                break
+                
+        if is_visible:
+            o_offset = chunk_vram_data[i, 0]
+            o_count = chunk_vram_data[i, 1]
+            if o_count > 0:
+                o_firsts[o_visible_count] = o_offset
+                o_counts[o_visible_count] = o_count
+                o_visible_count += 1
+                
+            t_offset = chunk_vram_data[i, 2]
+            t_count = chunk_vram_data[i, 3]
+            if t_count > 0:
+                t_firsts[t_visible_count] = t_offset
+                t_counts[t_visible_count] = t_count
+                t_visible_count += 1
+                
+    return o_visible_count, t_visible_count

@@ -35,9 +35,30 @@ class ChunkMixin:
         if getattr(self, 'gpu_mode', False):
             from renderer.modern_chunk_renderer import ModernChunkRenderer
             self.chunk_renderer = ModernChunkRenderer(self.TOTAL_CHUNKS)
+            self.active_gpu_mode = "modern"
         else:
-            from renderer.legacy_chunk_renderer import LegacyChunkRenderer
-            self.chunk_renderer = LegacyChunkRenderer(self.TOTAL_CHUNKS)
+            total_kb = GLint(0)
+            vram_mb = 0
+            try:
+                glGetIntegerv(0x9048, ctypes.byref(total_kb))
+                if total_kb.value > 0: vram_mb = total_kb.value / 1024
+            except: pass
+            
+            if vram_mb == 0:
+                try:
+                    vbo_free = (GLint * 4)()
+                    glGetIntegerv(0x87FB, vbo_free)
+                    if vbo_free[0] > 0: vram_mb = vbo_free[0] / 1024
+                except: pass
+                
+            if vram_mb >= 1536: # 1.5 GB+ VRAM
+                from renderer.legacy_mega_renderer import LegacyMegaRenderer
+                self.chunk_renderer = LegacyMegaRenderer(self.TOTAL_CHUNKS)
+                self.active_gpu_mode = "legacy_mega"
+            else:
+                from renderer.legacy_chunk_renderer import LegacyChunkRenderer
+                self.chunk_renderer = LegacyChunkRenderer(self.TOTAL_CHUNKS)
+                self.active_gpu_mode = "legacy"
 
         
         # Multithreading Worker Pool
@@ -332,7 +353,7 @@ class ChunkMixin:
 
     def _apply_chunk_mesh(self, cx, cz, meshes):
         t_start = time.perf_counter()
-        if getattr(self, 'gpu_mode', False):
+        if getattr(self, 'active_gpu_mode', "legacy") in ("modern", "legacy_mega"):
             success = self.chunk_renderer.add_chunk_mesh(cx, cz, meshes)
             if not success:
                 self.pending_vram_chunks.add((cx, cz))
